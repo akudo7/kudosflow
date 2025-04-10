@@ -1,0 +1,13 @@
+<bolt_file_modifications>
+  <diff path="tailwind.config.js">
+@@ -2,7 +2,7 @@
+export default {
+  content: [
+    "./index.html",
+-    "./src/**/*.{js,ts,jsx,tsx}",
++    "./src/**/*.{js,jsx}",
+  ],
+  theme: {
+    extend: {},
+  </diff>
+</bolt_file_modifications>
