@@ -1,0 +1,76 @@
+version: "3.9"
+
+networks:
+  net:
+    driver: bridge
+
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    restart: always
+    container_name: qdrant
+    ports:
+      - 6333:6333
+      - 6334:6334
+    expose:
+      - 6333
+      - 6334
+      - 6335
+    configs:
+      - source: qdrant_config
+        target: /qdrant/config/production.yaml
+    volumes:
+      - ./qdrant:/qdrant/storage
+    networks:
+      - net
+
+  weaviate:
+    command:
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8080"
+      - --scheme
+      - http
+    image: cr.weaviate.io/semitechnologies/weaviate:latest
+    ports:
+      - 8080:8080
+      - 50051:50051
+    volumes:
+      # - weaviate_data:/var/lib/weaviate
+      - ./weaviate:/var/lib/weaviate
+    restart: on-failure:0
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "false"
+      PERSISTENCE_DATA_PATH: "/var/lib/weaviate"
+      DEFAULT_VECTORIZER_MODULE: "none"
+      ENABLE_MODULES: "text2vec-cohere,text2vec-huggingface,text2vec-palm,text2vec-openai,generative-openai,generative-cohere,generative-palm,ref2vec-centroid,reranker-cohere,qna-openai"
+      CLUSTER_HOSTNAME: "node1"
+    networks:
+      - net
+
+  redis:
+    image: "redislabs/redisearch:latest"
+    ports:
+      - 6379:6379
+    networks:
+      - net
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./postgres:/var/lib/postgresql 
+    restart: always
+    ports: 
+      - 5432:5432
+    networks:
+      - net
+
+configs:
+  qdrant_config:
+    content: |
+      log_level: INFO
