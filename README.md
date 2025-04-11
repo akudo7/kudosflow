@@ -74,7 +74,7 @@ eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9kdWN0Ijoia3Vkb3NmbG93IiwidmVyc2lvbiI
 ```
 
 <p align="center">
-<img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudos-gpt_00_1.png" />
+<img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/settings.png" />
 </p>
 </details>
 &nbsp;
@@ -106,10 +106,6 @@ VSCode environment values for kudosflow are accessible to the Assistant.
   - terminal
     - example: `Here are the results. Let me know if any corrections are needed and provide suggestions for improvement.`
 
-<p align="center">
-    <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudos-gpt.v4.1.0_2.png"/>
-    <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudos-gpt.v4.1.0_3.png"/>
-</p>
 </details>
 &nbsp;
 
@@ -130,10 +126,6 @@ To use this feature, Ollama must be installed.
 - temperature
   - example: `0.1`
 
-<p align="center">
-    <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudos-gpt.v4.1.0_2.png"/>
-    <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudos-gpt.v4.1.0_4.png"/>
-</p>
 </details>
 &nbsp;
 
@@ -145,10 +137,6 @@ VSCode environment variables set for kudosflow are available to the currently ac
 - Chatflow
   - example: `/Users/akirakudo/Desktop/MyWork/VSCode/kudosflow/json/chats/bufferMemory/OpenAI Chatflow.json`
 
-<p align="center">
-    <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudos-gpt.v4.1.0_2.png"/>
-    <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudos-gpt.v4.1.0_4.png"/>
-</p>
 </details>
 &nbsp;
 <details>
