@@ -151,6 +151,17 @@ VSCode environment variables set for kudosflow are available to the currently ac
 </p>
 </details>
 &nbsp;
+<details>
+<summary>Troubleshooting:</summary>
+
+You have to install packages yourself,if you are hitting a trouble below.
+
+<p align="center">
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/trouble1.png"/>
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/trouble2.png"/>
+</p>
+</details>
+&nbsp;
 
 # Features
 
