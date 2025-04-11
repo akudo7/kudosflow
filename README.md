@@ -159,25 +159,49 @@ kudosflow provides powerful features for making requests to AI through an intuit
 ## ver 1.0.0
 &nbsp;
 <details>
-<summary>01. Configuration: </summary>
+<summary>01. Set the credentials: </summary>
 
-- Configuration
-  - After kudosflow is successfully loaded, a `.kudosflow` folder and a `credential.json` file are automatically created in your current project directory. The LangChain nodes used in your flow require certain credentials to be defined in this JSON file.
+After kudosflow is successfully loaded, `.kudosflow` folder and `credential.json` file are automatically created in your current project directory. The LangChain nodes used in your flow require certain credentials to be defined in this JSON file.
 
-    <p align="center">
-    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/credentials.png" />
-    </p>
+<p align="center">
+<img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/credentials.png" />
+</p>
 
 </details>
 &nbsp;
 <details>
-<summary><font color="red">02. Set a current flow:</font></summary>
+<summary>02. Set a current flow:</summary>
 
-- Configuration
-  - After kudosflow is successfully loaded, a `.kudosflow` folder and a `credential.json` file are automatically created in your current project directory. The LangChain nodes used in your flow require certain credentials to be defined in this JSON file.
+To configure the Chatflow used by the Assistant, you can either create a new Chatflow from scratch or use an existing one. Some usable ones are attached to this page—please feel free to refer to it!
+
+- Create Chatflow
+  - From the 'Add Nodes' menu, you can drag and drop the nodes you want to use, and connect the outputs to the node parameters via edges.
 
     <p align="center">
-    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/credentials.png" />
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/create1.png" />
+    </p>
+    <p align="center">
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/create2.png" />
+    </p>
+
+- Open Chatflow
+  - Open an existing one.
+
+    <p align="center">
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/open1.png" />
+    </p>
+    <p align="center">
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/open2.png" />
+    </p>
+    <p align="center">
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/open3.png" />
+    </p>
+
+- Set Chatflow
+  - Set the Chatflow to be used by the Assistant.
+
+    <p align="center">
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/save.png" />
     </p>
 
 </details>
@@ -193,7 +217,7 @@ Supported Devin feature
     - Recommend to change it for fitting with your environment.
   - boltArtifact and bolt_file_modifications are supported.
   - Samples
-    - [System Prompt](https://github.com/akudo7/kudos-gpt/raw/HEAD/bolt_new-system-prompt.txt)
+    - [Prompt](https://github.com/akudo7/kudos-gpt/raw/HEAD/bolt_new-system-prompt.txt)
     - [artifact.xml](https://github.com/akudo7/kudos-gpt/raw/HEAD/artifact.xml)
     - [modifications.xml](https://github.com/akudo7/kudos-gpt/raw/HEAD/modifications.xml)
 
@@ -320,7 +344,7 @@ To compare/update an active text editor with a message in a discussion, the `Com
 </details>
 &nbsp;
 <details>
-<summary><font color="red">12. RAG</font></summary>
+<summary>12. RAG</summary>
 
 To register files in the VectorDB, you can use the RAG Explorer. PostgreSQL is required to use this feature. The docker-compose.yml file attached to this page also includes support for PostgreSQL. Please take a look!
 
@@ -361,11 +385,11 @@ This page contains sample flows and a docker-compose.yml file below, allowing yo
 
 # Coming features soon(I hope...)
 
-- LangFlow support
-- Auto development with Agent(LangFlow)
+- LangGraph support
+- Auto development with Agent(LangGraph)
   - Recommend to use [Kudos-gpt](https://marketplace.visualstudio.com/items?itemName=AkiraKudo.kudos-gpt) until this feature will be publishe, if you need to use Agents.
 - Supporting to trained on permissive data with local models
 
 ## **Hand-crafted by [Akira Kudo](https://www.linkedin.com/in/akira-kudo-4b04163/) in Tokyo, Japan**
-
+Feel free contact me if you are interested in SceneGraphManager!
 <p align="center">Copyright and Reserved &copy; 2023-present Akira Kudo</p>
