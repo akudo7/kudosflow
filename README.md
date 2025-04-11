@@ -11,6 +11,9 @@
 <p align="left">
 kufosflow is a Flowise-like LangChain extension for VSCode that uses an innovative AI flow management engine (SceneGraphManager) and brings an AI chatbot right into your editor. Use it as your AI programming assistant to understand complex code, make improvements, or generate comments. To get started, launch it from the Command Menu, highlight a piece of code, click the plus icon on the left to open a chat, and start talking—just like in ChatGPT. All your conversations are saved in the chat history and can be exported as a JSON file.
 </p>
+  <p align="center">
+    <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudosflow.png"/>
+  </p>
 &nbsp;
 
 # Technology overview
@@ -56,7 +59,7 @@ Here's a translation of the introduction to LangChain nodes supported by SceneGr
 
 kudosflow provides powerful features for making requests to AI through an intuitive and easy-to-use interface.
 
-<summary><font size=5>ver 1.0.0</font></summary>
+## ver 1.0.0
 &nbsp;
 <details>
  <summary>01. Set the token:</summary>
@@ -153,22 +156,80 @@ VSCode environment variables set for kudosflow are available to the currently ac
 
 kudosflow provides powerful features for making requests to AI through an intuitive and easy-to-use interface.
 
-<summary><font size=5>ver 1.0.0</font></summary>
+## ver 1.0.0
 &nbsp;
 <details>
-<summary>01. Configuration: </summary>
+<summary>01. Set the credentials: </summary>
 
-- Configuration
-  - After kudosflow is successfully loaded, a `.kudosflow` folder and a `credential.json` file are automatically created in your current project directory. The LangChain nodes used in your flow require certain credentials to be defined in this JSON file.
+After kudosflow is successfully loaded, `.kudosflow` folder and `credential.json` file are automatically created in your current project directory. The LangChain nodes used in your flow require certain credentials to be defined in this JSON file.
+
+<p align="center">
+<img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/credentials.png" />
+</p>
+
+</details>
+&nbsp;
+<details>
+<summary>02. Set a current flow:</summary>
+
+To configure the Chatflow used by the Assistant, you can either create a new Chatflow from scratch or use an existing one. Some usable ones are attached to this page—please feel free to refer to it!
+
+- Create Chatflow
+  - From the 'Add Nodes' menu, you can drag and drop the nodes you want to use, and connect the outputs to the node parameters via edges.
 
     <p align="center">
-    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/credentials.png" />
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/create1.png" />
+    </p>
+    <p align="center">
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/create2.png" />
+    </p>
+
+- Open Chatflow
+  - Open an existing one.
+
+    <p align="center">
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/open1.png" />
+    </p>
+    <p align="center">
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/open2.png" />
+    </p>
+    <p align="center">
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/open3.png" />
+    </p>
+
+- Set Chatflow
+  - Set the Chatflow to be used by the Assistant.
+
+    <p align="center">
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/save.png" />
     </p>
 
 </details>
 &nbsp;
 <details>
-<summary>02. Turn On/Off: </summary>
+<summary>03. Devin</summary>
+
+Supported Devin feature
+
+- Available to import XMLs which are exported by the Bolt.new system promopt.
+
+  - See in detail of the original prompt at the "<https://github.com/stackblitz/bolt.new/blob/main/app/lib/.server/llm/prompts.ts>".
+    - Recommend to change it for fitting with your environment.
+  - boltArtifact and bolt_file_modifications are supported.
+  - Samples
+    - [Prompt](https://github.com/akudo7/kudos-gpt/raw/HEAD/bolt_new-system-prompt.txt)
+    - [artifact.xml](https://github.com/akudo7/kudos-gpt/raw/HEAD/artifact.xml)
+    - [modifications.xml](https://github.com/akudo7/kudos-gpt/raw/HEAD/modifications.xml)
+
+  <p align="center">
+  <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudos-gpt.v5.0.0_1.gif"/>
+  <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudos-gpt.v5.0.0_2.gif"/>
+  </p>
+
+</details>
+&nbsp;
+<details>
+<summary>04. Turn On/Off: </summary>
 
 - Assistants
   - After successfully loading kudosflow, you need to manually run `kudosflow: Assistants On/Off` to enable it.
@@ -192,7 +253,7 @@ kudosflow provides powerful features for making requests to AI through an intuit
 </details>
 &nbsp;
 <details>
-<summary>03. Have a discussion by asking directly:</summary>
+<summary>05. Have a discussion by asking directly:</summary>
 To ask your question during a discussion, the `Direct Asking` button is available.
 
 <p align="center">
@@ -205,7 +266,7 @@ Your question will be answered by the assistant.
 </details>
 &nbsp;
 <details>
-<summary>04. Have a discussion by asking image: </summary>
+<summary>06. Have a discussion by asking image: </summary>
 To ask a question about an image in a discussion, the `Asking Image` button is available.
 Please note that you have to enter a question before clicking the button.
 <p align="center">
@@ -214,7 +275,7 @@ Please note that you have to enter a question before clicking the button.
 </details>
 &nbsp;
 <details>
-<summary>05. Have a discussion with templates:</summary>
+<summary>07. Have a discussion with templates:</summary>
 
 To start a discussion with a template, the strings in your clipboard can be accessed using the `Clipboard` button.
 
@@ -236,7 +297,7 @@ For example, after clicking the "Find Bugs" button below.
 </details>
 &nbsp;
 <details>
-<summary>06. Create a message from a terminal:</summary>
+<summary>08. Create a message from a terminal:</summary>
 
 You can create a message with the output from the terminal using the Terminal button. All strings from the terminal will be added to the message with the "kudosflow.messages.terminal" prompt in the settings.
 
@@ -249,7 +310,7 @@ You can create a message with the output from the terminal using the Terminal bu
 </details>
 &nbsp;
 <details>
-<summary>07. Save a discussion: </summary>
+<summary>09. Save a discussion: </summary>
 
 To Save a chat history is available with the floppy disk icon labeled `JSON Export`. It will be created a new JSON file as an `opening file + _chathisoty.json`.
 
@@ -259,7 +320,7 @@ To Save a chat history is available with the floppy disk icon labeled `JSON Expo
 </details>
 &nbsp;
 <details>
-<summary>09. Delete a discussion: </summary>
+<summary>10. Delete a discussion: </summary>
 
 To delete a discussion, the trash icon labeled `del thread` is available. This will also delete the thread from the Chat Memory.
 
@@ -269,7 +330,7 @@ To delete a discussion, the trash icon labeled `del thread` is available. This w
 </details>
 &nbsp;
 <details>
-<summary>10. Compare/update an active text editor with a message</summary>
+<summary>11. Compare/update an active text editor with a message</summary>
 
 To compare/update an active text editor with a message in a discussion, the `Compare` command from the `More actions…` is available.
 <font color="red">NOTE: A temporary file will be created in a folder `Setting / kudosflow / Temp Folder`.</font>
@@ -283,36 +344,52 @@ To compare/update an active text editor with a message in a discussion, the `Com
 </details>
 &nbsp;
 <details>
-<summary>11. Devin</summary>
+<summary>12. RAG</summary>
 
-Supported Devin feature
+To register files in the VectorDB, you can use the RAG Explorer. PostgreSQL is required to use this feature. The docker-compose.yml file attached to this page also includes support for PostgreSQL. Please take a look!
 
-- Available to import XMLs which are exported by the Bolt.new system promopt.
-
-  - See in detail of the original prompt at the "<https://github.com/stackblitz/bolt.new/blob/main/app/lib/.server/llm/prompts.ts>".
-    - Recommend to change it for fitting with your environment.
-  - boltArtifact and bolt_file_modifications are supported.
-  - Samples
-    - [System Prompt](https://github.com/akudo7/kudos-gpt/raw/HEAD/bolt_new-system-prompt.txt)
-    - [artifact.xml](https://github.com/akudo7/kudos-gpt/raw/HEAD/artifact.xml)
-    - [modifications.xml](https://github.com/akudo7/kudos-gpt/raw/HEAD/modifications.xml)
-
-  <p align="center">
-  <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudos-gpt.v5.0.0_1.gif"/>
-  <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudos-gpt.v5.0.0_2.gif"/>
-  </p>
-
+<p align="center">
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/rag1.png" />
+</p>
+<p align="center">
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/rag2.png" />
+</p>
+<p align="center">
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/rag3.png" />
+</p>
 </details>
-
 &nbsp;
+
+# Get Started
+
+This page contains sample flows and a docker-compose.yml file below, allowing you to start using it with KudosFlow right away. Feel free to give it a try!
+
+- Sample flow
+  - chats
+    - bufferMemory
+      - Anthropic Chatflow.json
+      - AzureOpenAI Chatflow.json
+      - Ollama Chatflow.json
+      - OpenAI Chatflow.json
+    - redis
+      - Ollama and Redis Chatflow.json
+  - stores
+    - Qdrant
+      - AzureOpenAI with Qdrant Chatflow.json
+      - Ollama with Qdrant Chatflow.json
+      - OpenAI with Qdrant Chatflow.json
+    - Weaviate
+      - OpenAI with Weaviate Chatflow.json
+- yaml
+  - docker-compose.yml
 
 # Coming features soon(I hope...)
 
-- LangFlow
-- Auto development with Agent flow
-  - Recommend to use [Kudos-gpt](https://marketplace.visualstudio.com/items?itemName=AkiraKudo.kudos-gpt) until this feature will be published.
+- LangGraph support
+- Auto development with Agent(LangGraph)
+  - Recommend to use [Kudos-gpt](https://marketplace.visualstudio.com/items?itemName=AkiraKudo.kudos-gpt) until this feature will be publishe, if you need to use Agents.
 - Supporting to trained on permissive data with local models
 
 ## **Hand-crafted by [Akira Kudo](https://www.linkedin.com/in/akira-kudo-4b04163/) in Tokyo, Japan**
-
+Feel free contact me if you are interested in SceneGraphManager!
 <p align="center">Copyright and Reserved &copy; 2023-present Akira Kudo</p>
