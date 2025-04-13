@@ -1,0 +1,26 @@
+<specification>
+```markdown
+```
+</specification>
+
+<Project>
+```plain text
+${{kudosflow_tree}}
+```
+</Project>
+
+<${{kudosflow_filename}}>
+```typescript
+${{kudosflow_content}}
+```
+</${{kudosflow_filename}}>
+
+<LOG>
+```bash
+${{kudosflow_terminal}}
+```
+</LOG>
+
+QUERY： ${{kudosflow_query}}
+
+CAUTION : When there are files that need to be checked in order to provide an answer, please display 'Please tell me the "actual filename including path"' and do not answer the question.

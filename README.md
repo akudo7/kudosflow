@@ -59,7 +59,7 @@ Here's a translation of the introduction to LangChain nodes supported by SceneGr
 
 kudosflow provides powerful features for making requests to AI through an intuitive and easy-to-use interface.
 
-## ver 1.0.0
+## ver 1.1.0
 &nbsp;
 <details>
  <summary>01. Set the token:</summary>
@@ -86,23 +86,16 @@ VSCode environment values for kudosflow are accessible to the Assistant.
 
 - Temp Folder
   - example: `/var/tmp`
+- Tree
+  - command
+    - example: `tree`
+  - argument
+    - example: `-I 'node_modules|out|json|resources|.map|.org|.js|eslint.config.mjs|readme.txt|README.md|CHANGELOG.md|yarn.lock|vsc-extension-quickstart.md|tree.txt'`
 - Messages
   - clipboard
     - example: `The code:`
   - progress
     - example: `inquiring...`
-  - bugAssessment
-    - example: `Find the bugs in the code, and show the improvements as the improved code.`
-  - vulnerabilityAssessment
-    - example: `Find and address vulnerabilities in the code, and show the improvements as the improved code.`
-  - speedEnhancement
-    - example: `Diagnose if code speed improvement is possible, and show the improvements as the improved code.`
-  - etcEnhancement
-    - example: `Diagnose if any other improvements are possible, and show the improvements as the improved code.`
-  - makeComment
-    - example: `Add comments for code review to the class, methods, and all lines of code as the improved code.`
-  - makeTest
-    - example: `Make tests for the code.`
   - terminal
     - example: `Here are the results. Let me know if any corrections are needed and provide suggestions for improvement.`
 
@@ -155,7 +148,7 @@ You have to install packages yourself,if you are hitting a trouble below.
 
 kudosflow provides powerful features for making requests to AI through an intuitive and easy-to-use interface.
 
-## ver 1.0.0
+## ver 1.1.0
 &nbsp;
 <details>
 <summary>01. Set the credentials: </summary>
@@ -289,10 +282,18 @@ To use the buttons, a message from the VSCode environment (Messages) will be req
 <p align="center">
     <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudos-gpt_06_3.png" />
 </p>
-For example, after clicking the "Find Bugs" button below.
+For example, after clicking the "template" button below.
 <p align="center">
-    <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudos-gpt_06_4.png" />
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/template.gif" />
 </p>
+There is template.txt in .kudosflow folder that includes a query. Some variables below are available.
+
+- ${{kudosflow_tree}} : project construction
+- ${{kudosflow_filename}} : current filename
+- ${{kudosflow_content}} : current file content
+- ${{kudosflow_terminal}} : terminal log
+- ${{kudosflow_query}} : query
+
 </details>
 &nbsp;
 <details>
