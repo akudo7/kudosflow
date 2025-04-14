@@ -346,7 +346,7 @@ To compare/update an active text editor with a message in a discussion, the `Com
 <details>
 <summary>12. RAG</summary>
 
-To register files in the VectorDB, you can use the RAG Explorer. PostgreSQL is required to use this feature. The docker-compose.yml file attached to this page also includes support for PostgreSQL. Please take a look!
+To register files in the VectorDB, you can use the RAG Explorer that add metadata "kudosflow" to them. PostgreSQL is required to use this feature. The docker-compose.yml file attached to this page also includes support for PostgreSQL. Please take a look!
 
 <p align="center">
     <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/rag1.png" />
@@ -357,6 +357,21 @@ To register files in the VectorDB, you can use the RAG Explorer. PostgreSQL is r
 <p align="center">
     <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/rag3.png" />
 </p>
+
+This section explains how to enable filtering in RAG-based chat.
+
+- Qdrant
+<p align="center">
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/qdrant_search_filtering.png" />
+</p>
+
+- Weaviate
+<p align="center">
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/weaviate_search_filtering.png" />
+</p>
+
+
+
 </details>
 &nbsp;
 
