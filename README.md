@@ -362,7 +362,7 @@ This section explains how to enable filtering in RAG-based chat.
 
 - Qdrant
 <p align="center">
-    <img src="https://github.com/akudo7/kudosflow/raw/HEA/images/qdrant_search_filter.png" />
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/qdrant_search_filter.png" />
 </p>
 
 - Weaviate
