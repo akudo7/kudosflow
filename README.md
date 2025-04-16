@@ -13,6 +13,7 @@ kufosflow is a Flowise-like LangChain extension for VSCode that uses an innovati
 </p>
   <p align="center">
     <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudosflow.png"/>
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/v120.gif" />
   </p>
 &nbsp;
 
@@ -165,7 +166,6 @@ After kudosflow is successfully loaded, `.kudosflow` folder and `credential.json
 
 <p align="center">
 <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/credentials.png" />
-<img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/v120.gif" />
 </p>
 
 </details>
