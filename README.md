@@ -134,11 +134,19 @@ VSCode environment variables set for kudosflow are available to the currently ac
 &nbsp;
 <details>
 <summary>Troubleshooting:</summary>
-
-You have to install packages yourself,if you are hitting a trouble below.
+If you're experiencing issues, some common problems are listed below.
 
 <p align="center">
     <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/trouble1.png"/>
+</p>
+
+- The chatflow JSON file is either missing or invalid.
+<p align="center">
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/trouble3.png"/>
+</p>
+
+- You need to install the required packages manually.
+<p align="center">
     <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/trouble2.png"/>
 </p>
 </details>
