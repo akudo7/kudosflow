@@ -165,6 +165,7 @@ After kudosflow is successfully loaded, `.kudosflow` folder and `credential.json
 
 <p align="center">
 <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/credentials.png" />
+<img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/v120.gif" />
 </p>
 
 </details>
