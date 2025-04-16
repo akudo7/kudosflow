@@ -60,7 +60,7 @@ Here's a translation of the introduction to LangChain nodes supported by SceneGr
 
 kudosflow provides powerful features for making requests to AI through an intuitive and easy-to-use interface.
 
-## ver 1.1.0
+## ver 1.2.0
 &nbsp;
 <details>
  <summary>01. Set the token:</summary>
@@ -93,8 +93,6 @@ VSCode environment values for kudosflow are accessible to the Assistant.
   - argument
     - example: `-I 'node_modules|out|json|resources|.map|.org|.js|eslint.config.mjs|readme.txt|README.md|CHANGELOG.md|yarn.lock|vsc-extension-quickstart.md|tree.txt'`
 - Messages
-  - clipboard
-    - example: `The code:`
   - progress
     - example: `inquiring...`
   - terminal
@@ -157,7 +155,7 @@ If you're experiencing issues, some common problems are listed below.
 
 kudosflow provides powerful features for making requests to AI through an intuitive and easy-to-use interface.
 
-## ver 1.1.0
+## ver 1.2.0
 &nbsp;
 <details>
 <summary>01. Set the credentials: </summary>
