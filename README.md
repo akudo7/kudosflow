@@ -60,7 +60,7 @@ Here's a translation of the introduction to LangChain nodes supported by SceneGr
 
 kudosflow provides powerful features for making requests to AI through an intuitive and easy-to-use interface.
 
-## ver 1.3.0
+## ver 1.3.1
 &nbsp;
 <details>
  <summary>01. Set the token:</summary>
@@ -159,7 +159,7 @@ If you're experiencing issues, some common problems are listed below.
 
 kudosflow provides powerful features for making requests to AI through an intuitive and easy-to-use interface.
 
-## ver 1.3.0
+## ver 1.3.1
 &nbsp;
 <details>
 <summary>01. Set the credentials: </summary>
