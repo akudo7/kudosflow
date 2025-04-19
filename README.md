@@ -60,7 +60,7 @@ Here's a translation of the introduction to LangChain nodes supported by SceneGr
 
 kudosflow provides powerful features for making requests to AI through an intuitive and easy-to-use interface.
 
-## ver 1.2.0
+## ver 1.3.0
 &nbsp;
 <details>
  <summary>01. Set the token:</summary>
@@ -97,6 +97,10 @@ VSCode environment values for kudosflow are accessible to the Assistant.
     - example: `inquiring...`
   - terminal
     - example: `Here are the results. Let me know if any corrections are needed and provide suggestions for improvement.`
+  - asking
+    - example: `CAUTION: If answering a question requires checking specific files in the project, do not provide an answer immediately. Instead, prompt the user with the following message: \"Please provide the actual filename including its full path.\" When the user’s request involves adding or modifying multiple files, follow these steps: 1. First, list all relevant filenames with their full paths. 2. Wait for the user to confirm or specify which file to proceed with. 3. Then, show only the additions or modifications for the selected file. 4. Repeat this process for each file individually.`
+  - askingImage
+    - example: `CAUTION: If answering a question requires checking specific files in the project, do not provide an answer immediately. Instead, prompt the user with the following message: \"Please provide the actual filename including its full path.\" When the user’s request involves adding or modifying multiple files, follow these steps: 1. First, list all relevant filenames with their full paths. 2. Wait for the user to confirm or specify which file to proceed with. 3. Then, show only the additions or modifications for the selected file. 4. Repeat this process for each file individually.`
 
 </details>
 &nbsp;
@@ -155,7 +159,7 @@ If you're experiencing issues, some common problems are listed below.
 
 kudosflow provides powerful features for making requests to AI through an intuitive and easy-to-use interface.
 
-## ver 1.2.0
+## ver 1.3.0
 &nbsp;
 <details>
 <summary>01. Set the credentials: </summary>
@@ -262,6 +266,18 @@ Your question will be answered by the assistant.
 <p align="center">
     <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudos-gpt_05_2.png" />
 </p>
+
+Added support for direct file input using the "Direct asking" button with the file: prefix
+</br>
+Example: file:src/App.tsx
+</br>
+Specific classes or functions can now be excluded when inputting a file.
+</br>
+Example: file:src/App.tsx!func1,func2,func3
+  <p align="center">
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/v120.gif" />
+  </p>
+
 </details>
 &nbsp;
 <details>
@@ -276,23 +292,6 @@ Please note that you have to enter a question before clicking the button.
 <details>
 <summary>07. Have a discussion with templates:</summary>
 
-To start a discussion with a template, the strings in your clipboard can be accessed using the `Clipboard` button.
-
-<p align="center">
-    <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudos-gpt_06_1.png" />
-</p>
-When using the `Clipboard` button, the VSCode environment value (Messages/clipboard) will be added to the beginning of the message.
-<p align="center">
-    <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudos-gpt_06_2.png" />
-</p>
-To use the buttons, a message from the VSCode environment (Messages) will be requested directly.
-<p align="center">
-    <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudos-gpt_06_3.png" />
-</p>
-For example, after clicking the "template" button below.
-<p align="center">
-    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/template.gif" />
-</p>
 There is template.txt in .kudosflow folder that includes a query. Some variables below are available.
 
 - ${{kudosflow_tree}} : project construction
@@ -300,6 +299,16 @@ There is template.txt in .kudosflow folder that includes a query. Some variables
 - ${{kudosflow_content}} : current file content
 - ${{kudosflow_terminal}} : terminal log
 - ${{kudosflow_query}} : query
+
+To start a discussion with a template, these values can be accessed using the `template` button.
+
+This file is loaded every time a command is executed.
+
+<p align="center">
+    <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/template.gif" />
+</p>
+
+
 
 </details>
 &nbsp;
@@ -327,13 +336,16 @@ To Save a chat history is available with the floppy disk icon labeled `JSON Expo
 </details>
 &nbsp;
 <details>
-<summary>10. Delete a discussion: </summary>
+<summary>10. Delete discussions: </summary>
 
-To delete a discussion, the trash icon labeled `del thread` is available. This will also delete the thread from the Chat Memory.
+To delete all discussions, the trash icon labeled `del thread` is available. This will also delete a thread from the Chat Memory.
 
 <p align="center">
     <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudos-gpt_07_1.png" />
 </p>
+
+All threads you open are used a chat memory.
+
 </details>
 &nbsp;
 <details>
@@ -354,6 +366,7 @@ To compare/update an active text editor with a message in a discussion, the `Com
 <summary>12. RAG</summary>
 
 To register files in the VectorDB, you can use the RAG Explorer that add metadata "kudosflow" to them. PostgreSQL is required to use this feature. The docker-compose.yml file attached to this page also includes support for PostgreSQL. Please take a look!
+And Markdown file(.md) is now split by section when registered in RAG. This must be simplified development with llms-full.txt.
 
 <p align="center">
     <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/rag1.png" />
@@ -376,8 +389,6 @@ This section explains how to enable filtering in RAG-based chat.
 <p align="center">
     <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/weaviate_search_filter.png" />
 </p>
-
-
 
 </details>
 &nbsp;
