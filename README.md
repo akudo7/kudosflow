@@ -60,7 +60,7 @@ Here's a translation of the introduction to LangChain nodes supported by SceneGr
 
 kudosflow provides powerful features for making requests to AI through an intuitive and easy-to-use interface.
 
-## ver 1.3.1
+## ver 1.3.2
 &nbsp;
 <details>
  <summary>01. Set the token:</summary>
@@ -159,7 +159,7 @@ If you're experiencing issues, some common problems are listed below.
 
 kudosflow provides powerful features for making requests to AI through an intuitive and easy-to-use interface.
 
-## ver 1.3.1
+## ver 1.3.2
 &nbsp;
 <details>
 <summary>01. Set the credentials: </summary>
@@ -269,11 +269,96 @@ Your question will be answered by the assistant.
 
 Added support for direct file input using the "Direct asking" button with the file: prefix
 </br>
-Example: file:src/App.tsx
-</br>
-Specific classes or functions can now be excluded when inputting a file.
-</br>
-Example: file:src/App.tsx!func1,func2,func3
+1. file:./path/to/file|func1,func2 (keep only listed functions)
+2. file:./path/to/file!func1,func2 (exclude listed functions)
+
+```typescript
+import { useState } from 'react'
+import TodoForm from './components/TodoForm'
+import TodoItem from './components/TodoItem'
+
+const App = () => {
+    const [todos, setTodos] = useState([])
+
+    const addTodo = (text) => {
+        setTodos([...todos, { id: Date.now(), text, completed: false }])
+    }
+
+    const toggleTodo = (id) => {
+        setTodos(todos.map(todo =>
+            todo.id === id ? { ...todo, completed: !todo.completed } : todo
+        ))
+    }
+
+    const deleteTodo = (id) => {
+        setTodos(todos.filter(todo => todo.id !== id))
+    }
+
+    return (
+        <div className="max-w-lg mx-auto mt-10 p-4">
+        <h1 className="text-2xl font-bold mb-4">Todo App</h1>
+        <TodoForm onAdd={addTodo} />
+        <div className="bg-white rounded shadow">
+            {todos.map(todo => (
+                <TodoItem
+                    key={todo.id}
+                    todo={todo}
+                    onToggle={toggleTodo}
+                    onDelete={deleteTodo}
+                />
+            ))}
+            {todos.length === 0 && (
+                <p className="p-4 text-gray-500">No todos yet. Add one above!</p>
+            )}
+        </div>
+        </div>
+    )
+}
+
+export default App
+```
+
+1. file:./src/App.jsx|App,toggleTodo
+2. file:./path/to/file!addTodo,deleteTodo
+
+```typescript
+import { useState } from 'react'
+import TodoForm from './components/TodoForm'
+import TodoItem from './components/TodoItem'
+
+const App = () => {
+    const [todos, setTodos] = useState([])
+
+    const toggleTodo = (id) => {
+        setTodos(todos.map(todo =>
+            todo.id === id ? { ...todo, completed: !todo.completed } : todo
+        ))
+    }
+
+    return (
+        <div className="max-w-lg mx-auto mt-10 p-4">
+        <h1 className="text-2xl font-bold mb-4">Todo App</h1>
+        <TodoForm onAdd={addTodo} />
+        <div className="bg-white rounded shadow">
+            {todos.map(todo => (
+                <TodoItem
+                    key={todo.id}
+                    todo={todo}
+                    onToggle={toggleTodo}
+                    onDelete={deleteTodo}
+                />
+            ))}
+            {todos.length === 0 && (
+                <p className="p-4 text-gray-500">No todos yet. Add one above!</p>
+            )}
+        </div>
+        </div>
+    )
+}
+
+export default App
+```
+
   <p align="center">
     <img src="https://github.com/akudo7/kudosflow/raw/HEAD/images/v120.gif" />
   </p>
