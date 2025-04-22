@@ -319,7 +319,7 @@ export default App
 ```
 
 1. file:./src/App.jsx|App,toggleTodo
-2. file:./path/to/file!addTodo,deleteTodo
+2. file:./src/App.jsx!addTodo,deleteTodo
 
 ```typescript
 import { useState } from 'react'
