@@ -30,11 +30,23 @@
       {
         "command": "reactflowtest.helloworld",
         "title": "Hello World"
+      },
+      {
+        "command": "kudosflow.openWorkflowEditor",
+        "title": "Open Workflow Editor",
+        "category": "Kudosflow"
       }
     ],
     "menus": {
       "view/title": [],
-      "view/item/context": []
+      "view/item/context": [],
+      "explorer/context": [
+        {
+          "command": "kudosflow.openWorkflowEditor",
+          "when": "resourceExtname == .json",
+          "group": "navigation"
+        }
+      ]
     }
   },
   "scripts": {
