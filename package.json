@@ -1,0 +1,71 @@
+{
+  "name": "reactflowtest",
+  "displayName": "reactflowtest",
+  "description": "reactflowtest",
+  "version": "0.0.1",
+  "author": {
+    "name": "Akira Kudo",
+    "url": "https://www.linkedin.com/in/akira-kudo-4b04163/"
+  },
+  "bugs": {
+    "url": "https://github.com/akudo7/kudos-gpt/issues"
+  },
+  "repository": {
+    "url": "https://github.com/akudo7/kudos-gpt/blob/main/README.md"
+  },
+  "homepage": "https://github.com/akudo7/kudos-gpt/blob/main/README.md",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "views": {
+      "explorer": []
+    },
+    "commands": [
+      {
+        "command": "reactflowtest.helloworld",
+        "title": "Hello World"
+      }
+    ],
+    "menus": {
+      "view/title": [],
+      "view/item/context": []
+    }
+  },
+  "scripts": {
+    "install:all": "yarn install && cd webview-ui && yarn install",
+    "start:webview": "cd webview-ui && yarn run start",
+    "build:webview": "cd webview-ui && yarn run build",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "obfuscate": "javascript-obfuscator out --output out --compact true --control-flow-flattening true",
+    "prepackage": "yarn run compile && yarn run obfuscate",
+    "package": "yarn run prepackage && vsce package",
+    "pretest": "yarn run compile && yarn run lint",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.9",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.96.0",
+    "@types/xml2js": "^0.4.14",
+    "@typescript-eslint/eslint-plugin": "^8.10.0",
+    "@typescript-eslint/parser": "^8.7.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^9.13.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.6.3",
+    "webpack": "^5.95.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "moment": "^2.30.1"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "component-gallery",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^6.4.2",
+    "@mui/lab": "^6.0.0-beta.26",
+    "@mui/material": "^6.4.1",
+    "@mui/styled-engine": "^6.4.0",
+    "@tabler/icons-react": "^3.29.0",
+    "@types/lodash": "^4.17.15",
+    "html-react-parser": "^5.2.2",
+    "lodash": "^4.17.21",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-perfect-scrollbar": "^1.5.8",
+    "react-redux": "^9.2.0",
+    "reactflow": "^11.11.4"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.64",
+    "@types/react-dom": "^18.2.21",
+    "@types/vscode-webview": "^1.57.5",
+    "@vitejs/plugin-react": "^4.2.1",
+    "typescript": "^5.4.2",
+    "vite": "^5.1.5"
+  }
+}
