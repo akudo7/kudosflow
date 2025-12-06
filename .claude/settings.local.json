@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd project documentation, Claude settings, and test workflow\n\n- Add comprehensive documentation in docs/ directory\n  - Architecture overview\n  - Implementation plan with 6 phases\n- Add Claude Code settings configuration\n- Add test workflow JSON for interrupt-based workflow testing\n- Update .gitignore to exclude .DS_Store files\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n)\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
