@@ -233,7 +233,7 @@ export class WorkflowEditorPanel {
           </style>
         </head>
         <body>
-          <div id="root"></div>
+          <div id="root" data-editor="workflow"></div>
           <script type="module" nonce="${nonce}" src="${scriptUri}"></script>
         </body>
       </html>

@@ -17,6 +17,7 @@
     "@mui/styled-engine": "^6.4.0",
     "@tabler/icons-react": "^3.29.0",
     "@types/lodash": "^4.17.15",
+    "@xyflow/react": "^12.10.0",
     "html-react-parser": "^5.2.2",
     "lodash": "^4.17.21",
     "react": "^18.2.0",

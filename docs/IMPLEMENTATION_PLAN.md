@@ -53,7 +53,7 @@ JSONファイルの右クリックメニューとWorkflowEditorPanel作成
 - WorkflowEditorPanel.ts作成
 - JSONファイル読み込み・保存ロジック
 
-#### [Phase 2: Webview側の基礎](phases/PHASE2_WEBVIEW_BASICS.md) ⬜
+#### [Phase 2: Webview側の基礎](phases/PHASE2_WEBVIEW_BASICS.md) ☑
 
 React FlowでJSONのノード/エッジを表示
 

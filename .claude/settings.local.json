@@ -9,7 +9,10 @@
       "Bash(git commit -m \"$(cat <<''EOF''\nAdd Workflow Editor feature with JSON file integration\n\n- Add WorkflowEditorPanel for editing workflow JSON files\n- Register kudosflow.openWorkflowEditor command\n- Add context menu entry for JSON files in explorer\n- Update Claude Code settings with additional allowed commands\n- Add screenshots directory with demo images\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git commit:*)",
       "Bash(git merge:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nAdd git merge to allowed commands\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd git merge to allowed commands\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push:*)",
+      "Bash(yarn add:*)",
+      "Bash(yarn build)"
     ],
     "deny": [],
     "ask": []
