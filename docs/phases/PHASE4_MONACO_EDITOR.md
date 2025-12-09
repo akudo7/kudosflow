@@ -1,21 +1,21 @@
 # Phase 4: Monaco Editor統合
 
-**ステータス**: ⬜ 未開始
+**ステータス**: ☑ 完了
 
 **目標**: ノード内にMonaco Editorを表示してコードを編集
 
 ## タスク
 
-- [ ] `@monaco-editor/react`をインストール
-- [ ] `WorkflowNode.tsx`作成（カスタムノードコンポーネント）
-  - [ ] ノード基本UI（タイトル、ハンドル）
-  - [ ] Monaco Editorコンポーネント埋め込み
-  - [ ] コード変更時のハンドラー
-  - [ ] ノードの展開/折りたたみ機能
-  - [ ] パラメータ/出力の表示
-- [ ] `WorkflowEditor.tsx`でカスタムノードタイプを登録
-- [ ] スタイリング（CSSまたはstyled-components）
-- [ ] ビルド & テスト: ノードをクリックしてコード編集できる
+- [x] `@monaco-editor/react`をインストール
+- [x] `WorkflowNode.tsx`作成（カスタムノードコンポーネント）
+  - [x] ノード基本UI（タイトル、ハンドル）
+  - [x] Monaco Editorコンポーネント埋め込み
+  - [x] コード変更時のハンドラー
+  - [x] ノードの展開/折りたたみ機能
+  - [x] パラメータ/出力の表示
+- [x] `WorkflowEditor.tsx`でカスタムノードタイプを登録
+- [x] スタイリング（CSSまたはstyled-components）
+- [x] ビルド & テスト: ノードをクリックしてコード編集できる
 
 ## 成功基準
 

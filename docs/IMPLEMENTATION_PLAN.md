@@ -74,7 +74,7 @@ WorkflowConfig ⇔ React Flow形式の相互変換
 - flowToJson.ts作成
 - 往復変換のテスト
 
-#### [Phase 4: Monaco Editor統合](phases/PHASE4_MONACO_EDITOR.md) ⬜
+#### [Phase 4: Monaco Editor統合](phases/PHASE4_MONACO_EDITOR.md) ☑
 
 ノード内にMonaco Editorを表示してコードを編集
 
