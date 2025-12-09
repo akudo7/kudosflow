@@ -64,7 +64,7 @@ React FlowでJSONのノード/エッジを表示
 - WorkflowEditor.tsx作成
 - React Flow基本セットアップ
 
-#### [Phase 3: JSON変換ロジック](phases/PHASE3_JSON_CONVERSION.md) ⬜
+#### [Phase 3: JSON変換ロジック](phases/PHASE3_JSON_CONVERSION.md) ☑
 
 WorkflowConfig ⇔ React Flow形式の相互変換
 
