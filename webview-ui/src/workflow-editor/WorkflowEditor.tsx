@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import {
   ReactFlow,
   Background,
@@ -13,6 +13,7 @@ import '@xyflow/react/dist/style.css';
 import { WorkflowConfig, ReactFlowNode, ReactFlowEdge } from './types/workflow.types';
 import { jsonToFlow } from './converters/jsonToFlow';
 import { flowToJson } from './converters/flowToJson';
+import { WorkflowNode } from './WorkflowNode';
 
 // VSCode API
 declare const vscode: any;
@@ -22,6 +23,11 @@ export const WorkflowEditor: React.FC = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState<ReactFlowEdge>([]);
   const [workflowConfig, setWorkflowConfig] = useState<WorkflowConfig | null>(null);
   const [filePath, setFilePath] = useState<string>('');
+
+  // Define custom node types
+  const nodeTypes = useMemo(() => ({
+    workflowNode: WorkflowNode,
+  }), []);
 
   // メッセージ受信
   useEffect(() => {
@@ -124,6 +130,7 @@ export const WorkflowEditor: React.FC = () => {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        nodeTypes={nodeTypes}
         fitView
       >
         <Background />

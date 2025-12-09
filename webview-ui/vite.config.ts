@@ -14,4 +14,12 @@ export default defineConfig({
       },
     },
   },
+  optimizeDeps: {
+    include: ['monaco-editor'],
+  },
+  server: {
+    fs: {
+      strict: false,
+    },
+  },
 });

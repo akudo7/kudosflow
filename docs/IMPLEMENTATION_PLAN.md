@@ -74,7 +74,7 @@ WorkflowConfig ⇔ React Flow形式の相互変換
 - flowToJson.ts作成
 - 往復変換のテスト
 
-#### [Phase 4: Monaco Editor統合](phases/PHASE4_MONACO_EDITOR.md) ⬜
+#### [Phase 4: Monaco Editor統合](phases/PHASE4_MONACO_EDITOR.md) ☑
 
 ノード内にMonaco Editorを表示してコードを編集
 
@@ -85,7 +85,18 @@ WorkflowConfig ⇔ React Flow形式の相互変換
 - Monaco Editor埋め込み
 - 展開/折りたたみ機能
 
-#### [Phase 5: 保存機能の完成](phases/PHASE5_SAVE_FUNCTIONALITY.md) ⬜
+#### [Phase 5: Implementation編集機能](phases/PHASE5_EDITABLE_IMPLEMENTATION.md) ⬜
+
+ノード内のImplementationコードを編集可能にする
+
+**主なタスク:**
+
+- TextAreaコンポーネントの実装
+- リアルタイム編集機能
+- 編集UIの改善
+- Tabキーのインデント対応
+
+#### [Phase 6: 保存機能の完成](phases/PHASE6_SAVE_FUNCTIONALITY.md) ⬜
 
 Ctrl+Sでの保存と確認ダイアログの実装
 
@@ -96,7 +107,7 @@ Ctrl+Sでの保存と確認ダイアログの実装
 - 保存ツールバーボタン
 - 保存成功/失敗フィードバック
 
-#### [Phase 6: CRUD操作](phases/PHASE6_CRUD_OPERATIONS.md) ⬜
+#### [Phase 7: CRUD操作](phases/PHASE7_CRUD_OPERATIONS.md) ⬜
 
 ノード/エッジの追加・削除・複製機能
 

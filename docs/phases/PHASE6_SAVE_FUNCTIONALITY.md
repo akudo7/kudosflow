@@ -1,4 +1,4 @@
-# Phase 5: 保存機能の完成
+# Phase 6: 保存機能の完成
 
 **ステータス**: ⬜ 未開始
 
@@ -105,4 +105,4 @@ const handleSave = () => {
 
 ## 次のフェーズ
 
-Phase 5が完了したら、[Phase 6: CRUD操作](PHASE6_CRUD_OPERATIONS.md)に進んでください。
+Phase 6が完了したら、次のフェーズ（Phase 7以降）に進んでください。

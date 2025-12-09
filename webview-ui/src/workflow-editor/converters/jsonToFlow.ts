@@ -31,7 +31,7 @@ export function jsonToFlow(workflow: WorkflowConfig): {
   workflow.nodes.forEach((node, index) => {
     nodes.push({
       id: node.id,
-      type: 'default',
+      type: 'workflowNode', // Use custom WorkflowNode component
       position: {
         x: 100 + (index % 3) * 300, // Basic grid layout
         y: 150 + Math.floor(index / 3) * 200,
