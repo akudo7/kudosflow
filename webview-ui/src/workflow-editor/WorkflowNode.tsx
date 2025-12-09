@@ -1,20 +1,10 @@
 import React, { memo, useState, useCallback } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
-import Editor from '@monaco-editor/react';
 import { CustomNodeData } from './types/workflow.types';
 
 export const WorkflowNode = memo(({ data, id }: NodeProps) => {
   const nodeData = data as CustomNodeData;
   const [isExpanded, setIsExpanded] = useState(false);
-  const [code, setCode] = useState(nodeData.implementation || '');
-
-  const handleCodeChange = useCallback((value: string | undefined) => {
-    if (value !== undefined) {
-      setCode(value);
-      // Update the data directly to reflect changes in the flow state
-      nodeData.implementation = value;
-    }
-  }, [nodeData]);
 
   const toggleExpand = useCallback(() => {
     setIsExpanded(prev => !prev);
@@ -125,37 +115,28 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
             </div>
           )}
 
-          {/* Implementation Editor */}
+          {/* Implementation Section */}
           <div style={{ marginBottom: '10px' }}>
             <strong style={{ fontSize: '12px', color: '#88c0d0' }}>
               Implementation:
             </strong>
-          </div>
-
-          <div
-            style={{
-              border: '1px solid #555',
-              borderRadius: '4px',
-              overflow: 'hidden',
-            }}
-          >
-            <Editor
-              height="250px"
-              defaultLanguage="typescript"
-              value={code}
-              onChange={handleCodeChange}
-              theme="vs-dark"
-              options={{
-                minimap: { enabled: false },
-                fontSize: 12,
-                lineNumbers: 'on',
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                wordWrap: 'on',
-                tabSize: 2,
-                insertSpaces: true,
+            <pre
+              style={{
+                fontSize: '10px',
+                background: '#1a1a1a',
+                padding: '8px',
+                borderRadius: '4px',
+                overflowX: 'auto',
+                overflowY: 'auto',
+                margin: '4px 0',
+                color: '#d8dee9',
+                maxHeight: '300px',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
               }}
-            />
+            >
+              {nodeData.implementation || '// No implementation'}
+            </pre>
           </div>
 
           {/* Ends Section (if applicable) */}
