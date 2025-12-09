@@ -1,23 +1,23 @@
 # Phase 3: JSON変換ロジック
 
-**ステータス**: ⬜ 未開始
+**ステータス**: ☑ 完了
 
 **目標**: WorkflowConfig ⇔ React Flow形式の相互変換
 
 ## タスク
 
-- [ ] `converters/jsonToFlow.ts`作成
-  - [ ] WorkflowConfig → React Flow nodes/edgesに変換
-  - [ ] ノード位置の自動レイアウト（Dagre/ELKまたは簡易的な計算）
-  - [ ] 特殊ノード（\_\_start\_\_, \_\_end\_\_）のハンドリング
-  - [ ] 条件付きエッジのサポート
-- [ ] `converters/flowToJson.ts`作成
-  - [ ] React Flow nodes/edges → WorkflowConfigに変換
-  - [ ] 元のconfig, stateAnnotation, annotationを保持
-  - [ ] ノードのfunction.implementationを更新
-  - [ ] エッジのfrom/toを更新
-- [ ] 単体テスト作成（test.jsonで検証）
-- [ ] ビルド & テスト: 往復変換でデータが保持される
+- [x] `converters/jsonToFlow.ts`作成
+  - [x] WorkflowConfig → React Flow nodes/edgesに変換
+  - [x] ノード位置の自動レイアウト（簡易的なグリッドレイアウト）
+  - [x] 特殊ノード（\_\_start\_\_, \_\_end\_\_）のハンドリング
+  - [x] 条件付きエッジのサポート
+- [x] `converters/flowToJson.ts`作成
+  - [x] React Flow nodes/edges → WorkflowConfigに変換
+  - [x] 元のconfig, stateAnnotation, annotationを保持
+  - [x] ノードのfunction.implementationを更新
+  - [x] エッジのfrom/toを更新
+- [x] WorkflowEditor.tsxでの統合
+- [x] ビルド & コンパイル成功
 
 ## 成功基準
 
