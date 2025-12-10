@@ -142,8 +142,6 @@ export class WorkflowEditorPanel {
           case "error":
             window.showErrorMessage(message.message || "An error occurred");
             break;
-          default:
-            console.log("Unknown message command:", message.command);
         }
       },
       undefined,
@@ -171,14 +169,12 @@ export class WorkflowEditorPanel {
 
         this._panel.webview.postMessage({ command: "saveSuccess" });
         window.showInformationMessage("ワークフローを保存しました");
-        console.log(`Saved workflow to: ${this._filePath}`);
       } catch (error) {
         this._panel.webview.postMessage({
           command: "saveError",
           error: String(error),
         });
         window.showErrorMessage(`保存に失敗しました: ${error}`);
-        console.error("Error saving workflow:", error);
       }
     }
   }
@@ -234,6 +230,9 @@ export class WorkflowEditorPanel {
         </head>
         <body>
           <div id="root" data-editor="workflow"></div>
+          <script nonce="${nonce}">
+            const vscode = acquireVsCodeApi();
+          </script>
           <script type="module" nonce="${nonce}" src="${scriptUri}"></script>
         </body>
       </html>

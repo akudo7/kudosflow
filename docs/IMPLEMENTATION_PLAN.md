@@ -96,7 +96,7 @@ WorkflowConfig ⇔ React Flow形式の相互変換
 - 編集UIの改善
 - Tabキーのインデント対応
 
-#### [Phase 6: 保存機能の完成](phases/PHASE6_SAVE_FUNCTIONALITY.md) ⬜
+#### [Phase 6: 保存機能の完成](phases/PHASE6_SAVE_FUNCTIONALITY.md) ☑
 
 Ctrl+Sでの保存と確認ダイアログの実装
 

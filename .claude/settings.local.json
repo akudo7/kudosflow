@@ -14,7 +14,8 @@
       "Bash(yarn add:*)",
       "Bash(yarn build)",
       "Bash(yarn build:webview:*)",
-      "Bash(yarn list:*)"
+      "Bash(yarn list:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []
