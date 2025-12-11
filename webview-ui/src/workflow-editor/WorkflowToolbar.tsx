@@ -2,10 +2,36 @@ import React from 'react';
 
 interface Props {
   onSave: () => void;
+  onAddNode: () => void;
+  onDeleteSelected: () => void;
+  onDuplicateSelected: () => void;
   isDirty: boolean;
+  hasSelection: boolean;
 }
 
-export const WorkflowToolbar: React.FC<Props> = ({ onSave, isDirty }) => {
+export const WorkflowToolbar: React.FC<Props> = ({
+  onSave,
+  onAddNode,
+  onDeleteSelected,
+  onDuplicateSelected,
+  isDirty,
+  hasSelection
+}) => {
+  const buttonStyle = (enabled: boolean) => ({
+    background: enabled ? 'var(--vscode-button-background)' : 'var(--vscode-button-secondaryBackground)',
+    color: enabled ? 'var(--vscode-button-foreground)' : 'var(--vscode-button-secondaryForeground)',
+    border: 'none',
+    padding: '6px 12px',
+    borderRadius: '3px',
+    cursor: enabled ? 'pointer' : 'not-allowed',
+    fontSize: '13px',
+    fontFamily: 'var(--vscode-font-family)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    opacity: enabled ? 1 : 0.6,
+  });
+
   return (
     <div
       style={{
@@ -24,21 +50,34 @@ export const WorkflowToolbar: React.FC<Props> = ({ onSave, isDirty }) => {
       }}
     >
       <button
+        onClick={onAddNode}
+        style={buttonStyle(true)}
+        title="新しいノードを追加"
+      >
+        ➕ ノード追加
+      </button>
+      <button
+        onClick={onDuplicateSelected}
+        disabled={!hasSelection}
+        style={buttonStyle(hasSelection)}
+        title="選択したノードを複製"
+      >
+        📋 複製
+      </button>
+      <button
+        onClick={onDeleteSelected}
+        disabled={!hasSelection}
+        style={buttonStyle(hasSelection)}
+        title="選択したアイテムを削除 (Delete)"
+      >
+        🗑️ 削除
+      </button>
+      <div style={{ width: '1px', height: '24px', background: 'var(--vscode-widget-border)' }} />
+      <button
         onClick={onSave}
         disabled={!isDirty}
-        style={{
-          background: isDirty ? 'var(--vscode-button-background)' : 'var(--vscode-button-secondaryBackground)',
-          color: isDirty ? 'var(--vscode-button-foreground)' : 'var(--vscode-button-secondaryForeground)',
-          border: 'none',
-          padding: '6px 12px',
-          borderRadius: '3px',
-          cursor: isDirty ? 'pointer' : 'not-allowed',
-          fontSize: '13px',
-          fontFamily: 'var(--vscode-font-family)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-        }}
+        style={buttonStyle(isDirty)}
+        title="ワークフローを保存 (Ctrl+S)"
       >
         💾 保存
         {isDirty && (

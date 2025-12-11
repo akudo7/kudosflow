@@ -107,7 +107,7 @@ Ctrl+Sでの保存と確認ダイアログの実装
 - 保存ツールバーボタン
 - 保存成功/失敗フィードバック
 
-#### [Phase 7: CRUD操作](phases/PHASE7_CRUD_OPERATIONS.md) ⬜
+#### [Phase 7: CRUD操作](phases/PHASE7_CRUD_OPERATIONS.md) ☑
 
 ノード/エッジの追加・削除・複製機能
 
