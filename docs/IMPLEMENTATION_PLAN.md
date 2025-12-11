@@ -119,6 +119,29 @@ Ctrl+Sでの保存と確認ダイアログの実装
 - エッジ削除機能
 - コンテキストメニュー
 
+#### [Phase 8: ワークフロー設定エディタ](phases/PHASE8_WORKFLOW_SETTINGS.md) ⬜
+
+ワークフローのメタデータ（Config、State、Annotation）の編集機能
+
+##### Phase 8A: ノード名 + シンプルなConfig編集 ⬜
+
+- ノード名（Node ID）編集とユニーク制約
+- Config編集（recursionLimit, defaultMaxListeners）
+- StateAnnotation名編集
+- 右サイドバー設定パネルUI
+
+##### Phase 8B: StateGraph ドロップダウン編集 ⬜
+
+- annotationRefドロップダウン選択
+- checkpointer.typeドロップダウン選択
+- バリデーション機能
+
+##### Phase 8C: Annotationフィールド CRUD ⬜
+
+- Annotationフィールドの追加・編集・削除
+- モーダルフォームUI
+- JS識別子バリデーション
+
 ## フェーズ実行方法
 
 各フェーズは独立して実装可能です。以下のコマンドで実装を開始してください:
