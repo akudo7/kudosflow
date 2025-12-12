@@ -153,7 +153,7 @@ handleNodeNameChange(oldId: string, newId: string):
 
 ## Phase 8B: StateGraph ドロップダウン編集
 
-**ステータス**: ⬜ 未開始
+**ステータス**: ☑ 完了
 **推定時間**: 1-2日 (7-10時間)
 **複雑度**: 中程度
 
@@ -215,13 +215,13 @@ webview-ui/src/workflow-editor/settings/
 
 ### タスクリスト
 
-- [ ] `StateGraphEditor.tsx` 作成: ドロップダウンUI
-- [ ] `WorkflowSettingsPanel.tsx` 修正: State Graphタブ追加
-- [ ] `validation.ts` 修正: `validateStateGraph()` 追加
-- [ ] annotationRefドロップダウン: stateAnnotation.nameから自動取得
-- [ ] checkpointerドロップダウン: 3つの選択肢実装
-- [ ] バリデーション警告表示: annotationRef不一致時
-- [ ] テスト: stateGraph変更の保存・読み込み確認
+- [x] `StateGraphEditor.tsx` 作成: ドロップダウンUI
+- [x] `WorkflowSettingsPanel.tsx` 修正: State Graphタブ追加
+- [x] `validation.ts` 修正: `validateStateGraph()` 追加
+- [x] annotationRefドロップダウン: stateAnnotation.nameから自動取得
+- [x] checkpointerドロップダウン: 3つの選択肢実装
+- [x] バリデーション警告表示: annotationRef不一致時
+- [x] テスト: stateGraph変更の保存・読み込み確認
 
 ---
 

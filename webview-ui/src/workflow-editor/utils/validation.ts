@@ -51,3 +51,24 @@ export function validateNodeName(
 
   return { valid: true };
 }
+
+/**
+ * Validate StateGraph configuration
+ * @param annotationRef - The annotationRef value in stateGraph
+ * @param stateAnnotationName - The name value in stateAnnotation
+ * @returns ValidationResult
+ */
+export function validateStateGraph(
+  annotationRef: string,
+  stateAnnotationName: string
+): ValidationResult {
+  // Check if annotationRef matches stateAnnotation.name
+  if (annotationRef !== stateAnnotationName) {
+    return {
+      valid: false,
+      error: `annotationRef "${annotationRef}" は stateAnnotation.name "${stateAnnotationName}" と一致する必要があります`,
+    };
+  }
+
+  return { valid: true };
+}
