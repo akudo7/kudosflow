@@ -7,7 +7,11 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [code, setCode] = useState(nodeData.implementation || '');
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [nameValue, setNameValue] = useState(nodeData.label);
+  const [nameError, setNameError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const toggleExpand = useCallback(() => {
     setIsExpanded(prev => !prev);
@@ -38,6 +42,44 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
       }, 0);
     }
   }, [code, nodeData]);
+
+  // Handle node name double-click
+  const handleNameDoubleClick = useCallback(() => {
+    setIsEditingName(true);
+    setNameValue(nodeData.label);
+    setNameError(null);
+    setTimeout(() => nameInputRef.current?.focus(), 0);
+  }, [nodeData.label]);
+
+  // Handle name change
+  const handleNameSave = useCallback(() => {
+    const trimmedName = nameValue.trim();
+    if (!trimmedName) {
+      setNameError('ノード名を入力してください');
+      return;
+    }
+
+    if (nodeData.onNodeNameChange && trimmedName !== id) {
+      nodeData.onNodeNameChange(id, trimmedName);
+    }
+
+    setIsEditingName(false);
+    setNameError(null);
+  }, [nameValue, id, nodeData]);
+
+  const handleNameCancel = useCallback(() => {
+    setIsEditingName(false);
+    setNameValue(nodeData.label);
+    setNameError(null);
+  }, [nodeData.label]);
+
+  const handleNameKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleNameSave();
+    } else if (e.key === 'Escape') {
+      handleNameCancel();
+    }
+  }, [handleNameSave, handleNameCancel]);
 
   return (
     <div
@@ -72,11 +114,79 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
           justifyContent: 'space-between',
           alignItems: 'center',
           marginBottom: isExpanded ? '12px' : '0',
+          gap: '8px',
         }}
       >
-        <strong style={{ fontSize: '14px', color: '#4a9eff' }}>
-          {nodeData.label}
-        </strong>
+        {isEditingName ? (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+              <input
+                ref={nameInputRef}
+                type="text"
+                value={nameValue}
+                onChange={(e) => setNameValue(e.target.value)}
+                onKeyDown={handleNameKeyDown}
+                style={{
+                  flex: 1,
+                  padding: '4px 8px',
+                  fontSize: '13px',
+                  fontFamily: 'var(--vscode-editor-font-family)',
+                  background: '#1a1a1a',
+                  color: '#4a9eff',
+                  border: '1px solid #4a9eff',
+                  borderRadius: '3px',
+                  outline: 'none',
+                }}
+              />
+              <button
+                onClick={handleNameSave}
+                style={{
+                  padding: '4px 8px',
+                  background: '#4a9eff',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '3px',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                }}
+              >
+                ✓
+              </button>
+              <button
+                onClick={handleNameCancel}
+                style={{
+                  padding: '4px 8px',
+                  background: '#555',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '3px',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+            {nameError && (
+              <div style={{ fontSize: '11px', color: '#ff6b6b' }}>
+                {nameError}
+              </div>
+            )}
+          </div>
+        ) : (
+          <strong
+            style={{
+              fontSize: '14px',
+              color: '#4a9eff',
+              cursor: 'pointer',
+              flex: 1,
+            }}
+            onDoubleClick={handleNameDoubleClick}
+            title="ダブルクリックして名前を編集"
+          >
+            {nodeData.label}
+          </strong>
+        )}
         <button
           onClick={toggleExpand}
           style={{
@@ -89,6 +199,7 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
             fontSize: '12px',
             fontWeight: 'bold',
             transition: 'background 0.2s',
+            flexShrink: 0,
           }}
           onMouseEnter={(e) => (e.currentTarget.style.background = '#3a7fd5')}
           onMouseLeave={(e) => (e.currentTarget.style.background = '#4a9eff')}

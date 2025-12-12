@@ -51,7 +51,14 @@ export interface CustomNodeData extends Record<string, unknown> {
   parameters?: Array<{ name: string; type: string; modelRef?: string }>;
   output?: Record<string, string>;
   ends?: string[];
+  onNodeNameChange?: (oldId: string, newId: string) => void;
 }
 
 export type ReactFlowNode = FlowNode<CustomNodeData>;
 export type ReactFlowEdge = FlowEdge;
+
+// Validation types
+export interface ValidationResult {
+  valid: boolean;
+  error?: string;
+}
