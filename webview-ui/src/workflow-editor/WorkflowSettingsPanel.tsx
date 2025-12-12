@@ -3,6 +3,7 @@ import { WorkflowConfig, ReactFlowNode, ReactFlowEdge } from './types/workflow.t
 import { NodeNameEditor } from './settings/NodeNameEditor';
 import { ConfigEditor } from './settings/ConfigEditor';
 import { StateAnnotationEditor } from './settings/StateAnnotationEditor';
+import { StateGraphEditor } from './settings/StateGraphEditor';
 
 interface Props {
   show: boolean;
@@ -15,7 +16,7 @@ interface Props {
   onUpdateEdges: (edges: ReactFlowEdge[]) => void;
 }
 
-type TabType = 'nodes' | 'settings';
+type TabType = 'nodes' | 'settings' | 'stateGraph';
 
 export const WorkflowSettingsPanel: React.FC<Props> = ({
   show,
@@ -59,6 +60,10 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
         type: "Annotation.Root"
       }
     });
+  };
+
+  const handleStateGraphChange = (stateGraph: any) => {
+    onUpdateConfig({ stateGraph });
   };
 
   const panelStyle: React.CSSProperties = {
@@ -148,6 +153,12 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
         >
           設定
         </button>
+        <button
+          onClick={() => setActiveTab('stateGraph')}
+          style={getTabStyle(activeTab === 'stateGraph')}
+        >
+          State Graph
+        </button>
       </div>
 
       <div style={contentStyle}>
@@ -190,6 +201,13 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
               onStateAnnotationChange={handleStateAnnotationChange}
             />
           </>
+        )}
+        {activeTab === 'stateGraph' && (
+          <StateGraphEditor
+            stateGraph={workflowConfig.stateGraph}
+            stateAnnotationName={workflowConfig.stateAnnotation.name}
+            onStateGraphChange={handleStateGraphChange}
+          />
         )}
       </div>
     </div>

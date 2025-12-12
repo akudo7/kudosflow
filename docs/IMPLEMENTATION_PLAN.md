@@ -130,7 +130,7 @@ Ctrl+Sでの保存と確認ダイアログの実装
 - StateAnnotation名編集
 - 右サイドバー設定パネルUI
 
-##### Phase 8B: StateGraph ドロップダウン編集 ⬜
+##### Phase 8B: StateGraph ドロップダウン編集 ☑
 
 - annotationRefドロップダウン選択
 - checkpointer.typeドロップダウン選択
