@@ -19,6 +19,7 @@ import { WorkflowNode } from './WorkflowNode';
 import { WorkflowToolbar } from './WorkflowToolbar';
 import { SaveNotification } from './SaveNotification';
 import { ContextMenu } from './ContextMenu';
+import { WorkflowSettingsPanel } from './WorkflowSettingsPanel';
 
 // VSCode API
 declare const vscode: any;
@@ -40,11 +41,62 @@ export const WorkflowEditor: React.FC = () => {
     y: number;
     nodeId?: string;
   } | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Define custom node types
   const nodeTypes = useMemo(() => ({
     workflowNode: WorkflowNode,
   }), []);
+
+  // Handle node name change from inline editing
+  const handleNodeNameChangeFromNode = useCallback(
+    (oldId: string, newId: string) => {
+      setNodes((currentNodes) =>
+        currentNodes.map((node) =>
+          node.id === oldId ? { ...node, id: newId, data: { ...node.data, label: newId } } : node
+        )
+      );
+
+      setEdges((currentEdges) =>
+        currentEdges.map((edge) => ({
+          ...edge,
+          source: edge.source === oldId ? newId : edge.source,
+          target: edge.target === oldId ? newId : edge.target,
+        }))
+      );
+
+      setIsDirty(true);
+    },
+    [setNodes, setEdges]
+  );
+
+  const loadWorkflow = useCallback((config: WorkflowConfig, path: string) => {
+    setWorkflowConfig(config);
+    setFilePath(path);
+    setIsDirty(false);
+
+    try {
+      const { nodes: flowNodes, edges: flowEdges } = jsonToFlow(config);
+      // Add onNodeNameChange callback to all nodes
+      const nodesWithCallback = flowNodes.map(node => ({
+        ...node,
+        data: {
+          ...node.data,
+          onNodeNameChange: handleNodeNameChangeFromNode,
+        }
+      }));
+      setNodes(nodesWithCallback);
+      setEdges(flowEdges);
+    } catch (error) {
+      console.error('Error converting workflow to flow:', error);
+      if (typeof vscode !== 'undefined') {
+        vscode.postMessage({
+          command: 'error',
+          message: `Failed to load workflow: ${error}`
+        });
+      }
+    }
+  }, [handleNodeNameChangeFromNode, setNodes, setEdges]);
 
   // メッセージ受信
   useEffect(() => {
@@ -78,27 +130,7 @@ export const WorkflowEditor: React.FC = () => {
     }
 
     return () => window.removeEventListener('message', handleMessage);
-  }, []);
-
-  const loadWorkflow = (config: WorkflowConfig, path: string) => {
-    setWorkflowConfig(config);
-    setFilePath(path);
-    setIsDirty(false);
-
-    try {
-      const { nodes: flowNodes, edges: flowEdges } = jsonToFlow(config);
-      setNodes(flowNodes);
-      setEdges(flowEdges);
-    } catch (error) {
-      console.error('Error converting workflow to flow:', error);
-      if (typeof vscode !== 'undefined') {
-        vscode.postMessage({
-          command: 'error',
-          message: `Failed to load workflow: ${error}`
-        });
-      }
-    }
-  };
+  }, [loadWorkflow]);
 
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -175,11 +207,12 @@ export const WorkflowEditor: React.FC = () => {
         implementation: '// コードをここに書く\nreturn state;',
         parameters: [{ name: 'state', type: 'any' }],
         output: {},
+        onNodeNameChange: handleNodeNameChangeFromNode,
       },
     };
     setNodes((nds) => [...nds, newNode]);
     setIsDirty(true);
-  }, [setNodes]);
+  }, [setNodes, handleNodeNameChangeFromNode]);
 
   // Delete selected nodes/edges
   const handleDeleteSelected = useCallback(() => {
@@ -219,12 +252,13 @@ export const WorkflowEditor: React.FC = () => {
       data: {
         ...node.data,
         label: `${node.data.label} (コピー)`,
+        onNodeNameChange: handleNodeNameChangeFromNode,
       },
     }));
 
     setNodes((nds) => [...nds, ...newNodes]);
     setIsDirty(true);
-  }, [selectedNodes, nodes, setNodes]);
+  }, [selectedNodes, nodes, setNodes, handleNodeNameChangeFromNode]);
 
   // Handle node context menu
   const onNodeContextMenu = useCallback(
@@ -286,6 +320,33 @@ export const WorkflowEditor: React.FC = () => {
     return items;
   }, [contextMenu, handleAddNode, handleDuplicateSelected, handleDeleteSelected]);
 
+  // Handle workflow config updates
+  const handleUpdateWorkflowConfig = useCallback(
+    (updates: Partial<WorkflowConfig>) => {
+      setWorkflowConfig((prev) => (prev ? { ...prev, ...updates } : prev));
+      setIsDirty(true);
+    },
+    []
+  );
+
+  // Handle nodes update from settings panel
+  const handleUpdateNodes = useCallback(
+    (updatedNodes: ReactFlowNode[]) => {
+      setNodes(updatedNodes);
+      setIsDirty(true);
+    },
+    [setNodes]
+  );
+
+  // Handle edges update from settings panel
+  const handleUpdateEdges = useCallback(
+    (updatedEdges: ReactFlowEdge[]) => {
+      setEdges(updatedEdges);
+      setIsDirty(true);
+    },
+    [setEdges]
+  );
+
   // Ctrl+S handling and Delete key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -316,6 +377,7 @@ export const WorkflowEditor: React.FC = () => {
         onAddNode={handleAddNode}
         onDeleteSelected={handleDeleteSelected}
         onDuplicateSelected={handleDuplicateSelected}
+        onToggleSettings={() => setShowSettings(!showSettings)}
         isDirty={isDirty}
         hasSelection={selectedNodes.length > 0 || selectedEdges.length > 0}
       />
@@ -348,6 +410,18 @@ export const WorkflowEditor: React.FC = () => {
           y={contextMenu.y}
           items={getContextMenuItems()}
           onClose={() => setContextMenu(null)}
+        />
+      )}
+      {workflowConfig && (
+        <WorkflowSettingsPanel
+          show={showSettings}
+          workflowConfig={workflowConfig}
+          nodes={nodes}
+          edges={edges}
+          onClose={() => setShowSettings(false)}
+          onUpdateConfig={handleUpdateWorkflowConfig}
+          onUpdateNodes={handleUpdateNodes}
+          onUpdateEdges={handleUpdateEdges}
         />
       )}
     </div>

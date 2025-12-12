@@ -5,6 +5,7 @@ interface Props {
   onAddNode: () => void;
   onDeleteSelected: () => void;
   onDuplicateSelected: () => void;
+  onToggleSettings: () => void;
   isDirty: boolean;
   hasSelection: boolean;
 }
@@ -14,6 +15,7 @@ export const WorkflowToolbar: React.FC<Props> = ({
   onAddNode,
   onDeleteSelected,
   onDuplicateSelected,
+  onToggleSettings,
   isDirty,
   hasSelection
 }) => {
@@ -73,6 +75,13 @@ export const WorkflowToolbar: React.FC<Props> = ({
         🗑️ 削除
       </button>
       <div style={{ width: '1px', height: '24px', background: 'var(--vscode-widget-border)' }} />
+      <button
+        onClick={onToggleSettings}
+        style={buttonStyle(true)}
+        title="ワークフロー設定を開く"
+      >
+        ⚙️ 設定
+      </button>
       <button
         onClick={onSave}
         disabled={!isDirty}
