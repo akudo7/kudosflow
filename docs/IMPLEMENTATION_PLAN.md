@@ -119,11 +119,11 @@ Ctrl+Sでの保存と確認ダイアログの実装
 - エッジ削除機能
 - コンテキストメニュー
 
-#### [Phase 8: ワークフロー設定エディタ](phases/PHASE8_WORKFLOW_SETTINGS.md) ⬜
+#### [Phase 8: ワークフロー設定エディタ](phases/PHASE8_WORKFLOW_SETTINGS.md) 🔄
 
 ワークフローのメタデータ（Config、State、Annotation）の編集機能
 
-##### Phase 8A: ノード名 + シンプルなConfig編集 ⬜
+##### Phase 8A: ノード名 + シンプルなConfig編集 ☑
 
 - ノード名（Node ID）編集とユニーク制約
 - Config編集（recursionLimit, defaultMaxListeners）

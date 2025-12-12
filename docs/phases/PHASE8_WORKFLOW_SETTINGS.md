@@ -20,7 +20,7 @@ Phase 8では、現在はノードのimplementationコードのみ編集可能�
 
 ## Phase 8A: ノード名 + シンプルなConfig編集
 
-**ステータス**: ⬜ 未開始
+**ステータス**: ☑ 完了
 **推定時間**: 1-2日 (9-13時間)
 **複雑度**: 簡単
 
@@ -136,18 +136,18 @@ handleNodeNameChange(oldId: string, newId: string):
 
 ### タスクリスト
 
-- [ ] `validation.ts` 作成: `validateNodeName()` 実装
-- [ ] `WorkflowSettingsPanel.tsx` 作成: 基本構造、タブUI
-- [ ] `NodeNameEditor.tsx` 作成: ノード一覧とインライン編集
-- [ ] `ConfigEditor.tsx` 作成: 数値入力フォーム
-- [ ] `StateAnnotationEditor.tsx` 作成: テキスト入力フォーム
-- [ ] `WorkflowToolbar.tsx` 修正: "⚙️ 設定" ボタン追加
-- [ ] `WorkflowEditor.tsx` 修正: 状態管理、ハンドラ追加、パネル統合
-- [ ] `WorkflowNode.tsx` 修正: ヘッダーダブルクリック編集機能
-- [ ] `types/workflow.types.ts` 修正: ValidationResult型追加
-- [ ] テスト: ノード名変更でエッジが正しく更新されるか確認
-- [ ] テスト: 重複名のバリデーションエラー表示確認
-- [ ] テスト: Config値の保存・読み込み確認
+- [x] `validation.ts` 作成: `validateNodeName()` 実装
+- [x] `WorkflowSettingsPanel.tsx` 作成: 基本構造、タブUI
+- [x] `NodeNameEditor.tsx` 作成: ノード一覧とインライン編集
+- [x] `ConfigEditor.tsx` 作成: 数値入力フォーム
+- [x] `StateAnnotationEditor.tsx` 作成: テキスト入力フォーム
+- [x] `WorkflowToolbar.tsx` 修正: "⚙️ 設定" ボタン追加
+- [x] `WorkflowEditor.tsx` 修正: 状態管理、ハンドラ追加、パネル統合
+- [x] `WorkflowNode.tsx` 修正: ヘッダーダブルクリック編集機能
+- [x] `types/workflow.types.ts` 修正: ValidationResult型追加
+- [x] テスト: ノード名変更でエッジが正しく更新されるか確認
+- [x] テスト: 重複名のバリデーションエラー表示確認
+- [x] テスト: Config値の保存・読み込み確認
 
 ---
 
@@ -435,12 +435,12 @@ const inputStyle = {
 
 ### Phase 8A テスト
 
-- [ ] ノード名変更後、キャンバス上で即座に反映される
-- [ ] エッジのsource/targetが正しく更新される
-- [ ] 重複名入力時、エラー表示される
-- [ ] 予約語入力時、エラー表示される
-- [ ] Config値が保存・読み込みできる
-- [ ] StateAnnotation.nameが保存・読み込みできる
+- [x] ノード名変更後、キャンバス上で即座に反映される
+- [x] エッジのsource/targetが正しく更新される
+- [x] 重複名入力時、エラー表示される
+- [x] 予約語入力時、エラー表示される
+- [x] Config値が保存・読み込みできる
+- [x] StateAnnotation.nameが保存・読み込みできる
 
 ### Phase 8B テスト
 
@@ -463,7 +463,7 @@ const inputStyle = {
 
 ## 成功基準
 
-### Phase 8A
+### Phase 8A ☑
 
 - ✓ ノード名を設定パネルで編集できる
 - ✓ ノード名をノードヘッダーでダブルクリック編集できる
