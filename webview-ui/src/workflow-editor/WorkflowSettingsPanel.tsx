@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { WorkflowConfig, ReactFlowNode, ReactFlowEdge } from './types/workflow.types';
+import { WorkflowConfig, ReactFlowNode, ReactFlowEdge, AnnotationField } from './types/workflow.types';
 import { NodeNameEditor } from './settings/NodeNameEditor';
 import { ConfigEditor } from './settings/ConfigEditor';
 import { StateAnnotationEditor } from './settings/StateAnnotationEditor';
 import { StateGraphEditor } from './settings/StateGraphEditor';
+import { AnnotationFieldsEditor } from './settings/AnnotationFieldsEditor';
 
 interface Props {
   show: boolean;
@@ -16,7 +17,7 @@ interface Props {
   onUpdateEdges: (edges: ReactFlowEdge[]) => void;
 }
 
-type TabType = 'nodes' | 'settings' | 'stateGraph';
+type TabType = 'nodes' | 'settings' | 'stateGraph' | 'annotation';
 
 export const WorkflowSettingsPanel: React.FC<Props> = ({
   show,
@@ -64,6 +65,10 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
 
   const handleStateGraphChange = (stateGraph: any) => {
     onUpdateConfig({ stateGraph });
+  };
+
+  const handleAnnotationChange = (annotation: Record<string, AnnotationField>) => {
+    onUpdateConfig({ annotation });
   };
 
   const panelStyle: React.CSSProperties = {
@@ -159,6 +164,12 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
         >
           State Graph
         </button>
+        <button
+          onClick={() => setActiveTab('annotation')}
+          style={getTabStyle(activeTab === 'annotation')}
+        >
+          Annotation
+        </button>
       </div>
 
       <div style={contentStyle}>
@@ -207,6 +218,12 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
             stateGraph={workflowConfig.stateGraph}
             stateAnnotationName={workflowConfig.stateAnnotation.name}
             onStateGraphChange={handleStateGraphChange}
+          />
+        )}
+        {activeTab === 'annotation' && (
+          <AnnotationFieldsEditor
+            annotation={workflowConfig.annotation}
+            onAnnotationChange={handleAnnotationChange}
           />
         )}
       </div>

@@ -227,7 +227,7 @@ webview-ui/src/workflow-editor/settings/
 
 ## Phase 8C: Annotationフィールド CRUD
 
-**ステータス**: ⬜ 未開始
+**ステータス**: ☑ 完了
 **推定時間**: 3-4日 (22-28時間)
 **複雑度**: 複雑
 
@@ -346,17 +346,17 @@ const reservedKeywords = [
 
 ### タスクリスト
 
-- [ ] `AnnotationFieldsEditor.tsx` 作成: テーブルビュー
-- [ ] `AnnotationFieldForm.tsx` 作成: モーダルフォーム
-- [ ] `WorkflowSettingsPanel.tsx` 修正: Annotationタブ追加
-- [ ] `validation.ts` 修正: `validateFieldName()`, `isReservedKeyword()` 追加
-- [ ] CRUD操作実装: 追加、編集、削除
-- [ ] Reducerコードエディタ: TextArea with syntax awareness
-- [ ] Default値JSON解析: 型に応じた入力補助
-- [ ] エラー表示: インラインエラーメッセージ
-- [ ] テスト: フィールド追加・編集・削除の動作確認
-- [ ] テスト: バリデーションエラーの表示確認
-- [ ] テスト: 保存後のJSON構造確認
+- [x] `AnnotationFieldsEditor.tsx` 作成: テーブルビュー
+- [x] `AnnotationFieldForm.tsx` 作成: モーダルフォーム
+- [x] `WorkflowSettingsPanel.tsx` 修正: Annotationタブ追加
+- [x] `validation.ts` 修正: `validateFieldName()`, `isReservedKeyword()` 追加
+- [x] CRUD操作実装: 追加、編集、削除
+- [x] Reducerコードエディタ: TextArea with syntax awareness
+- [x] Default値JSON解析: 型に応じた入力補助
+- [x] エラー表示: インラインエラーメッセージ
+- [x] テスト: フィールド追加・編集・削除の動作確認
+- [x] テスト: バリデーションエラーの表示確認
+- [x] テスト: 保存後のJSON構造確認
 
 ---
 

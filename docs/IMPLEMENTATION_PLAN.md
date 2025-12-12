@@ -119,7 +119,7 @@ Ctrl+Sでの保存と確認ダイアログの実装
 - エッジ削除機能
 - コンテキストメニュー
 
-#### [Phase 8: ワークフロー設定エディタ](phases/PHASE8_WORKFLOW_SETTINGS.md) 🔄
+#### [Phase 8: ワークフロー設定エディタ](phases/PHASE8_WORKFLOW_SETTINGS.md) ☑
 
 ワークフローのメタデータ（Config、State、Annotation）の編集機能
 
@@ -136,7 +136,7 @@ Ctrl+Sでの保存と確認ダイアログの実装
 - checkpointer.typeドロップダウン選択
 - バリデーション機能
 
-##### Phase 8C: Annotationフィールド CRUD ⬜
+##### Phase 8C: Annotationフィールド CRUD ☑
 
 - Annotationフィールドの追加・編集・削除
 - モーダルフォームUI

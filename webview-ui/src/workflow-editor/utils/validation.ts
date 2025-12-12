@@ -72,3 +72,74 @@ export function validateStateGraph(
 
   return { valid: true };
 }
+
+// JavaScript reserved keywords
+const RESERVED_KEYWORDS = [
+  'break', 'case', 'catch', 'class', 'const', 'continue',
+  'debugger', 'default', 'delete', 'do', 'else', 'export',
+  'extends', 'finally', 'for', 'function', 'if', 'import',
+  'in', 'instanceof', 'let', 'new', 'return', 'super',
+  'switch', 'this', 'throw', 'try', 'typeof', 'var',
+  'void', 'while', 'with', 'yield', 'await', 'enum',
+  'implements', 'interface', 'package', 'private', 'protected',
+  'public', 'static', 'null', 'true', 'false'
+];
+
+/**
+ * Check if a string is a reserved JavaScript keyword
+ * @param name - The name to check
+ * @returns boolean
+ */
+export function isReservedKeyword(name: string): boolean {
+  return RESERVED_KEYWORDS.includes(name);
+}
+
+/**
+ * Validate annotation field name
+ * @param fieldName - The field name to validate
+ * @param existingFields - Current annotation fields
+ * @param excludeField - Field name to exclude from uniqueness check (for editing existing field)
+ * @returns ValidationResult
+ */
+export function validateFieldName(
+  fieldName: string,
+  existingFields: Record<string, any>,
+  excludeField?: string
+): ValidationResult {
+  // Empty check
+  if (!fieldName || fieldName.trim() === '') {
+    return {
+      valid: false,
+      error: 'フィールド名を入力してください',
+    };
+  }
+
+  const trimmedName = fieldName.trim();
+
+  // JavaScript identifier validation (must start with letter, $, or _, followed by letters, digits, $, or _)
+  const jsIdentifierRegex = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/;
+  if (!jsIdentifierRegex.test(trimmedName)) {
+    return {
+      valid: false,
+      error: '有効なJavaScript識別子である必要があります（英字、数字、$、_ のみ使用可能）',
+    };
+  }
+
+  // Reserved keywords check
+  if (isReservedKeyword(trimmedName)) {
+    return {
+      valid: false,
+      error: `予約語 "${trimmedName}" は使用できません`,
+    };
+  }
+
+  // Uniqueness check
+  if (excludeField !== trimmedName && trimmedName in existingFields) {
+    return {
+      valid: false,
+      error: `フィールド名 "${trimmedName}" は既に使用されています`,
+    };
+  }
+
+  return { valid: true };
+}
