@@ -1,0 +1,158 @@
+{
+  "config": {
+    "recursionLimit": 100,
+    "eventEmitter": {
+      "defaultMaxListeners": 20
+    }
+  },
+  "a2aClients": {
+    "task_agent": {
+      "cardUrl": "http://localhost:3001/.well-known/agent.json",
+      "timeout": 30000
+    },
+    "research_agent": {
+      "cardUrl": "http://localhost:3002/.well-known/agent.json",
+      "timeout": 30000
+    },
+    "quality_agent": {
+      "cardUrl": "http://localhost:3003/.well-known/agent.json",
+      "timeout": 30000
+    }
+  },
+  "stateAnnotation": {
+    "name": "AgentState",
+    "type": "Annotation.Root"
+  },
+  "annotation": {
+    "messages": {
+      "type": "BaseMessage[]",
+      "reducer": "(x, y) => x.concat(y)",
+      "default": []
+    },
+    "currentPhase": {
+      "type": "string",
+      "reducer": "(x, y) => y || x",
+      "default": "task_creation"
+    },
+    "approvalPending": {
+      "type": "boolean",
+      "reducer": "(x, y) => y !== undefined ? y : x",
+      "default": false
+    },
+    "tasksApproved": {
+      "type": "boolean",
+      "reducer": "(x, y) => y !== undefined ? y : x",
+      "default": false
+    },
+    "researchCompleted": {
+      "type": "boolean",
+      "reducer": "(x, y) => y !== undefined ? y : x",
+      "default": false
+    },
+    "qualityEvaluated": {
+      "type": "boolean",
+      "reducer": "(x, y) => y !== undefined ? y : x",
+      "default": false
+    }
+  },
+  "models": [
+    {
+      "id": "mainModel",
+      "type": "OpenAI",
+      "config": {
+        "model": "gpt-4o-mini",
+        "temperature": 0.7
+      },
+      "bindA2AClients": true,
+      "systemPrompt": "You are a BizDev Market Analysis Orchestrator Agent. Your role is to coordinate market research by following a structured workflow: 1. Task Creation: Delegate to task_agent to create research tasks 2. User Approval: Wait for user approval of tasks 3. Research Execution: Delegate to research_agent to execute approved tasks 4. Quality Evaluation: Delegate to quality_agent to evaluate results 5. Final Synthesis: Create comprehensive executive summary. Follow this sequence strictly and wait for each phase to complete before proceeding."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "orchestrator",
+      "function": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof AgentState.State"
+          },
+          {
+            "name": "model",
+            "type": "ModelConfig",
+            "modelRef": "mainModel"
+          }
+        ],
+        "output": {
+          "messages": "Message[]",
+          "currentPhase": "string"
+        },
+        "implementation": "try { console.log('🎯 [orchestrator] Current phase:', state.currentPhase); console.log('🎯 [orchestrator] Messages count:', state.messages.length); const currentPhase = state.currentPhase || 'task_creation'; console.log('🎯 [orchestrator] Current phase determined:', currentPhase); if (state.messages && state.messages.length > 0) { console.log('🎯 [orchestrator] Message details:'); state.messages.forEach((msg, i) => { console.log(`  Message ${i}: role=${msg._getType ? msg._getType() : (msg.role || 'undefined')}, content=${(msg.content || '').substring(0, 50)}...`); }); } if (currentPhase === 'task_creation') { const hasTaskAgentCall = state.messages.some(msg => (msg._getType && msg._getType() === 'tool') || (msg.role === 'tool' && msg.name === 'send_message_to_task_agent')); if (!hasTaskAgentCall) { console.log('🎯 [orchestrator] Phase 1: Starting task creation - calling task agent'); const userContent = state.messages.find(msg => msg.content && (msg.content.includes('矢崎総業') || msg.content.includes('research')))?.content || state.messages[state.messages.length - 1]?.content || 'Please create research tasks based on the user request.'; const response = await model.invoke([{ role: 'system', content: 'You must use the send_message_to_task_agent tool to create structured research tasks. Send the user research request to break it down into actionable tasks.' }, { role: 'user', content: userContent }]); return { messages: [response], currentPhase: 'awaiting_task_approval' }; } else { console.log('🎯 [orchestrator] Task agent already called, waiting for approval'); return { messages: [], currentPhase: 'awaiting_task_approval' }; } } else if (currentPhase === 'research_execution' && state.tasksApproved) { console.log('🎯 [orchestrator] Phase 2: Starting research execution'); const userContent = state.messages.find(msg => msg.content && (msg.content.includes('矢崎総業') || msg.content.includes('research')))?.content || 'Please conduct comprehensive research based on the approved tasks.'; const response = await model.invoke([{ role: 'system', content: 'Tasks have been approved. Now execute comprehensive research using the send_message_to_research_agent tool.' }, { role: 'user', content: userContent }]); return { messages: [response], currentPhase: 'awaiting_research_results' }; } else if (currentPhase === 'quality_evaluation' && state.researchCompleted) { console.log('🎯 [orchestrator] Phase 3: Starting quality evaluation'); const researchResults = state.messages.filter(msg => (msg._getType && msg._getType() === 'tool') || (msg.role === 'tool' && msg.name === 'send_message_to_research_agent')); const combinedResults = researchResults.map(msg => msg.content).join('\\n\\n'); const response = await model.invoke([{ role: 'system', content: 'Research has been completed. Now evaluate the research quality using the send_message_to_quality_agent tool.' }, { role: 'user', content: `Please evaluate these research results:\\n\\n${combinedResults}` }]); return { messages: [response], currentPhase: 'awaiting_quality_evaluation' }; } else if (currentPhase === 'final_synthesis' && state.qualityEvaluated) { console.log('🎯 [orchestrator] Phase 4: Creating final synthesis'); const allResults = state.messages.filter(msg => (msg._getType && msg._getType() === 'tool') || msg.role === 'tool'); const taskResults = allResults.filter(msg => msg.name === 'send_message_to_task_agent'); const researchResults = allResults.filter(msg => msg.name === 'send_message_to_research_agent'); const qualityResults = allResults.filter(msg => msg.name === 'send_message_to_quality_agent'); const synthesisPrompt = `Based on the complete workflow results, create a comprehensive executive summary for the research:\\n\\nTask Creation Results: ${taskResults.map(msg => msg.content).join('\\n')}\\n\\nResearch Results: ${researchResults.map(msg => msg.content).join('\\n')}\\n\\nQuality Evaluation: ${qualityResults.map(msg => msg.content).join('\\n')}\\n\\nCreate a well-structured executive summary with clear sections and actionable insights.`; const finalResponse = await model.invoke([{ role: 'user', content: synthesisPrompt }]); console.log('📋 [Final Executive Summary]:', finalResponse.content); return { messages: [finalResponse], currentPhase: 'completed' }; } else if (currentPhase === 'completed') { return { messages: [{ role: 'assistant', content: 'Research analysis workflow completed successfully!' }], currentPhase: 'completed' }; } else if (currentPhase === 'awaiting_task_approval' || currentPhase === 'awaiting_research_results' || currentPhase === 'awaiting_quality_evaluation') { return { messages: [{ role: 'assistant', content: `Waiting for ${currentPhase.replace('awaiting_', '').replace('_', ' ')} to complete...` }], currentPhase }; } console.log('🎯 [orchestrator] Default: Continuing with task creation'); return { messages: [], currentPhase: 'task_creation' }; } catch (error) { console.error('🎯 [orchestrator] Error:', error); return { messages: [{ role: 'assistant', content: `Error: ${error.message}` }], currentPhase: 'error' }; }"
+      }
+    },
+    {
+      "id": "tools",
+      "type": "ToolNode",
+      "useA2AClients": true
+    },
+    {
+      "id": "approval_handler",
+      "function": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof AgentState.State"
+          }
+        ],
+        "output": {
+          "messages": "Message[]",
+          "approvalPending": "boolean",
+          "tasksApproved": "boolean",
+          "researchCompleted": "boolean",
+          "qualityEvaluated": "boolean",
+          "currentPhase": "string"
+        },
+        "implementation": "console.log('🔍 [approval_handler] Processing workflow state'); const lastToolResult = state.messages.filter(msg => (msg._getType && msg._getType() === 'tool') || msg.role === 'tool').pop(); const lastUserMessage = state.messages.filter(msg => (msg._getType && msg._getType() === 'human') || msg.role === 'user' || msg.role === 'human').pop(); if (lastUserMessage && lastUserMessage.content) { const userInput = lastUserMessage.content.toLowerCase().trim(); if ((userInput === 'approve' || userInput.includes('approve')) && state.currentPhase === 'awaiting_task_approval') { console.log('🔍 [approval_handler] User approved tasks'); return { messages: [{ role: 'assistant', content: 'Tasks approved. Proceeding with research execution.' }], approvalPending: false, tasksApproved: true, currentPhase: 'research_execution' }; } else if ((userInput === 'reject' || userInput.includes('reject')) && state.currentPhase === 'awaiting_task_approval') { console.log('🔍 [approval_handler] User rejected tasks'); return { messages: [{ role: 'assistant', content: 'Tasks rejected. Please provide new requirements.' }], approvalPending: false, tasksApproved: false, currentPhase: 'task_creation' }; } else if ((userInput === 'modify' || userInput.includes('modify')) && state.currentPhase === 'awaiting_task_approval') { console.log('🔍 [approval_handler] User requested task modifications'); return { messages: [{ role: 'assistant', content: 'Tasks require modification. Please specify changes needed.' }], approvalPending: false, tasksApproved: false, currentPhase: 'task_creation' }; } } if (lastToolResult && lastToolResult.content) { const content = lastToolResult.content; console.log('🔍 [approval_handler] Tool result content preview:', content.substring(0, 200)); if (lastToolResult.name === 'send_message_to_task_agent' && (content.includes('Task approval required') || content.includes('Please respond with: approve, reject, or modify'))) { console.log('🔍 [approval_handler] Detected task approval request from TaskCreationAgent'); console.log('⏸️ [approval_handler] Interrupting workflow for user approval'); const taskContent = typeof content === 'string' ? content : JSON.stringify(content); const cleanContent = taskContent.includes('response') ? JSON.parse(taskContent).response.content || taskContent : taskContent; console.log('📋 [TaskList] Generated tasks:'); console.log(cleanContent); try { interrupt({ content: `TaskCreationAgent has created research tasks. Please review and respond with: approve, reject, or modify` }); } catch (interruptError) { console.log('⏸️ [approval_handler] GraphInterrupt thrown successfully'); } return { messages: [{ role: 'assistant', content: `TaskCreationAgent has created research tasks:\\n\\n${cleanContent}\\n\\nPlease respond with: approve, reject, or modify` }], approvalPending: true, tasksApproved: false, currentPhase: 'awaiting_task_approval' }; } else if (lastToolResult.name === 'send_message_to_research_agent' && !state.researchCompleted) { console.log('🔍 [approval_handler] Research execution completed'); return { messages: [], researchCompleted: true, currentPhase: 'quality_evaluation' }; } else if (lastToolResult.name === 'send_message_to_quality_agent' && !state.qualityEvaluated) { console.log('🔍 [approval_handler] Quality evaluation completed'); return { messages: [], qualityEvaluated: true, currentPhase: 'final_synthesis' }; } } console.log('🔍 [approval_handler] No action needed, maintaining current phase'); return { messages: [], approvalPending: false, currentPhase: state.currentPhase };"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "__start__",
+      "to": "orchestrator"
+    },
+    {
+      "from": "tools",
+      "to": "approval_handler"
+    },
+    {
+      "from": "approval_handler",
+      "to": "orchestrator"
+    },
+    {
+      "type": "conditional",
+      "from": "orchestrator",
+      "condition": {
+        "name": "shouldContinue",
+        "function": {
+          "parameters": [
+            {
+              "name": "state",
+              "type": "typeof AgentState.State"
+            }
+          ],
+          "output": "string",
+          "implementation": "try { const lastMessage = state.messages[state.messages.length - 1]; console.log('🔀 [shouldContinue] Phase:', state.currentPhase, 'Tasks approved:', state.tasksApproved, 'Approval pending:', state.approvalPending); if (lastMessage && lastMessage.tool_calls && lastMessage.tool_calls.length > 0) { console.log('🔀 [shouldContinue] Tool calls detected, routing to tools'); return 'tools'; } if (state.currentPhase === 'completed' || state.currentPhase === 'error') { console.log('🔀 [shouldContinue] Workflow completed'); return '__end__'; } if (state.currentPhase === 'awaiting_task_approval' && !state.approvalPending && !state.tasksApproved) { console.log('🔀 [shouldContinue] Continuing orchestrator for approval handling'); return 'orchestrator'; } if (state.currentPhase === 'research_execution' || state.currentPhase === 'quality_evaluation' || state.currentPhase === 'final_synthesis') { console.log('🔀 [shouldContinue] Continuing orchestrator for next phase'); return 'orchestrator'; } return '__end__'; } catch (error) { console.error('🔀 [shouldContinue] Error:', error); return '__end__'; }",
+          "possibleTargets": ["tools", "orchestrator", "__end__"]
+        }
+      }
+    }
+  ],
+  "stateGraph": {
+    "annotationRef": "AgentState",
+    "config": {
+      "checkpointer": {
+        "type": "MemorySaver"
+      }
+    }
+  }
+}

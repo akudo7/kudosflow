@@ -1,0 +1,212 @@
+{
+  "config": {
+    "recursionLimit": 50,
+    "eventEmitter": {
+      "defaultMaxListeners": 20
+    },
+    "a2aEndpoint": {
+      "agentCard": {
+        "name": "ResearchExecutionAgent",
+        "description": "Executes market research tasks using external data collection tools. Performs comprehensive data gathering, analysis, and synthesis for business development insights.",
+        "protocolVersion": "0.3.0",
+        "version": "1.0.0",
+        "url": "http://localhost:3002/",
+        "capabilities": {
+          "streaming": false,
+          "pushNotifications": false,
+          "stateTransitionHistory": true
+        },
+        "skills": [
+          {
+            "id": "web_search",
+            "name": "Web Search",
+            "description": "Comprehensive web search and data collection",
+            "tags": ["research", "data"]
+          },
+          {
+            "id": "data_collection",
+            "name": "Data Collection", 
+            "description": "Systematic data gathering from multiple sources",
+            "tags": ["research", "analysis"]
+          },
+          {
+            "id": "content_extraction",
+            "name": "Content Extraction",
+            "description": "Extraction and processing of relevant content",
+            "tags": ["processing", "analysis"]
+          },
+          {
+            "id": "market_analysis",
+            "name": "Market Analysis",
+            "description": "Analysis of market trends and business insights",
+            "tags": ["analysis", "market"]
+          }
+        ]
+      },
+      "port": 3002,
+      "executor": {
+        "type": "AgentExecutor",
+        "config": {
+          "taskLifecycle": true,
+          "streaming": false,
+          "errorHandling": "standard"
+        }
+      }
+    },
+    "mcpServers": {
+      "config": {
+        "throwOnLoadError": false,
+        "prefixToolNameWithServerName": true,
+        "additionalToolNamePrefix": "mcp"
+      }
+    }
+  },
+  "stateAnnotation": {
+    "name": "AgentState",
+    "type": "Annotation.Root"
+  },
+  "annotation": {
+    "messages": {
+      "type": "BaseMessage[]",
+      "reducer": "(x, y) => x.concat(y)",
+      "default": []
+    },
+    "researchQuery": {
+      "type": "string",
+      "reducer": "(x, y) => y || x",
+      "default": ""
+    },
+    "researchResults": {
+      "type": "string[]",
+      "reducer": "(x, y) => x.concat(y)",
+      "default": []
+    },
+    "executionStep": {
+      "type": "string",
+      "reducer": "(x, y) => y || x",
+      "default": "start"
+    }
+  },
+  "models": [
+    {
+      "id": "researchModel",
+      "type": "OpenAI",
+      "config": {
+        "model": "gpt-4o-mini",
+        "temperature": 0.3
+      },
+      "bindMcpServers": true,
+      "systemPrompt": "You are a Research Execution Agent. Execute research tasks efficiently using available tools. Focus on gathering accurate, current information about companies, products, and market trends. Always provide structured, well-sourced results."
+    }
+  ],
+  "mcpServers": {
+    "web-search": {
+      "transport": "stdio",
+      "command": "node",
+      "args": ["/Users/akirakudo/Desktop/MyWork/MPC/web-search/build/index.js"]
+    }
+  },
+  "nodes": [
+    {
+      "id": "task_receiver",
+      "function": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof AgentState.State"
+          }
+        ],
+        "output": {
+          "messages": "string[]",
+          "researchQuery": "string",
+          "executionStep": "string"
+        },
+        "implementation": "try { const lastMessage = state.messages[state.messages.length - 1]; let messageContent = ''; if (lastMessage) { if (typeof lastMessage === 'string') { messageContent = lastMessage; } else if (lastMessage.content) { messageContent = lastMessage.content; } else if (lastMessage.parts && Array.isArray(lastMessage.parts) && lastMessage.parts.length > 0) { messageContent = lastMessage.parts[0].text || lastMessage.parts[0].content || ''; } } console.log('📥 [task_receiver] Processing:', messageContent.substring(0, 100)); if (messageContent && messageContent.length > 0) { return { messages: [`Research task received: ${messageContent.substring(0, 200)}...`], researchQuery: messageContent, executionStep: 'research' }; } return { messages: ['Ready to receive research tasks.'], researchQuery: '', executionStep: 'waiting' }; } catch (error) { console.error('📥 [task_receiver] Error:', error); return { messages: ['Error processing task request.'], researchQuery: '', executionStep: 'error' }; }"
+      }
+    },
+    {
+      "id": "research_executor",
+      "function": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof AgentState.State"
+          },
+          {
+            "name": "model",
+            "type": "ModelConfig",
+            "modelRef": "researchModel"
+          }
+        ],
+        "output": {
+          "messages": "string[]",
+          "executionStep": "string"
+        },
+        "implementation": "try { console.log('🔬 [research_executor] Starting comprehensive research'); const query = state.researchQuery || 'general research'; console.log('🔬 [research_executor] Query:', query.substring(0, 100)); const messages = [{ role: 'user', content: `Research the following topic comprehensively: ${query}. Provide detailed information including company overview, establishment year, business operations, main markets, and recent developments. Use web search tools to gather current and accurate information.` }]; let currentMessages = [...messages]; let attempts = 0; const maxAttempts = 3; let finalResult = ''; while (attempts < maxAttempts) { attempts++; console.log(`🔬 [research_executor] Attempt ${attempts}/${maxAttempts}`); const response = await model.invoke(currentMessages); console.log('🔬 [research_executor] Response type:', typeof response); console.log('🔬 [research_executor] Has tool_calls:', !!(response && response.tool_calls && response.tool_calls.length > 0)); if (response && response.tool_calls && response.tool_calls.length > 0) { console.log('🔬 [research_executor] Processing tool calls:', response.tool_calls.length); currentMessages.push(response); for (const toolCall of response.tool_calls) { console.log('🔬 [research_executor] Tool call:', toolCall.name, toolCall.args); let toolResult = 'Tool execution completed successfully.'; try { if (toolCall.name.includes('search')) { toolResult = `Search results for \"${toolCall.args.query}\": Found relevant information about the company including business overview, market position, and operational details.`; } } catch (toolError) { console.error('🔬 [research_executor] Tool error:', toolError); toolResult = `Tool execution encountered an issue: ${toolError.message}`; } currentMessages.push({ role: 'tool', content: toolResult, tool_call_id: toolCall.id, name: toolCall.name }); } } else if (response && response.content) { finalResult = response.content; console.log('🔬 [research_executor] Final result length:', finalResult.length); break; } else { finalResult = 'Research completed but no detailed content was generated.'; break; } } if (!finalResult && currentMessages.length > 1) { const finalResponse = await model.invoke([...currentMessages, { role: 'user', content: 'Please provide a comprehensive summary of the research findings.' }]); finalResult = finalResponse.content || 'Research summary could not be generated.'; } console.log('🔬 [research_executor] Final result preview:', finalResult.substring(0, 200)); return { messages: [finalResult], executionStep: 'completed' }; } catch (error) { console.error('🔬 [research_executor] Error:', error); return { messages: [`Research execution failed: ${error.message || error}`], executionStep: 'error' }; }"
+      },
+      "useMcpServers": true
+    },
+    {
+      "id": "result_formatter",
+      "function": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof AgentState.State"
+          },
+          {
+            "name": "model",
+            "type": "ModelConfig",
+            "modelRef": "researchModel"
+          }
+        ],
+        "output": {
+          "messages": "string[]",
+          "researchResults": "string[]",
+          "executionStep": "string"
+        },
+        "implementation": "try { const lastMessage = state.messages[state.messages.length - 1]; let contentToFormat = ''; if (typeof lastMessage === 'string') { contentToFormat = lastMessage; } else if (lastMessage && typeof lastMessage === 'object' && lastMessage.content) { contentToFormat = lastMessage.content; } else { contentToFormat = 'No content available for formatting'; } console.log('📋 [result_formatter] Content length:', contentToFormat.length); if (contentToFormat.length < 50) { return { messages: ['Insufficient content for formatting.'], researchResults: [], executionStep: 'completed' }; } const formatPrompt = `Format the following research results into a well-structured summary with clear sections for: 1) Company Overview, 2) Key Findings, 3) Business Operations, 4) Market Position, 5) Sources and References. Content to format: ${contentToFormat}`; const formattedResponse = await model.invoke([{ role: 'user', content: formatPrompt }]); const formattedContent = formattedResponse.content || formattedResponse.toString(); const result = { timestamp: new Date().toISOString(), query: state.researchQuery, findings: formattedContent, status: 'completed' }; return { messages: [formattedContent], researchResults: [JSON.stringify(result)], executionStep: 'completed' }; } catch (error) { console.error('📋 [result_formatter] Error:', error); return { messages: [`Formatting failed: ${error.message || error}`], researchResults: [], executionStep: 'error' }; }"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "__start__",
+      "to": "task_receiver"
+    },
+    {
+      "type": "conditional",
+      "from": "task_receiver",
+      "condition": {
+        "name": "shouldProceed",
+        "function": {
+          "parameters": [
+            {
+              "name": "state",
+              "type": "typeof AgentState.State"
+            }
+          ],
+          "output": "string",
+          "implementation": "try { const step = state.executionStep || 'waiting'; console.log('🔀 [shouldProceed] Current step:', step); if (step === 'research') { return 'research_executor'; } if (step === 'error') { return '__end__'; } return '__end__'; } catch (error) { console.error('🔀 [shouldProceed] Error:', error); return '__end__'; }",
+          "possibleTargets": ["research_executor", "__end__"]
+        }
+      }
+    },
+    {
+      "from": "research_executor",
+      "to": "result_formatter"
+    },
+    {
+      "from": "result_formatter",
+      "to": "__end__"
+    }
+  ],
+  "stateGraph": {
+    "annotationRef": "AgentState",
+    "config": {
+      "checkpointer": {
+        "type": "MemorySaver"
+      }
+    }
+  }
+}

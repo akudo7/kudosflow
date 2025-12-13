@@ -1,0 +1,243 @@
+{
+    "config": {
+        "recursionLimit": 100,
+        "eventEmitter": {
+            "defaultMaxListeners": 20
+        },
+        "a2aEndpoint": {
+            "agentCard": {
+                "name": "QualityEvaluationAgent",
+                "description": "Evaluates research quality and ensures deliverable standards. Performs comprehensive quality assessment of research results and manages approval workflows for final deliverables.",
+                "protocolVersion": "0.3.0",
+                "version": "1.0.0",
+                "url": "http://localhost:3003/",
+                "capabilities": {
+                    "streaming": false,
+                    "pushNotifications": false,
+                    "stateTransitionHistory": true
+                },
+                "skills": [
+                    {
+                        "id": "quality_assessment",
+                        "name": "Quality Assessment",
+                        "description": "Comprehensive quality evaluation of research results",
+                        "tags": ["quality", "evaluation"]
+                    },
+                    {
+                        "id": "research_validation",
+                        "name": "Research Validation",
+                        "description": "Validation of research methodology and findings",
+                        "tags": ["validation", "research"]
+                    },
+                    {
+                        "id": "completeness_check",
+                        "name": "Completeness Check",
+                        "description": "Verification of deliverable completeness",
+                        "tags": ["verification", "completeness"]
+                    },
+                    {
+                        "id": "accuracy_verification",
+                        "name": "Accuracy Verification",
+                        "description": "Verification of data accuracy and source credibility",
+                        "tags": ["accuracy", "verification"]
+                    },
+                    {
+                        "id": "human_approval_workflow",
+                        "name": "Human Approval Workflow",
+                        "description": "Management of human approval processes",
+                        "tags": ["workflow", "approval"]
+                    }
+                ]
+            },
+            "port": 3003,
+            "executor": {
+                "type": "AgentExecutor",
+                "config": {
+                    "taskLifecycle": true,
+                    "streaming": false,
+                    "errorHandling": "standard",
+                    "humanInTheLoop": true,
+                    "qualityGates": true
+                }
+            }
+        }
+    },
+    "stateAnnotation": {
+        "name": "AgentState",
+        "type": "Annotation.Root"
+    },
+    "annotation": {
+        "messages": {
+            "type": "BaseMessage[]",
+            "reducer": "(x, y) => x.concat(y)",
+            "default": []
+        },
+        "researchResults": {
+            "type": "any[]",
+            "reducer": "(x, y) => y || x",
+            "default": []
+        },
+        "qualityAssessment": {
+            "type": "any",
+            "reducer": "(x, y) => y || x",
+            "default": null
+        },
+        "qualityStatus": {
+            "type": "string",
+            "reducer": "(x, y) => y || x",
+            "default": "pending"
+        },
+        "approvalStatus": {
+            "type": "string",
+            "reducer": "(x, y) => y || x",
+            "default": "pending"
+        }
+    },
+    "models": [
+        {
+            "id": "qualityModel",
+            "type": "OpenAI",
+            "config": {
+                "model": "gpt-4o-mini",
+                "temperature": 0.2
+            },
+            "systemPrompt": "You are a Quality Evaluation Agent specialized in assessing research quality and ensuring deliverable standards. Your responsibilities: 1. Evaluate research results for completeness, accuracy, and relevance 2. Assess data quality, source credibility, and methodology soundness 3. Check alignment with original research objectives 4. Verify deliverable completeness against success criteria 5. Generate quality scores and improvement recommendations 6. Present quality assessments for human approval using interrupt() function. Quality Evaluation Criteria: - Completeness: All research objectives addressed, comprehensive coverage - Accuracy: Data verification, source credibility, fact-checking - Relevance: Alignment with business objectives and market focus - Methodology: Sound research approaches and data collection methods - Insights: Quality of analysis, actionable recommendations - Sources: Credible, recent, and diverse data sources - Structure: Clear organization and professional presentation. Quality Scoring: - Excellent (90-100): Exceeds expectations, ready for delivery - Good (80-89): Meets standards, minor improvements suggested - Fair (70-79): Adequate but requires improvements - Poor (<70): Significant issues, major revisions needed. Use ReAct pattern: Analyze research systematically, evaluate against criteria, generate scores, and seek approval for final deliverables."
+        }
+    ],
+    "nodes": [
+        {
+            "id": "result_receiver",
+            "function": {
+                "parameters": [
+                    {
+                        "name": "state",
+                        "type": "typeof AgentState.State"
+                    }
+                ],
+                "output": {
+                    "messages": "Message[]",
+                    "researchResults": "any[]"
+                },
+                "implementation": "const lastMessage = state.messages[state.messages.length - 1]; let messageContent = ''; if (lastMessage) { if (lastMessage.content) { messageContent = lastMessage.content; } else if (lastMessage.parts && Array.isArray(lastMessage.parts) && lastMessage.parts.length > 0) { messageContent = lastMessage.parts[0].text || lastMessage.parts[0].content || ''; } else if (typeof lastMessage === 'string') { messageContent = lastMessage; } } console.log('🔍 [result_receiver] Processing message:', messageContent); if (messageContent && (messageContent.includes('research results') || messageContent.includes('調査結果') || messageContent.includes('research') || messageContent.includes('調査') || (lastMessage && lastMessage.tool_calls && lastMessage.tool_calls.some(call => call.name === 'tasks/send')))) { try { let resultsData = []; const jsonMatch = messageContent.match(/```json\\n([\\s\\S]*?)\\n```/); if (jsonMatch) { resultsData = JSON.parse(jsonMatch[1]); } else if (messageContent.includes('{') && messageContent.includes('}')) { try { const startIndex = messageContent.indexOf('{'); const cleanJson = messageContent.substring(startIndex); resultsData = JSON.parse(cleanJson); } catch (e) { console.log('🔍 [result_receiver] JSON parse failed, creating default result'); resultsData = [{ task: { objective: 'Research analysis' }, result: { key_findings: [messageContent], data_sources: ['Direct input'], executive_summary: messageContent } }]; } } else { resultsData = [{ task: { objective: 'Research analysis from direct input' }, result: { key_findings: [messageContent], data_sources: ['Direct input'], executive_summary: messageContent } }]; } console.log('🔍 [result_receiver] Parsed results:', resultsData); return { messages: [{ role: 'assistant', content: `Received research results for quality evaluation. Beginning assessment of ${Array.isArray(resultsData) ? resultsData.length : 1} research items...` }], researchResults: Array.isArray(resultsData) ? resultsData : [resultsData] }; } catch (e) { console.error('🔍 [result_receiver] Error parsing research results:', e); return { messages: [{ role: 'assistant', content: 'Error parsing research results. Please provide valid format.' }], researchResults: [] }; } } return { messages: [{ role: 'assistant', content: 'Ready to receive and evaluate research results.' }], researchResults: [] };"
+            }
+        },
+        {
+            "id": "quality_assessor",
+            "function": {
+                "parameters": [
+                    {
+                        "name": "state",
+                        "type": "typeof AgentState.State"
+                    },
+                    {
+                        "name": "model",
+                        "type": "ModelConfig",
+                        "modelRef": "qualityModel"
+                    }
+                ],
+                "output": {
+                    "messages": "Message[]",
+                    "qualityAssessment": "any",
+                    "qualityStatus": "string"
+                },
+                "implementation": "if (state.researchResults && state.researchResults.length > 0 && state.qualityStatus === 'pending') { console.log('🎯 [quality_assessor] Starting quality assessment for', state.researchResults.length, 'results'); const assessmentPrompt = `Evaluate the following research results for quality: ${JSON.stringify(state.researchResults, null, 2)}. Assess each result against quality criteria: completeness, accuracy, relevance, methodology, insights, sources, structure. Provide: 1. Individual scores (0-100) for each criterion 2. Overall quality score 3. Quality level (Excellent/Good/Fair/Poor) 4. Specific strengths and weaknesses 5. Improvement recommendations 6. Pass/fail decision (pass if overall score >= 70). Format response as JSON with detailed assessment.`; const response = await model.invoke([...state.messages, { role: 'user', content: assessmentPrompt }]); try { let assessment = {}; const content = response.content || ''; const jsonMatch = content.match(/```json\\n([\\s\\S]*?)\\n```/); if (jsonMatch) { assessment = JSON.parse(jsonMatch[1]); } else if (content.includes('{') && content.includes('}')) { const startIndex = content.indexOf('{'); const cleanJson = content.substring(startIndex); assessment = JSON.parse(cleanJson); } else { assessment = { overallScore: 75, qualityLevel: 'Good', strengths: ['Comprehensive analysis'], recommendations: ['Minor improvements suggested'], passFailDecision: 'pass' }; } const status = (assessment.overallScore >= 70 || assessment.passFailDecision === 'pass') ? 'pass' : 'fail'; console.log('🎯 [quality_assessor] Assessment completed:', { score: assessment.overallScore, status }); return { messages: [response], qualityAssessment: assessment, qualityStatus: status }; } catch (e) { console.error('🎯 [quality_assessor] Error parsing quality assessment:', e); return { messages: [response], qualityAssessment: { overallScore: 60, qualityLevel: 'Fair', error: 'Assessment parsing failed' }, qualityStatus: 'fail' }; } } const response = await model.invoke(state.messages); return { messages: [response] };"
+            }
+        },
+        {
+            "id": "approval_gate",
+            "function": {
+                "parameters": [
+                    {
+                        "name": "state",
+                        "type": "typeof AgentState.State"
+                    }
+                ],
+                "output": {
+                    "messages": "Message[]",
+                    "approvalStatus": "string"
+                },
+                "implementation": "if (state.qualityStatus === 'pass' && state.approvalStatus === 'pending') { console.log('🚪 [approval_gate] Quality assessment passed, requesting final approval'); try { const approvalData = { message: 'Quality evaluation completed. Quality assessment shows PASS status. Please review final deliverables for approval:', phase: 'quality_approval', data: { qualityScore: state.qualityAssessment?.overallScore || 'N/A', qualityLevel: state.qualityAssessment?.qualityLevel || 'Unknown', strengths: state.qualityAssessment?.strengths || [], recommendations: state.qualityAssessment?.recommendations || [], researchSummary: (state.researchResults || []).map(result => ({ task: result.task?.objective || 'Unknown', findings: result.result?.key_findings || [], sources: result.result?.data_sources || [] })) }, options: ['approve', 'reject', 'request_revisions'] }; const approvalResult = await interrupt(approvalData); console.log('🚪 [approval_gate] Final approval result:', approvalResult); const isApproved = approvalResult === 'approve' || approvalResult === true || (typeof approvalResult === 'object' && approvalResult.approved === true) || (typeof approvalResult === 'object' && approvalResult.choice === 'approve'); const feedback = typeof approvalResult === 'object' ? approvalResult.feedback || '' : ''; const status = isApproved ? 'approved' : 'rejected'; return { messages: [{ role: 'assistant', content: `Final deliverables ${status}. ${feedback}` }], approvalStatus: status }; } catch (error) { console.error('🚪 [approval_gate] Error in approval gate:', error); return { messages: [{ role: 'assistant', content: 'Error occurred during approval process. Defaulting to rejected status.' }], approvalStatus: 'rejected' }; } } else if (state.qualityStatus === 'fail') { console.log('🚪 [approval_gate] Quality assessment failed'); return { messages: [{ role: 'assistant', content: 'Quality assessment failed. Research results require significant improvements before approval consideration.' }], approvalStatus: 'rejected' }; } return { messages: [] };"
+            }
+        },
+        {
+            "id": "feedback_processor",
+            "function": {
+                "parameters": [
+                    {
+                        "name": "state",
+                        "type": "typeof AgentState.State"
+                    },
+                    {
+                        "name": "model",
+                        "type": "ModelConfig",
+                        "modelRef": "qualityModel"
+                    }
+                ],
+                "output": {
+                    "messages": "Message[]",
+                    "qualityStatus": "string",
+                    "approvalStatus": "string"
+                },
+                "implementation": "if (state.approvalStatus === 'rejected' && state.qualityStatus === 'pass') { console.log('🔄 [feedback_processor] Processing rejection feedback'); const feedbackPrompt = `Based on the quality assessment and rejection feedback, provide detailed revision recommendations: ${JSON.stringify(state.qualityAssessment, null, 2)}. Generate specific improvement actions for: 1. Data collection gaps 2. Analysis depth improvements 3. Source diversification needs 4. Presentation enhancements 5. Missing deliverable components. Format as actionable revision plan.`; const response = await model.invoke([...state.messages, { role: 'user', content: feedbackPrompt }]); return { messages: [response], qualityStatus: 'revision_needed', approvalStatus: 'pending' }; } return { messages: [{ role: 'assistant', content: 'No feedback processing required.' }] };"
+            }
+        }
+    ],
+    "edges": [
+        {
+            "from": "__start__",
+            "to": "result_receiver"
+        },
+        {
+            "from": "result_receiver",
+            "to": "quality_assessor"
+        },
+        {
+            "from": "quality_assessor",
+            "to": "approval_gate"
+        },
+        {
+            "type": "conditional",
+            "from": "approval_gate",
+            "condition": {
+                "name": "shouldContinue",
+                "function": {
+                    "parameters": [
+                        {
+                            "name": "state",
+                            "type": "typeof AgentState.State"
+                        }
+                    ],
+                    "output": "string",
+                    "implementation": "if (state.approvalStatus === 'approved') { console.log('🔀 [shouldContinue] Final approval granted, ending workflow'); return '__end__'; } if (state.approvalStatus === 'rejected' && state.qualityStatus === 'fail') { console.log('🔀 [shouldContinue] Quality failed and rejected, ending workflow'); return '__end__'; } if (state.approvalStatus === 'rejected' && state.qualityStatus === 'pass') { console.log('🔀 [shouldContinue] Quality passed but rejected, processing feedback'); return 'feedback_processor'; } console.log('🔀 [shouldContinue] Default to end'); return '__end__';",
+                    "possibleTargets": ["__end__", "feedback_processor"]
+                }
+            }
+        },
+        {
+            "type": "conditional",
+            "from": "feedback_processor",
+            "condition": {
+                "name": "shouldRetry",
+                "function": {
+                    "parameters": [
+                        {
+                            "name": "state",
+                            "type": "typeof AgentState.State"
+                        }
+                    ],
+                    "output": "string",
+                    "implementation": "if (state.qualityStatus === 'revision_needed') { console.log('🔀 [shouldRetry] Revisions needed, retrying quality assessment'); return 'quality_assessor'; } console.log('🔀 [shouldRetry] No retry needed, ending'); return '__end__';",
+                    "possibleTargets": ["quality_assessor", "__end__"]
+                }
+            }
+        }
+    ],
+    "stateGraph": {
+        "annotationRef": "AgentState",
+        "config": {
+            "checkpointer": {
+                "type": "MemorySaver"
+            }
+        }
+    }
+}
