@@ -6,19 +6,43 @@ This plan adds support for **A2A (Agent-to-Agent) Clients/Servers**, **ToolNode*
 
 ### Scope Analysis
 
-Based on the implementation requirements, this is a **large feature set** that has been split into **five sub-phases** to manage complexity and reduce context usage:
+Based on the implementation requirements, this is a **large feature set** that has been split into **six sub-phases** to manage complexity and reduce context usage:
 
-- **[Phase 9A](phase9/PHASE9A_A2A_CLIENT.md)**: Type definitions and A2A Client configuration (Foundation)
-- **[Phase 9B](phase9/PHASE9B_TOOLNODE_CONDITIONAL.md)**: ToolNode support and conditional edge enhancements (Node types)
-- **[Phase 9C](phase9/PHASE9C_MODEL_CONFIG.md)**: Model configuration enhancements (Model binding)
-- **[Phase 9D](phase9/PHASE9D_MCP_INTEGRATION.md)**: MCP Server integration (Future-ready)
-- **[Phase 9E](phase9/PHASE9E_UI_MANAGEMENT.md)**: UI for A2A/MCP management (Settings panel)
+- **[Phase 9A](phase9/PHASE9A_EDITABLE_PARAMS_OUTPUT.md)**: Editable node Parameters and Output (Foundation UI)
+- **[Phase 9B](phase9/PHASE9B_A2A_CLIENT.md)**: Type definitions and A2A Client configuration (Data structures)
+- **[Phase 9C](phase9/PHASE9C_TOOLNODE_CONDITIONAL.md)**: ToolNode support and conditional edge enhancements (Node types)
+- **[Phase 9D](phase9/PHASE9D_MODEL_CONFIG.md)**: Model configuration enhancements (Model binding)
+- **[Phase 9E](phase9/PHASE9E_MCP_INTEGRATION.md)**: MCP Server integration (Future-ready)
+- **[Phase 9F](phase9/PHASE9F_UI_MANAGEMENT.md)**: UI for A2A/MCP management (Settings panel)
 
 ---
 
 ## Sub-Phases Overview
 
-### [Phase 9A: Type Definitions and A2A Client Configuration](phase9/PHASE9A_A2A_CLIENT.md)
+### [Phase 9A: Editable Node Parameters and Output](phase9/PHASE9A_EDITABLE_PARAMS_OUTPUT.md)
+
+**Status**: ⬜ 未開始
+**Time**: 2-3 days
+**Complexity**: Medium
+**Priority**: ⭐ Foundation for all Phase 9 features
+
+Make node Parameters and Output editable in WorkflowNode component.
+
+**Key Tasks:**
+- Add validation functions for parameter names and output keys
+- Implement inline parameter editor with add/remove functionality
+- Implement inline output editor with add/remove functionality
+- Handle empty parameters/output cases gracefully
+- Match Implementation section UI/UX pattern
+
+**Benefits:**
+- Provides UI foundation for Phase 9B-9F
+- Enables modelRef field editing (needed for Phase 9B)
+- Consistent editing experience across all node properties
+
+---
+
+### [Phase 9B: Type Definitions and A2A Client Configuration](phase9/PHASE9B_A2A_CLIENT.md)
 
 **Status**: ⬜ 未開始
 **Time**: 2-3 days
@@ -32,9 +56,11 @@ Establish foundation types for A2A client configuration.
 - Implement JSON converters for A2A data
 - Add validation for A2A clients
 
+**Dependencies:** Phase 9A (parameter editor supports modelRef field)
+
 ---
 
-### [Phase 9B: ToolNode Support and Conditional Edge Enhancements](phase9/PHASE9B_TOOLNODE_CONDITIONAL.md)
+### [Phase 9C: ToolNode Support and Conditional Edge Enhancements](phase9/PHASE9C_TOOLNODE_CONDITIONAL.md)
 
 **Status**: ⬜ 未開始
 **Time**: 3-4 days
@@ -48,9 +74,11 @@ Add support for ToolNode type and enhanced conditional edges.
 - Create ToolNode visualization component
 - Update converters for ToolNode
 
+**Dependencies:** Phase 9A (editable parameters), Phase 9B (A2A client types)
+
 ---
 
-### [Phase 9C: Model Configuration Enhancements](phase9/PHASE9C_MODEL_CONFIG.md)
+### [Phase 9D: Model Configuration Enhancements](phase9/PHASE9D_MODEL_CONFIG.md)
 
 **Status**: ⬜ 未開始
 **Time**: 2-3 days
@@ -64,9 +92,11 @@ Extend model configuration to support A2A binding and system prompts.
 - Create Model Editor UI component
 - Add Models tab to settings panel
 
+**Dependencies:** Phase 9B (A2A client types)
+
 ---
 
-### [Phase 9D: MCP Server Integration](phase9/PHASE9D_MCP_INTEGRATION.md)
+### [Phase 9E: MCP Server Integration](phase9/PHASE9E_MCP_INTEGRATION.md)
 
 **Status**: ⬜ 未開始
 **Time**: 2-3 days
@@ -80,9 +110,11 @@ Add MCP server configuration support and model binding.
 - Create MCP Server Editor UI
 - Add MCP Servers tab to settings panel
 
+**Dependencies:** Phase 9B (A2A client pattern)
+
 ---
 
-### [Phase 9E: UI for A2A/MCP Management](phase9/PHASE9E_UI_MANAGEMENT.md)
+### [Phase 9F: UI for A2A/MCP Management](phase9/PHASE9F_UI_MANAGEMENT.md)
 
 **Status**: ⬜ 未開始
 **Time**: 3-4 days
@@ -96,17 +128,20 @@ Create comprehensive UI for managing all Phase 9 features.
 - Integrate all settings tabs
 - Complete end-to-end testing
 
+**Dependencies:** All previous Phase 9 sub-phases
+
 ---
 
 ## Estimated Total Time
 
-- **Phase 9A**: 2-3 days
-- **Phase 9B**: 3-4 days
-- **Phase 9C**: 2-3 days
-- **Phase 9D**: 2-3 days
-- **Phase 9E**: 3-4 days
+- **Phase 9A**: 2-3 days (Editable Parameters/Output)
+- **Phase 9B**: 2-3 days (A2A Client Configuration)
+- **Phase 9C**: 3-4 days (ToolNode & Conditional Edges)
+- **Phase 9D**: 2-3 days (Model Configuration)
+- **Phase 9E**: 2-3 days (MCP Server Integration)
+- **Phase 9F**: 3-4 days (UI Management)
 
-**Total**: 12-17 days (approximately 2-3 weeks)
+**Total**: 14-20 days (approximately 3-4 weeks)
 
 ---
 
@@ -114,13 +149,21 @@ Create comprehensive UI for managing all Phase 9 features.
 
 **Recommended sequence:**
 
-1. **Phase 9A** (Foundation) - Type definitions and basic A2A support
-2. **Phase 9B** (Node Types) - ToolNode and conditional edges
-3. **Phase 9C** (Model Binding) - Model configuration enhancements
-4. **Phase 9D** (MCP Integration) - MCP server support
-5. **Phase 9E** (UI Completion) - Comprehensive settings UI
+1. **Phase 9A** (Foundation UI) - Editable Parameters and Output
+2. **Phase 9B** (Data Structures) - Type definitions and basic A2A support
+3. **Phase 9C** (Node Types) - ToolNode and conditional edges
+4. **Phase 9D** (Model Binding) - Model configuration enhancements
+5. **Phase 9E** (MCP Integration) - MCP server support
+6. **Phase 9F** (UI Completion) - Comprehensive settings UI
 
 Each phase builds on the previous one and can be tested independently.
+
+**Why Phase 9A comes first:**
+- Provides consistent editing UI foundation
+- Enables modelRef field editing needed for Phase 9B
+- Establishes UI patterns that Phase 9F will follow
+- Can be implemented and tested independently
+- Low risk, high value foundation work
 
 ---
 

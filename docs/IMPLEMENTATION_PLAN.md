@@ -146,35 +146,43 @@ Ctrl+Sでの保存と確認ダイアログの実装
 
 エージェント間通信と高度なワークフロー機能の実装
 
-##### Phase 9A: 型定義とA2Aクライアント設定 ⬜
+##### Phase 9A: ノードParameters/Output編集機能 ⬜
+
+- Parameters編集UI実装（add/remove/modify）
+- Output編集UI実装（add/remove/modify）
+- パラメータ名/出力キーバリデーション
+- 空のparameters/outputケース対応
+- Implementation編集パターンと統一されたUI/UX
+
+##### Phase 9B: 型定義とA2Aクライアント設定 ⬜
 
 - A2AClientConfig型定義
 - WorkflowConfigへのa2aClients追加
 - JSON変換ロジック更新
 - A2Aクライアントバリデーション
 
-##### Phase 9B: ToolNodeサポートと条件付きエッジ強化 ⬜
+##### Phase 9C: ToolNodeサポートと条件付きエッジ強化 ⬜
 
 - ToolNode型実装
 - ConditionalEdgeCondition型定義
 - possibleTargets配列サポート
 - ToolNode UIコンポーネント
 
-##### Phase 9C: モデル設定の拡張 ⬜
+##### Phase 9D: モデル設定の拡張 ⬜
 
 - ModelConfig拡張（type、config、bindA2AClients、systemPrompt）
 - Modelsタブ追加
 - モデルエディタUI
 - モデルバリデーション
 
-##### Phase 9D: MCPサーバー統合 ⬜
+##### Phase 9E: MCPサーバー統合 ⬜
 
 - MCPServerConfig型定義
 - mcpServers設定サポート
 - MCPサーバーエディタUI
 - bindMcpServersサポート
 
-##### Phase 9E: A2A/MCP管理UI ⬜
+##### Phase 9F: A2A/MCP管理UI ⬜
 
 - A2Aクライアントエディタ
 - ノードバッジ表示（🔗 A2A、🔌 MCP、🛠️ ToolNode）
