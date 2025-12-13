@@ -143,3 +143,107 @@ export function validateFieldName(
 
   return { valid: true };
 }
+
+/**
+ * Validate parameter name
+ * @param name - The parameter name to validate
+ * @param existingParameters - Current list of parameters
+ * @param excludeIndex - Parameter index to exclude from uniqueness check (for editing existing parameter)
+ * @returns ValidationResult
+ */
+export function validateParameterName(
+  name: string,
+  existingParameters: Array<{ name: string }>,
+  excludeIndex?: number
+): ValidationResult {
+  // Empty check
+  if (!name || name.trim() === '') {
+    return {
+      valid: false,
+      error: 'パラメータ名を入力してください',
+    };
+  }
+
+  const trimmedName = name.trim();
+
+  // Valid JS identifier check
+  const jsIdentifierRegex = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/;
+  if (!jsIdentifierRegex.test(trimmedName)) {
+    return {
+      valid: false,
+      error: '有効なJavaScript識別子である必要があります（英字、数字、$、_ のみ使用可能）',
+    };
+  }
+
+  // Reserved keywords check
+  if (isReservedKeyword(trimmedName)) {
+    return {
+      valid: false,
+      error: `予約語 "${trimmedName}" は使用できません`,
+    };
+  }
+
+  // Uniqueness check
+  const duplicates = existingParameters.filter(
+    (p, i) => i !== excludeIndex && p.name === trimmedName
+  ).length;
+  if (duplicates > 0) {
+    return {
+      valid: false,
+      error: 'パラメータ名が重複しています',
+    };
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Validate output key
+ * @param key - The output key to validate
+ * @param existingOutput - Current output record
+ * @param excludeKey - Output key to exclude from uniqueness check (for editing existing key)
+ * @returns ValidationResult
+ */
+export function validateOutputKey(
+  key: string,
+  existingOutput: Record<string, string>,
+  excludeKey?: string
+): ValidationResult {
+  // Empty check
+  if (!key || key.trim() === '') {
+    return {
+      valid: false,
+      error: '出力キーを入力してください',
+    };
+  }
+
+  const trimmedKey = key.trim();
+
+  // Valid JS identifier check
+  const jsIdentifierRegex = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/;
+  if (!jsIdentifierRegex.test(trimmedKey)) {
+    return {
+      valid: false,
+      error: '有効なJavaScript識別子である必要があります（英字、数字、$、_ のみ使用可能）',
+    };
+  }
+
+  // Reserved keywords check
+  if (isReservedKeyword(trimmedKey)) {
+    return {
+      valid: false,
+      error: `予約語 "${trimmedKey}" は使用できません`,
+    };
+  }
+
+  // Uniqueness check
+  const keys = Object.keys(existingOutput).filter((k) => k !== excludeKey);
+  if (keys.includes(trimmedKey)) {
+    return {
+      valid: false,
+      error: '出力キーが重複しています',
+    };
+  }
+
+  return { valid: true };
+}
