@@ -142,6 +142,45 @@ Ctrl+Sでの保存と確認ダイアログの実装
 - モーダルフォームUI
 - JS識別子バリデーション
 
+#### [Phase 9: A2A Client/Server & 高度な機能](phases/PHASE9_A2A_MCP_ADVANCED.md) ⬜
+
+エージェント間通信と高度なワークフロー機能の実装
+
+##### Phase 9A: 型定義とA2Aクライアント設定 ⬜
+
+- A2AClientConfig型定義
+- WorkflowConfigへのa2aClients追加
+- JSON変換ロジック更新
+- A2Aクライアントバリデーション
+
+##### Phase 9B: ToolNodeサポートと条件付きエッジ強化 ⬜
+
+- ToolNode型実装
+- ConditionalEdgeCondition型定義
+- possibleTargets配列サポート
+- ToolNode UIコンポーネント
+
+##### Phase 9C: モデル設定の拡張 ⬜
+
+- ModelConfig拡張（type、config、bindA2AClients、systemPrompt）
+- Modelsタブ追加
+- モデルエディタUI
+- モデルバリデーション
+
+##### Phase 9D: MCPサーバー統合 ⬜
+
+- MCPServerConfig型定義
+- mcpServers設定サポート
+- MCPサーバーエディタUI
+- bindMcpServersサポート
+
+##### Phase 9E: A2A/MCP管理UI ⬜
+
+- A2Aクライアントエディタ
+- ノードバッジ表示（🔗 A2A、🔌 MCP、🛠️ ToolNode）
+- 設定パネル統合
+- 包括的なUI実装
+
 ## フェーズ実行方法
 
 各フェーズは独立して実装可能です。以下のコマンドで実装を開始してください:
