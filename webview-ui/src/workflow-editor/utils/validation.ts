@@ -1,4 +1,4 @@
-import { ReactFlowNode } from '../types/workflow.types';
+import { ReactFlowNode, A2AClientConfig } from '../types/workflow.types';
 
 export interface ValidationResult {
   valid: boolean;
@@ -242,6 +242,57 @@ export function validateOutputKey(
     return {
       valid: false,
       error: '出力キーが重複しています',
+    };
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Validate A2A Client configuration
+ * @param client - The A2A client configuration to validate
+ * @returns ValidationResult
+ */
+export function validateA2AClient(client: A2AClientConfig): ValidationResult {
+  // Check cardUrl exists
+  if (!client.cardUrl || client.cardUrl.trim() === '') {
+    return {
+      valid: false,
+      error: 'cardURLを入力してください',
+    };
+  }
+
+  // Check cardUrl is valid URL format
+  try {
+    const url = new URL(client.cardUrl);
+
+    // Check protocol is http or https
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      return {
+        valid: false,
+        error: 'cardURLは http または https で始まる必要があります',
+      };
+    }
+
+    // Check URL format matches agent.json pattern
+    if (!client.cardUrl.includes('agent.json')) {
+      return {
+        valid: false,
+        error: 'cardURLは agent.json エンドポイントを含む必要があります',
+      };
+    }
+  } catch (error) {
+    return {
+      valid: false,
+      error: '有効なURL形式ではありません',
+    };
+  }
+
+  // Check timeout is positive number
+  if (typeof client.timeout !== 'number' || client.timeout <= 0) {
+    return {
+      valid: false,
+      error: 'タイムアウトは正の数値である必要があります',
     };
   }
 

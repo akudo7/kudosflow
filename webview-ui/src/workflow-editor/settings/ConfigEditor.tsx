@@ -1,12 +1,8 @@
 import React from 'react';
+import { WorkflowConfigSettings } from '../types/workflow.types';
 
 interface Props {
-  config: {
-    recursionLimit?: number;
-    eventEmitter?: {
-      defaultMaxListeners?: number;
-    };
-  };
+  config?: WorkflowConfigSettings;
   onConfigChange: (config: any) => void;
 }
 
