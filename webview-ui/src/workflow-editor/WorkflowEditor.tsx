@@ -16,6 +16,7 @@ import { WorkflowConfig, ReactFlowNode, ReactFlowEdge } from './types/workflow.t
 import { jsonToFlow } from './converters/jsonToFlow';
 import { flowToJson } from './converters/flowToJson';
 import { WorkflowNode } from './WorkflowNode';
+import { ToolNode } from './ToolNode';
 import { WorkflowToolbar } from './WorkflowToolbar';
 import { SaveNotification } from './SaveNotification';
 import { ContextMenu } from './ContextMenu';
@@ -46,6 +47,7 @@ export const WorkflowEditor: React.FC = () => {
   // Define custom node types
   const nodeTypes = useMemo(() => ({
     workflowNode: WorkflowNode,
+    toolNode: ToolNode,
   }), []);
 
   // Handle node name change from inline editing
@@ -213,20 +215,37 @@ export const WorkflowEditor: React.FC = () => {
   }, []);
 
   // Add node
-  const handleAddNode = useCallback(() => {
-    const newNode: ReactFlowNode = {
-      id: `node_${Date.now()}`,
-      type: 'workflowNode',
-      position: { x: 250, y: 250 },
-      data: {
-        label: '新しいノード',
-        implementation: '// コードをここに書く\nreturn state;',
-        parameters: [{ name: 'state', type: 'any' }],
-        output: {},
-        onNodeNameChange: handleNodeNameChangeFromNode,
-      },
-    };
-    setNodes((nds) => [...nds, newNode]);
+  const handleAddNode = useCallback((nodeType: 'function' | 'tool') => {
+    if (nodeType === 'tool') {
+      // Create ToolNode
+      const newNode: ReactFlowNode = {
+        id: `tool_${Date.now()}`,
+        type: 'toolNode',
+        position: { x: 250, y: 250 },
+        data: {
+          label: '新しいToolNode',
+          nodeType: 'ToolNode',
+          useA2AClients: true,
+          onNodeNameChange: handleNodeNameChangeFromNode,
+        },
+      };
+      setNodes((nds) => [...nds, newNode]);
+    } else {
+      // Create Function Node
+      const newNode: ReactFlowNode = {
+        id: `node_${Date.now()}`,
+        type: 'workflowNode',
+        position: { x: 250, y: 250 },
+        data: {
+          label: '新しいノード',
+          implementation: '// コードをここに書く\nreturn state;',
+          parameters: [{ name: 'state', type: 'any' }],
+          output: {},
+          onNodeNameChange: handleNodeNameChangeFromNode,
+        },
+      };
+      setNodes((nds) => [...nds, newNode]);
+    }
     setIsDirty(true);
   }, [setNodes, handleNodeNameChangeFromNode]);
 
@@ -325,12 +344,19 @@ export const WorkflowEditor: React.FC = () => {
         }
       );
     } else {
-      // Canvas context menu
-      items.push({
-        label: 'ノード追加',
-        icon: '➕',
-        onClick: handleAddNode,
-      });
+      // Canvas context menu - Add submenu for node types
+      items.push(
+        {
+          label: 'Function Node追加',
+          icon: '⚙️',
+          onClick: () => handleAddNode('function'),
+        },
+        {
+          label: 'ToolNode追加',
+          icon: '🛠️',
+          onClick: () => handleAddNode('tool'),
+        }
+      );
     }
 
     return items;

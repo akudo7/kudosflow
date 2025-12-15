@@ -1,4 +1,4 @@
-import { ReactFlowNode, A2AClientConfig } from '../types/workflow.types';
+import { ReactFlowNode, A2AClientConfig, WorkflowNode, ConditionalEdgeCondition } from '../types/workflow.types';
 
 export interface ValidationResult {
   valid: boolean;
@@ -294,6 +294,122 @@ export function validateA2AClient(client: A2AClientConfig): ValidationResult {
       valid: false,
       error: 'タイムアウトは正の数値である必要があります',
     };
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Validate ToolNode configuration
+ * @param node - The ToolNode to validate
+ * @param workflowHasA2AClients - Whether the workflow has any A2A clients defined
+ * @returns ValidationResult
+ */
+export function validateToolNode(node: WorkflowNode, workflowHasA2AClients: boolean): ValidationResult {
+  // Check node type is ToolNode
+  if (node.type !== 'ToolNode') {
+    return {
+      valid: false,
+      error: 'ノードタイプが "ToolNode" ではありません',
+    };
+  }
+
+  // Check useA2AClients is boolean
+  if (node.useA2AClients !== undefined && typeof node.useA2AClients !== 'boolean') {
+    return {
+      valid: false,
+      error: 'useA2AClientsはboolean型である必要があります',
+    };
+  }
+
+  // ToolNode should not have function property
+  if (node.function) {
+    return {
+      valid: false,
+      error: 'ToolNodeはfunctionプロパティを持つことができません',
+    };
+  }
+
+  // Warn if useA2AClients is true but no A2A clients defined
+  if (node.useA2AClients && !workflowHasA2AClients) {
+    return {
+      valid: false,
+      error: 'useA2AClientsがtrueですが、ワークフローにA2Aクライアントが定義されていません',
+    };
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Validate ConditionalEdge configuration
+ * @param condition - The conditional edge condition to validate
+ * @param nodeIds - List of valid node IDs in the workflow (including __end__)
+ * @returns ValidationResult
+ */
+export function validateConditionalEdge(
+  condition: ConditionalEdgeCondition,
+  nodeIds: string[]
+): ValidationResult {
+  // Check condition name exists
+  if (!condition.name || condition.name.trim() === '') {
+    return {
+      valid: false,
+      error: '条件名を入力してください',
+    };
+  }
+
+  // Check condition.function exists
+  if (!condition.function) {
+    return {
+      valid: false,
+      error: '条件関数が定義されていません',
+    };
+  }
+
+  // Check function.parameters is array
+  if (!Array.isArray(condition.function.parameters)) {
+    return {
+      valid: false,
+      error: 'パラメータは配列である必要があります',
+    };
+  }
+
+  // Check function.output is string
+  if (typeof condition.function.output !== 'string') {
+    return {
+      valid: false,
+      error: '出力は文字列型である必要があります',
+    };
+  }
+
+  // Check function.implementation exists
+  if (!condition.function.implementation || condition.function.implementation.trim() === '') {
+    return {
+      valid: false,
+      error: '実装コードを入力してください',
+    };
+  }
+
+  // Validate possibleTargets if present
+  if (condition.possibleTargets) {
+    if (!Array.isArray(condition.possibleTargets)) {
+      return {
+        valid: false,
+        error: 'possibleTargetsは配列である必要があります',
+      };
+    }
+
+    // Check all targets are valid node IDs
+    const validNodeIds = [...nodeIds, '__end__'];
+    for (const target of condition.possibleTargets) {
+      if (!validNodeIds.includes(target)) {
+        return {
+          valid: false,
+          error: `無効なターゲット: "${target}" はワークフロー内に存在しません`,
+        };
+      }
+    }
   }
 
   return { valid: true };

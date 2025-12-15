@@ -29,15 +29,20 @@ export function jsonToFlow(workflow: WorkflowConfig): {
 
   // Convert workflow nodes to React Flow nodes
   workflow.nodes.forEach((node, index) => {
+    // Determine node type: ToolNode or regular workflowNode
+    const nodeType = node.type === 'ToolNode' ? 'toolNode' : 'workflowNode';
+
     nodes.push({
       id: node.id,
-      type: 'workflowNode', // Use custom WorkflowNode component
+      type: nodeType,
       position: {
         x: 100 + (index % 3) * 300, // Basic grid layout
         y: 150 + Math.floor(index / 3) * 200,
       },
       data: {
         label: node.id,
+        nodeType: node.type,
+        useA2AClients: node.useA2AClients,
         implementation: node.function?.implementation,
         parameters: node.function?.parameters,
         output: node.function?.output,
@@ -66,6 +71,12 @@ export function jsonToFlow(workflow: WorkflowConfig): {
         type: edge.type === 'conditional' ? 'smoothstep' : 'default',
         animated: edge.type === 'conditional',
         label: edge.condition ? 'conditional' : undefined,
+        data: edge.condition
+          ? {
+              condition: edge.condition,
+              possibleTargets: edge.condition.possibleTargets,
+            }
+          : undefined,
       });
     }
   });

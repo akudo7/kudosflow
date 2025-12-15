@@ -33,19 +33,32 @@ export interface WorkflowConfig {
 
 export interface WorkflowNode {
   id: string;
+  type?: string;  // "ToolNode" or undefined (function node)
+  useA2AClients?: boolean;  // For ToolNode
   function?: {
     parameters: Array<{ name: string; type: string; modelRef?: string }>;
-    output: Record<string, string>;
+    output: Record<string, string> | string;  // Can be string for conditional
     implementation: string;
   };
   ends?: string[];
+}
+
+// Conditional Edge Condition
+export interface ConditionalEdgeCondition {
+  name: string;
+  function: {
+    parameters: Array<{ name: string; type: string; modelRef?: string }>;
+    output: string;  // Target node ID
+    implementation: string;
+  };
+  possibleTargets?: string[];  // Possible target node IDs
 }
 
 export interface WorkflowEdge {
   from: string;
   to?: string;
   type?: 'conditional' | 'normal';
-  condition?: any;
+  condition?: ConditionalEdgeCondition;
 }
 
 export interface AnnotationField {
@@ -64,9 +77,11 @@ export interface ModelConfig {
 // React Flow types
 export interface CustomNodeData extends Record<string, unknown> {
   label: string;
+  nodeType?: string;  // "ToolNode" or undefined
+  useA2AClients?: boolean;  // For ToolNode
   implementation?: string;
   parameters?: Array<{ name: string; type: string; modelRef?: string }>;
-  output?: Record<string, string>;
+  output?: Record<string, string> | string;  // Can be string for conditional edges
   ends?: string[];
   onNodeNameChange?: (oldId: string, newId: string) => void;
 }

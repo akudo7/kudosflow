@@ -23,12 +23,25 @@ export function flowToJson(
       id: node.id,
     };
 
-    if (node.data.implementation !== undefined || node.data.parameters || node.data.output) {
-      workflowNode.function = {
-        parameters: node.data.parameters || [],
-        output: node.data.output || {},
-        implementation: node.data.implementation || '',
-      };
+    // Add node type if it's a ToolNode
+    if (node.data.nodeType) {
+      workflowNode.type = node.data.nodeType;
+    }
+
+    // Add useA2AClients flag if present
+    if (node.data.useA2AClients !== undefined) {
+      workflowNode.useA2AClients = node.data.useA2AClients;
+    }
+
+    // Only add function property if node is not a ToolNode
+    if (node.data.nodeType !== 'ToolNode') {
+      if (node.data.implementation !== undefined || node.data.parameters || node.data.output) {
+        workflowNode.function = {
+          parameters: node.data.parameters || [],
+          output: node.data.output || {},
+          implementation: node.data.implementation || '',
+        };
+      }
     }
 
     if (node.data.ends) {
@@ -47,6 +60,11 @@ export function flowToJson(
 
     if (edge.animated || edge.type === 'smoothstep') {
       workflowEdge.type = 'conditional';
+    }
+
+    // Preserve condition data including possibleTargets
+    if (edge.data?.condition) {
+      workflowEdge.condition = edge.data.condition as any;
     }
 
     workflowEdges.push(workflowEdge);
