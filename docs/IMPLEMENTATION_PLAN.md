@@ -154,7 +154,7 @@ Ctrl+Sでの保存と確認ダイアログの実装
 - 空のparameters/outputケース対応
 - Implementation編集パターンと統一されたUI/UX
 
-##### Phase 9B: 型定義とA2Aクライアント設定 ⬜
+##### Phase 9B: 型定義とA2Aクライアント設定 ☑
 
 - A2AClientConfig型定義
 - WorkflowConfigへのa2aClients追加

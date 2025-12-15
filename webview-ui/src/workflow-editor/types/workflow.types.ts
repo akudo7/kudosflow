@@ -1,8 +1,25 @@
 import { Node as FlowNode, Edge as FlowEdge } from '@xyflow/react';
 
+// A2A Client Configuration
+export interface A2AClientConfig {
+  cardUrl: string;      // Agent card endpoint URL
+  timeout: number;       // Request timeout in milliseconds
+  [key: string]: any;   // Allow additional properties
+}
+
+// Workflow Configuration Settings
+export interface WorkflowConfigSettings {
+  recursionLimit?: number;
+  eventEmitter?: {
+    defaultMaxListeners?: number;
+  };
+  [key: string]: any;
+}
+
 // SceneGraphManager types
 export interface WorkflowConfig {
-  config?: any;
+  config?: WorkflowConfigSettings;
+  a2aClients?: Record<string, A2AClientConfig>;
   stateAnnotation: {
     name: string;
     type: "Annotation.Root";

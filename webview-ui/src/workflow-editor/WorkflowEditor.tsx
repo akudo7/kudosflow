@@ -75,6 +75,14 @@ export const WorkflowEditor: React.FC = () => {
     setFilePath(path);
     setIsDirty(false);
 
+    // Log A2A clients for Phase 9B verification
+    if (config.a2aClients) {
+      console.log('[Phase 9B] A2A Clients loaded:', config.a2aClients);
+      console.log('[Phase 9B] A2A Client count:', Object.keys(config.a2aClients).length);
+    } else {
+      console.log('[Phase 9B] No A2A Clients in workflow');
+    }
+
     try {
       const { nodes: flowNodes, edges: flowEdges } = jsonToFlow(config);
       // Add onNodeNameChange callback to all nodes
@@ -171,6 +179,14 @@ export const WorkflowEditor: React.FC = () => {
 
     try {
       const updatedConfig = flowToJson(nodes, edges, workflowConfig);
+
+      // Log A2A clients for Phase 9B verification
+      if (updatedConfig.a2aClients) {
+        console.log('[Phase 9B] A2A Clients being saved:', updatedConfig.a2aClients);
+        console.log('[Phase 9B] A2A Client count:', Object.keys(updatedConfig.a2aClients).length);
+      } else {
+        console.log('[Phase 9B] No A2A Clients in saved workflow');
+      }
 
       if (typeof vscode !== 'undefined') {
         vscode.postMessage({
