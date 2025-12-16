@@ -168,7 +168,7 @@ Ctrl+Sでの保存と確認ダイアログの実装
 - possibleTargets配列サポート
 - ToolNode UIコンポーネント
 
-##### Phase 9D: モデル設定の拡張 ⬜
+##### Phase 9D: モデル設定の拡張 ☑
 
 - ModelConfig拡張（type、config、bindA2AClients、systemPrompt）
 - Modelsタブ追加

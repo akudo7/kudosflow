@@ -1,6 +1,6 @@
-# Phase 9C: Model Configuration Enhancements
+# Phase 9D: Model Configuration Enhancements
 
-**Status**: ⬜ 未開始
+**Status**: ☑ 完了
 **Estimated Time**: 2-3 days
 **Complexity**: Medium
 
@@ -112,21 +112,24 @@ webview-ui/src/workflow-editor/
 
 ## Implementation Tasks
 
-- [ ] Enhance `ModelConfig` interface with type, config, bindA2AClients, systemPrompt
-- [ ] Create `ModelEditor.tsx` component
+- [x] Enhance `ModelConfig` interface with type, config, bindA2AClients, systemPrompt
+- [x] Create `ModelEditor.tsx` component
   - Model list table
   - Add/Edit/Delete model functionality
-  - Model type dropdown (OpenAI, Anthropic, Ollama)
+  - Model type dropdown (OpenAI, Anthropic, Ollama, Custom)
   - Config fields editor
   - Bind checkboxes (A2A, MCP)
   - System prompt text area
-- [ ] Add "Models" tab to `WorkflowSettingsPanel.tsx`
-- [ ] Add `validateModelConfig()` in validation.ts
+- [x] Create `ModelFormModal.tsx` for add/edit forms
+- [x] Add "Models" tab to `WorkflowSettingsPanel.tsx`
+- [x] Add `validateModelConfig()` in validation.ts
   - Check ID uniqueness
   - Validate model type
   - Check config.model is not empty
-- [ ] Update converters to preserve model data
-- [ ] Test: Create, edit, delete models in UI
+  - Temperature range validation (0-2)
+  - A2A/MCP binding validation with existence checks
+- [x] Update converters to preserve model data (automatic via spread operator)
+- [x] Test: Create, edit, delete models in UI
 
 ## Validation Strategy
 
@@ -144,12 +147,13 @@ validateModelConfig(model: ModelConfig, a2aClients?, mcpServers?): ValidationRes
 
 ## Testing
 
-### Phase 9C Tests
+### Phase 9D Tests
 
-- [ ] Add model with bindA2AClients - verify saved
-- [ ] Edit model systemPrompt - verify saved
-- [ ] Delete model - verify removed from config
-- [ ] Model validation with missing A2A clients
+- [x] Add model with bindA2AClients - verify saved
+- [x] Edit model systemPrompt - verify saved
+- [x] Delete model - verify removed from config
+- [x] Model validation with missing A2A clients
+- [x] Build webview successfully
 
 ## Success Criteria
 
@@ -157,6 +161,9 @@ validateModelConfig(model: ModelConfig, a2aClients?, mcpServers?): ValidationRes
 - ✓ System prompts save/load
 - ✓ Model editor UI functional
 - ✓ Model validation prevents errors
+- ✓ Table-based UI with visual indicators
+- ✓ Full-featured modal form
+- ✓ Delete confirmation dialog
 
 ## Key Files Reference
 
