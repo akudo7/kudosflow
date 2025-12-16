@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { WorkflowConfig, ReactFlowNode, ReactFlowEdge, AnnotationField } from './types/workflow.types';
+import { WorkflowConfig, ReactFlowNode, ReactFlowEdge, AnnotationField, ModelConfig } from './types/workflow.types';
 import { NodeNameEditor } from './settings/NodeNameEditor';
 import { ConfigEditor } from './settings/ConfigEditor';
 import { StateAnnotationEditor } from './settings/StateAnnotationEditor';
 import { StateGraphEditor } from './settings/StateGraphEditor';
 import { AnnotationFieldsEditor } from './settings/AnnotationFieldsEditor';
+import { ModelEditor } from './settings/ModelEditor';
 
 interface Props {
   show: boolean;
@@ -17,7 +18,7 @@ interface Props {
   onUpdateEdges: (edges: ReactFlowEdge[]) => void;
 }
 
-type TabType = 'nodes' | 'settings' | 'stateGraph' | 'annotation';
+type TabType = 'nodes' | 'settings' | 'stateGraph' | 'annotation' | 'models';
 
 export const WorkflowSettingsPanel: React.FC<Props> = ({
   show,
@@ -69,6 +70,10 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
 
   const handleAnnotationChange = (annotation: Record<string, AnnotationField>) => {
     onUpdateConfig({ annotation });
+  };
+
+  const handleModelsChange = (models: ModelConfig[]) => {
+    onUpdateConfig({ models });
   };
 
   const panelStyle: React.CSSProperties = {
@@ -170,6 +175,12 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
         >
           Annotation
         </button>
+        <button
+          onClick={() => setActiveTab('models')}
+          style={getTabStyle(activeTab === 'models')}
+        >
+          Models
+        </button>
       </div>
 
       <div style={contentStyle}>
@@ -224,6 +235,17 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
           <AnnotationFieldsEditor
             annotation={workflowConfig.annotation}
             onAnnotationChange={handleAnnotationChange}
+          />
+        )}
+        {activeTab === 'models' && (
+          <ModelEditor
+            models={workflowConfig.models || []}
+            onModelsChange={handleModelsChange}
+            a2aClientsExist={
+              workflowConfig.a2aClients !== undefined &&
+              Object.keys(workflowConfig.a2aClients).length > 0
+            }
+            mcpServersExist={false}  // Phase 9E will add MCP support
           />
         )}
       </div>

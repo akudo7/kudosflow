@@ -69,9 +69,15 @@ export interface AnnotationField {
 
 export interface ModelConfig {
   id: string;
-  provider: string;
-  model: string;
-  [key: string]: any;
+  type: string;  // "OpenAI" | "Anthropic" | "Ollama" | etc.
+  config: {
+    model: string;
+    temperature?: number;
+    [key: string]: any;
+  };
+  bindA2AClients?: boolean;
+  bindMcpServers?: boolean;  // For Phase 9E (MCP Server integration)
+  systemPrompt?: string;
 }
 
 // React Flow types

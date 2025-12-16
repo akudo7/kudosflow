@@ -1,4 +1,4 @@
-import { ReactFlowNode, A2AClientConfig, WorkflowNode, ConditionalEdgeCondition } from '../types/workflow.types';
+import { ReactFlowNode, A2AClientConfig, WorkflowNode, ConditionalEdgeCondition, ModelConfig } from '../types/workflow.types';
 
 export interface ValidationResult {
   valid: boolean;
@@ -410,6 +410,85 @@ export function validateConditionalEdge(
         };
       }
     }
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Validate ModelConfig configuration
+ * @param model - The model configuration to validate
+ * @param a2aClientsExist - Whether the workflow has any A2A clients defined
+ * @param mcpServersExist - Whether the workflow has any MCP servers defined
+ * @returns ValidationResult
+ */
+export function validateModelConfig(
+  model: ModelConfig,
+  a2aClientsExist?: boolean,
+  mcpServersExist?: boolean
+): ValidationResult {
+  // Check model ID exists
+  if (!model.id || model.id.trim() === '') {
+    return {
+      valid: false,
+      error: 'モデルIDを入力してください',
+    };
+  }
+
+  // Check model type exists
+  if (!model.type || model.type.trim() === '') {
+    return {
+      valid: false,
+      error: 'モデルタイプを選択してください',
+    };
+  }
+
+  // Check config exists
+  if (!model.config) {
+    return {
+      valid: false,
+      error: 'モデル設定が必要です',
+    };
+  }
+
+  // Check config.model exists
+  if (!model.config.model || model.config.model.trim() === '') {
+    return {
+      valid: false,
+      error: 'モデル名を入力してください',
+    };
+  }
+
+  // Check temperature if provided
+  if (model.config.temperature !== undefined) {
+    if (typeof model.config.temperature !== 'number') {
+      return {
+        valid: false,
+        error: 'Temperatureは数値である必要があります',
+      };
+    }
+    if (model.config.temperature < 0 || model.config.temperature > 2) {
+      return {
+        valid: false,
+        error: 'Temperatureは0から2の範囲である必要があります',
+      };
+    }
+  }
+
+  // Warn if bindA2AClients is true but no A2A clients defined
+  if (model.bindA2AClients && a2aClientsExist === false) {
+    return {
+      valid: false,
+      error: 'bindA2AClientsがtrueですが、ワークフローにA2Aクライアントが定義されていません',
+    };
+  }
+
+  // Warn if bindMcpServers is true but no MCP servers defined
+  if (model.bindMcpServers && mcpServersExist === false) {
+    return {
+      valid: false,
+      error: 'bindMcpServersがtrueですが、ワークフローにMCPサーバーが定義されていません',
+    };
   }
 
   return { valid: true };
