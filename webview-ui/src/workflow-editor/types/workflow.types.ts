@@ -7,11 +7,27 @@ export interface A2AClientConfig {
   [key: string]: any;   // Allow additional properties
 }
 
+// MCP Server Configuration
+export interface MCPServerConfig {
+  transport: "stdio" | "sse";
+  command?: string;
+  args?: string[];
+  url?: string;  // For SSE transport
+  [key: string]: any;
+}
+
 // Workflow Configuration Settings
 export interface WorkflowConfigSettings {
   recursionLimit?: number;
   eventEmitter?: {
     defaultMaxListeners?: number;
+  };
+  mcpServers?: {
+    config?: {
+      throwOnLoadError?: boolean;
+      prefixToolNameWithServerName?: boolean;
+      additionalToolNamePrefix?: string;
+    };
   };
   [key: string]: any;
 }
@@ -20,6 +36,7 @@ export interface WorkflowConfigSettings {
 export interface WorkflowConfig {
   config?: WorkflowConfigSettings;
   a2aClients?: Record<string, A2AClientConfig>;
+  mcpServers?: Record<string, MCPServerConfig>;
   stateAnnotation: {
     name: string;
     type: "Annotation.Root";
