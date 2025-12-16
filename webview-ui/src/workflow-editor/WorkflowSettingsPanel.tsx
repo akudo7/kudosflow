@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { WorkflowConfig, ReactFlowNode, ReactFlowEdge, AnnotationField, ModelConfig } from './types/workflow.types';
+import { WorkflowConfig, ReactFlowNode, ReactFlowEdge, AnnotationField, ModelConfig, MCPServerConfig } from './types/workflow.types';
 import { NodeNameEditor } from './settings/NodeNameEditor';
 import { ConfigEditor } from './settings/ConfigEditor';
 import { StateAnnotationEditor } from './settings/StateAnnotationEditor';
 import { StateGraphEditor } from './settings/StateGraphEditor';
 import { AnnotationFieldsEditor } from './settings/AnnotationFieldsEditor';
 import { ModelEditor } from './settings/ModelEditor';
+import { MCPServerEditor } from './settings/MCPServerEditor';
 
 interface Props {
   show: boolean;
@@ -18,7 +19,7 @@ interface Props {
   onUpdateEdges: (edges: ReactFlowEdge[]) => void;
 }
 
-type TabType = 'nodes' | 'settings' | 'stateGraph' | 'annotation' | 'models';
+type TabType = 'nodes' | 'settings' | 'stateGraph' | 'annotation' | 'models' | 'mcpServers';
 
 export const WorkflowSettingsPanel: React.FC<Props> = ({
   show,
@@ -76,6 +77,10 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
     onUpdateConfig({ models });
   };
 
+  const handleMcpServersChange = (mcpServers: Record<string, MCPServerConfig>) => {
+    onUpdateConfig({ mcpServers });
+  };
+
   const panelStyle: React.CSSProperties = {
     position: 'absolute',
     top: 0,
@@ -123,7 +128,7 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
 
   const getTabStyle = (isActive: boolean): React.CSSProperties => ({
     flex: 1,
-    padding: '10px 16px',
+    padding: '10px 8px',
     background: isActive ? 'var(--vscode-tab-activeBackground)' : 'transparent',
     color: isActive
       ? 'var(--vscode-tab-activeForeground)'
@@ -131,8 +136,11 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
     border: 'none',
     borderBottom: isActive ? '2px solid var(--vscode-tab-activeBorder)' : 'none',
     cursor: 'pointer',
-    fontSize: '13px',
+    fontSize: '12px',
     fontFamily: 'var(--vscode-font-family)',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   });
 
   const contentStyle: React.CSSProperties = {
@@ -180,6 +188,12 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
           style={getTabStyle(activeTab === 'models')}
         >
           Models
+        </button>
+        <button
+          onClick={() => setActiveTab('mcpServers')}
+          style={getTabStyle(activeTab === 'mcpServers')}
+        >
+          MCP
         </button>
       </div>
 
@@ -245,8 +259,17 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
               workflowConfig.a2aClients !== undefined &&
               Object.keys(workflowConfig.a2aClients).length > 0
             }
-            mcpServersExist={false}  // Phase 9E will add MCP support
+            mcpServersExist={
+              workflowConfig.mcpServers !== undefined &&
+              Object.keys(workflowConfig.mcpServers).length > 0
+            }
             nodes={nodes}
+          />
+        )}
+        {activeTab === 'mcpServers' && (
+          <MCPServerEditor
+            mcpServers={workflowConfig.mcpServers || {}}
+            onMcpServersChange={handleMcpServersChange}
           />
         )}
       </div>

@@ -98,9 +98,10 @@ Extend model configuration to support A2A binding and system prompts.
 
 ### [Phase 9E: MCP Server Integration](phase9/PHASE9E_MCP_INTEGRATION.md)
 
-**Status**: ⬜ 未開始
+**Status**: ☑ 完了
 **Time**: 2-3 days
 **Complexity**: Medium
+**Completed**: 2025-12-16
 
 Add MCP server configuration support and model binding.
 

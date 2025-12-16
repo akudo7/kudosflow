@@ -1,4 +1,4 @@
-import { ReactFlowNode, A2AClientConfig, WorkflowNode, ConditionalEdgeCondition, ModelConfig } from '../types/workflow.types';
+import { ReactFlowNode, A2AClientConfig, WorkflowNode, ConditionalEdgeCondition, ModelConfig, MCPServerConfig } from '../types/workflow.types';
 
 export interface ValidationResult {
   valid: boolean;
@@ -92,6 +92,16 @@ const RESERVED_KEYWORDS = [
  */
 export function isReservedKeyword(name: string): boolean {
   return RESERVED_KEYWORDS.includes(name);
+}
+
+/**
+ * Check if a string is a valid JavaScript identifier
+ * @param name - The name to check
+ * @returns boolean
+ */
+export function isValidJSIdentifier(name: string): boolean {
+  const jsIdentifierRegex = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/;
+  return jsIdentifierRegex.test(name) && !isReservedKeyword(name);
 }
 
 /**
@@ -489,6 +499,68 @@ export function validateModelConfig(
       valid: false,
       error: 'bindMcpServersがtrueですが、ワークフローにMCPサーバーが定義されていません',
     };
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Validate MCP Server configuration
+ * @param server - The MCP server configuration to validate
+ * @returns ValidationResult
+ */
+export function validateMCPServer(server: MCPServerConfig): ValidationResult {
+  // Check transport is valid
+  if (!server.transport || (server.transport !== 'stdio' && server.transport !== 'sse')) {
+    return {
+      valid: false,
+      error: 'Transportは "stdio" または "sse" である必要があります',
+    };
+  }
+
+  // Validate based on transport type
+  if (server.transport === 'stdio') {
+    // Check command exists
+    if (!server.command || server.command.trim() === '') {
+      return {
+        valid: false,
+        error: 'Commandを入力してください',
+      };
+    }
+
+    // Check args is array if provided
+    if (server.args !== undefined && !Array.isArray(server.args)) {
+      return {
+        valid: false,
+        error: 'Argsは配列である必要があります',
+      };
+    }
+  } else if (server.transport === 'sse') {
+    // Check URL exists
+    if (!server.url || server.url.trim() === '') {
+      return {
+        valid: false,
+        error: 'URLを入力してください',
+      };
+    }
+
+    // Check URL is valid
+    try {
+      const url = new URL(server.url);
+
+      // Check protocol is http or https
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        return {
+          valid: false,
+          error: 'URLは http または https で始まる必要があります',
+        };
+      }
+    } catch (error) {
+      return {
+        valid: false,
+        error: '有効なURL形式ではありません',
+      };
+    }
   }
 
   return { valid: true };
