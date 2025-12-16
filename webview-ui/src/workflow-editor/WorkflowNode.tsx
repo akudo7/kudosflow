@@ -2,6 +2,7 @@ import React, { memo, useState, useCallback, useRef } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { CustomNodeData } from './types/workflow.types';
 import { validateParameterName, validateOutputKey } from './utils/validation';
+import { NodeBadges } from './settings/NodeBadges';
 
 export const WorkflowNode = memo(({ data, id }: NodeProps) => {
   const nodeData = data as CustomNodeData;
@@ -13,6 +14,31 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
   const [nameError, setNameError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
+
+  // Determine badges to display
+  const showToolNodeBadge = nodeData.nodeType === 'ToolNode';
+  const showA2ABadge = nodeData.useA2AClients === true;
+
+  // Check if any parameter uses a model with A2A or MCP binding
+  let hasModelWithA2A = false;
+  let hasModelWithMCP = false;
+
+  if (nodeData.parameters && nodeData.models) {
+    const modelRefs = nodeData.parameters
+      .map(p => p.modelRef)
+      .filter(ref => ref !== undefined && ref !== '');
+
+    modelRefs.forEach(modelRef => {
+      const model = nodeData.models?.find(m => m.id === modelRef);
+      if (model) {
+        if (model.bindA2AClients) hasModelWithA2A = true;
+        if (model.bindMcpServers) hasModelWithMCP = true;
+      }
+    });
+  }
+
+  const finalShowA2ABadge = showA2ABadge || hasModelWithA2A;
+  const finalShowMCPBadge = hasModelWithMCP;
 
   // Parameters editing state
   const [isEditingParams, setIsEditingParams] = useState(false);
@@ -301,18 +327,24 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
             )}
           </div>
         ) : (
-          <strong
-            style={{
-              fontSize: '14px',
-              color: '#4a9eff',
-              cursor: 'pointer',
-              flex: 1,
-            }}
-            onDoubleClick={handleNameDoubleClick}
-            title="ダブルクリックして名前を編集"
-          >
-            {nodeData.label}
-          </strong>
+          <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+            <strong
+              style={{
+                fontSize: '14px',
+                color: '#4a9eff',
+                cursor: 'pointer',
+              }}
+              onDoubleClick={handleNameDoubleClick}
+              title="ダブルクリックして名前を編集"
+            >
+              {nodeData.label}
+            </strong>
+            <NodeBadges
+              showToolNodeBadge={showToolNodeBadge}
+              showA2ABadge={finalShowA2ABadge}
+              showMCPBadge={finalShowMCPBadge}
+            />
+          </div>
         )}
         <button
           onClick={toggleExpand}

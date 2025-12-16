@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { WorkflowConfig, ReactFlowNode, ReactFlowEdge, AnnotationField, ModelConfig, MCPServerConfig } from './types/workflow.types';
+import { WorkflowConfig, ReactFlowNode, ReactFlowEdge, AnnotationField, ModelConfig, MCPServerConfig, A2AClientConfig } from './types/workflow.types';
 import { NodeNameEditor } from './settings/NodeNameEditor';
 import { ConfigEditor } from './settings/ConfigEditor';
 import { StateAnnotationEditor } from './settings/StateAnnotationEditor';
@@ -7,6 +7,7 @@ import { StateGraphEditor } from './settings/StateGraphEditor';
 import { AnnotationFieldsEditor } from './settings/AnnotationFieldsEditor';
 import { ModelEditor } from './settings/ModelEditor';
 import { MCPServerEditor } from './settings/MCPServerEditor';
+import { A2AClientEditor } from './settings/A2AClientEditor';
 
 interface Props {
   show: boolean;
@@ -19,7 +20,7 @@ interface Props {
   onUpdateEdges: (edges: ReactFlowEdge[]) => void;
 }
 
-type TabType = 'nodes' | 'settings' | 'stateGraph' | 'annotation' | 'models' | 'mcpServers';
+type TabType = 'nodes' | 'settings' | 'stateGraph' | 'annotation' | 'a2aClients' | 'models' | 'mcpServers';
 
 export const WorkflowSettingsPanel: React.FC<Props> = ({
   show,
@@ -79,6 +80,10 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
 
   const handleMcpServersChange = (mcpServers: Record<string, MCPServerConfig>) => {
     onUpdateConfig({ mcpServers });
+  };
+
+  const handleA2AClientsChange = (a2aClients: Record<string, A2AClientConfig>) => {
+    onUpdateConfig({ a2aClients });
   };
 
   const panelStyle: React.CSSProperties = {
@@ -184,6 +189,12 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
           Annotation
         </button>
         <button
+          onClick={() => setActiveTab('a2aClients')}
+          style={getTabStyle(activeTab === 'a2aClients')}
+        >
+          A2A
+        </button>
+        <button
           onClick={() => setActiveTab('models')}
           style={getTabStyle(activeTab === 'models')}
         >
@@ -249,6 +260,12 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
           <AnnotationFieldsEditor
             annotation={workflowConfig.annotation}
             onAnnotationChange={handleAnnotationChange}
+          />
+        )}
+        {activeTab === 'a2aClients' && (
+          <A2AClientEditor
+            a2aClients={workflowConfig.a2aClients || {}}
+            onA2AClientsChange={handleA2AClientsChange}
           />
         )}
         {activeTab === 'models' && (

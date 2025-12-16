@@ -1,6 +1,7 @@
 import React, { memo, useState, useCallback, useRef } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { CustomNodeData } from './types/workflow.types';
+import { NodeBadges } from './settings/NodeBadges';
 
 export const ToolNode = memo(({ data, id }: NodeProps) => {
   const nodeData = data as CustomNodeData;
@@ -8,6 +9,26 @@ export const ToolNode = memo(({ data, id }: NodeProps) => {
   const [nameValue, setNameValue] = useState(nodeData.label);
   const [nameError, setNameError] = useState<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
+
+  // Determine badges to display
+  const showToolNodeBadge = true; // Always show for ToolNode
+  const showA2ABadge = nodeData.useA2AClients === true;
+
+  // Check if any parameter uses a model with MCP binding
+  let hasModelWithMCP = false;
+
+  if (nodeData.parameters && nodeData.models) {
+    const modelRefs = nodeData.parameters
+      .map(p => p.modelRef)
+      .filter(ref => ref !== undefined && ref !== '');
+
+    modelRefs.forEach(modelRef => {
+      const model = nodeData.models?.find(m => m.id === modelRef);
+      if (model?.bindMcpServers) {
+        hasModelWithMCP = true;
+      }
+    });
+  }
 
   // Handle node name double-click
   const handleNameDoubleClick = useCallback(() => {
@@ -95,6 +116,11 @@ export const ToolNode = memo(({ data, id }: NodeProps) => {
           >
             ToolNode
           </span>
+          <NodeBadges
+            showToolNodeBadge={false}
+            showA2ABadge={showA2ABadge}
+            showMCPBadge={hasModelWithMCP}
+          />
         </div>
 
         {/* Node Name */}
