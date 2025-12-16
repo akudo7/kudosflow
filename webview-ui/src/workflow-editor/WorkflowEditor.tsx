@@ -87,11 +87,12 @@ export const WorkflowEditor: React.FC = () => {
 
     try {
       const { nodes: flowNodes, edges: flowEdges } = jsonToFlow(config);
-      // Add onNodeNameChange callback to all nodes
+      // Add onNodeNameChange callback and models to all nodes
       const nodesWithCallback = flowNodes.map(node => ({
         ...node,
         data: {
           ...node.data,
+          models: config.models || [],
           onNodeNameChange: handleNodeNameChangeFromNode,
         }
       }));

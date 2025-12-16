@@ -109,6 +109,18 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
     setParamsValue(updatedParams);
   }, [paramsValue]);
 
+  const handleParamModelRefChange = useCallback((index: number, newModelRef: string) => {
+    const updatedParams = [...paramsValue];
+    if (newModelRef === '') {
+      // Remove modelRef if empty string selected
+      const { modelRef, ...paramWithoutModelRef } = updatedParams[index];
+      updatedParams[index] = paramWithoutModelRef as { name: string; type: string; modelRef?: string };
+    } else {
+      updatedParams[index] = { ...updatedParams[index], modelRef: newModelRef };
+    }
+    setParamsValue(updatedParams);
+  }, [paramsValue]);
+
   const handleAddParam = useCallback(() => {
     setParamsValue([...paramsValue, { name: '', type: '' }]);
   }, [paramsValue]);
@@ -435,6 +447,35 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
                           }}
                         />
                       </div>
+                      {nodeData.models && nodeData.models.length > 0 && (
+                        <div style={{ marginTop: '4px' }}>
+                          <label style={{ fontSize: '10px', color: '#999', display: 'block', marginBottom: '2px' }}>
+                            Model Reference (Optional):
+                          </label>
+                          <select
+                            value={param.modelRef || ''}
+                            onChange={(e) => handleParamModelRefChange(index, e.target.value)}
+                            style={{
+                              width: '100%',
+                              padding: '4px',
+                              fontSize: '10px',
+                              fontFamily: 'var(--vscode-editor-font-family)',
+                              background: '#1a1a1a',
+                              color: '#d8dee9',
+                              border: '1px solid #555',
+                              borderRadius: '3px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            <option value="">None</option>
+                            {nodeData.models.map((model) => (
+                              <option key={model.id} value={model.id}>
+                                {model.id} ({model.config.model})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
                     </div>
                   ))
                 )}
@@ -495,6 +536,11 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
                   nodeData.parameters.map((param, index) => (
                     <div key={index} style={{ marginBottom: '4px' }}>
                       {index + 1}. {param.name}: {param.type}
+                      {param.modelRef && (
+                        <span style={{ color: '#88c0d0', marginLeft: '8px', fontSize: '9px' }}>
+                          [Model: {param.modelRef}]
+                        </span>
+                      )}
                     </div>
                   ))
                 )}

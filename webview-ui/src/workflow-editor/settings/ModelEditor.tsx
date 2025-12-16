@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ModelConfig } from '../types/workflow.types';
+import { ModelConfig, ReactFlowNode } from '../types/workflow.types';
 import { ModelFormModal } from './ModelFormModal';
 
 interface Props {
@@ -7,6 +7,7 @@ interface Props {
   onModelsChange: (models: ModelConfig[]) => void;
   a2aClientsExist?: boolean;
   mcpServersExist?: boolean;
+  nodes?: ReactFlowNode[];  // For checking modelRef usage
 }
 
 export const ModelEditor: React.FC<Props> = ({
@@ -14,6 +15,7 @@ export const ModelEditor: React.FC<Props> = ({
   onModelsChange,
   a2aClientsExist = false,
   mcpServersExist = false,
+  nodes = [],
 }) => {
   const [showForm, setShowForm] = useState(false);
   const [editingModelId, setEditingModelId] = useState<string | null>(null);
@@ -30,6 +32,19 @@ export const ModelEditor: React.FC<Props> = ({
   };
 
   const handleDeleteModel = (modelId: string) => {
+    // Check if model is referenced by any node parameters
+    const referencingNodes = nodes.filter((node) =>
+      node.data.parameters?.some((p) => p.modelRef === modelId)
+    );
+
+    if (referencingNodes.length > 0) {
+      const nodeNames = referencingNodes.map((n) => n.data.label).join(', ');
+      alert(
+        `モデル "${modelId}" は以下のノードで参照されています:\n${nodeNames}\n\n先にノードのパラメータから参照を削除してください。`
+      );
+      return;
+    }
+
     setDeletingModelId(modelId);
   };
 

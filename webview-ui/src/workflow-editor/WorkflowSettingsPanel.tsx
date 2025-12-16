@@ -246,6 +246,7 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
               Object.keys(workflowConfig.a2aClients).length > 0
             }
             mcpServersExist={false}  // Phase 9E will add MCP support
+            nodes={nodes}
           />
         )}
       </div>

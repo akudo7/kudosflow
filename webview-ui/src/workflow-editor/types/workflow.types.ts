@@ -89,6 +89,7 @@ export interface CustomNodeData extends Record<string, unknown> {
   parameters?: Array<{ name: string; type: string; modelRef?: string }>;
   output?: Record<string, string> | string;  // Can be string for conditional edges
   ends?: string[];
+  models?: ModelConfig[];  // Available models for modelRef dropdown
   onNodeNameChange?: (oldId: string, newId: string) => void;
 }
 
