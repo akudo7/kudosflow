@@ -62,6 +62,7 @@
     "lint": "eslint src --ext ts"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/mocha": "^10.0.9",
     "@types/node": "20.x",
     "@types/vscode": "^1.96.0",
@@ -77,8 +78,11 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "@a2a-js/sdk": "^0.3.6",
+    "@kudos/scene-graph-manager": "file:/Users/akirakudo/Desktop/MyWork/CLI/kudos-cli/src/SceneGraphManager",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
     "lodash": "^4.17.21",
-    "moment": "^2.30.1",
-    "@kudos/scene-graph-manager": "file:/Users/akirakudo/Desktop/MyWork/CLI/kudos-cli/src/SceneGraphManager"
+    "moment": "^2.30.1"
   }
 }

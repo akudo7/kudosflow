@@ -118,3 +118,28 @@ export interface ValidationResult {
   valid: boolean;
   error?: string;
 }
+
+// Server types (Phase 10A)
+export enum ServerState {
+  IDLE = 'idle',
+  STARTING = 'starting',
+  RUNNING = 'running',
+  STOPPING = 'stopping',
+  STOPPED = 'stopped',
+  ERROR = 'error'
+}
+
+export interface ServerEndpoints {
+  agentCard: string;      // http://localhost:3000/.well-known/agent.json
+  messageSend: string;    // http://localhost:3000/message/send
+  tasks: string;          // http://localhost:3000/tasks
+}
+
+export interface ServerStatus {
+  state: ServerState;
+  port?: number;
+  pid?: number;
+  endpoints?: ServerEndpoints;
+  error?: string;
+  startTime?: Date;
+}

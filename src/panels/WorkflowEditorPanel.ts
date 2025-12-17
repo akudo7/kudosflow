@@ -9,6 +9,7 @@ import {
 } from "vscode";
 import { getUri } from "../utilities/getUri";
 import { getNonce } from "../utilities/getNonce";
+import { A2AServerLauncher } from "../execution/A2AServerLauncher";
 
 /**
  * This class manages the state and behavior of WorkflowEditor webview panels.
@@ -25,10 +26,18 @@ export class WorkflowEditorPanel {
   private readonly _panel: WebviewPanel;
   private _disposables: Disposable[] = [];
   private _filePath: string;
+  private _serverLauncher: A2AServerLauncher;
 
   private constructor(panel: WebviewPanel, extensionUri: Uri, filePath: string) {
     this._panel = panel;
     this._filePath = filePath;
+    this._serverLauncher = new A2AServerLauncher();
+
+    // Listen to server status changes
+    this._serverLauncher.onStatusChange(() => {
+      console.log('[WorkflowEditorPanel] Server status changed, sending update to webview');
+      this._sendServerStatus();
+    });
 
     // Set an event listener to listen for when the panel is disposed
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
@@ -91,6 +100,14 @@ export class WorkflowEditorPanel {
   public dispose() {
     WorkflowEditorPanel.currentPanel = undefined;
 
+    // Stop server if running
+    if (this._serverLauncher.isServerRunning()) {
+      this._serverLauncher.stopServer().catch(console.error);
+    }
+
+    // Dispose of server launcher
+    this._serverLauncher.dispose();
+
     // Dispose of the current webview panel
     this._panel.dispose();
 
@@ -142,6 +159,18 @@ export class WorkflowEditorPanel {
           case "error":
             window.showErrorMessage(message.message || "An error occurred");
             break;
+          case "startA2AServer":
+            await this._startA2AServer(message.filePath, message.port);
+            break;
+          case "stopA2AServer":
+            await this._stopA2AServer();
+            break;
+          case "getServerStatus":
+            this._sendServerStatus();
+            break;
+          case "restartServer":
+            await this._restartServer();
+            break;
         }
       },
       undefined,
@@ -177,6 +206,71 @@ export class WorkflowEditorPanel {
         window.showErrorMessage(`保存に失敗しました: ${error}`);
       }
     }
+  }
+
+  /**
+   * Start A2A server for the workflow
+   */
+  private async _startA2AServer(filePath: string, port?: number): Promise<void> {
+    try {
+      const serverPort = port || 3000;
+      await this._serverLauncher.launchServer(filePath, serverPort);
+      this._sendServerStatus();
+      window.showInformationMessage(
+        `A2A Server started on port ${serverPort}`
+      );
+    } catch (error: any) {
+      this._panel.webview.postMessage({
+        command: "serverError",
+        error: error.message,
+      });
+      window.showErrorMessage(`Failed to start server: ${error.message}`);
+    }
+  }
+
+  /**
+   * Stop A2A server
+   */
+  private async _stopA2AServer(): Promise<void> {
+    try {
+      await this._serverLauncher.stopServer();
+      this._sendServerStatus();
+      window.showInformationMessage("A2A Server stopped");
+    } catch (error: any) {
+      this._panel.webview.postMessage({
+        command: "serverError",
+        error: error.message,
+      });
+      window.showErrorMessage(`Failed to stop server: ${error.message}`);
+    }
+  }
+
+  /**
+   * Restart A2A server
+   */
+  private async _restartServer(): Promise<void> {
+    try {
+      await this._serverLauncher.restartServer();
+      this._sendServerStatus();
+      window.showInformationMessage("A2A Server restarted");
+    } catch (error: any) {
+      this._panel.webview.postMessage({
+        command: "serverError",
+        error: error.message,
+      });
+      window.showErrorMessage(`Failed to restart server: ${error.message}`);
+    }
+  }
+
+  /**
+   * Send server status to webview
+   */
+  private _sendServerStatus(): void {
+    const status = this._serverLauncher.getServerStatus();
+    this._panel.webview.postMessage({
+      command: "serverStatus",
+      status,
+    });
   }
 
   /**

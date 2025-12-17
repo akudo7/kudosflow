@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { ServerStatus, ServerState } from './types/workflow.types';
 
 interface Props {
   onSave: () => void;
@@ -8,6 +9,10 @@ interface Props {
   onToggleSettings: () => void;
   isDirty: boolean;
   hasSelection: boolean;
+  serverStatus: ServerStatus;
+  onStartServer: () => void;
+  onStopServer: () => void;
+  onRestartServer: () => void;
 }
 
 export const WorkflowToolbar: React.FC<Props> = ({
@@ -17,10 +22,16 @@ export const WorkflowToolbar: React.FC<Props> = ({
   onDuplicateSelected,
   onToggleSettings,
   isDirty,
-  hasSelection
+  hasSelection,
+  serverStatus,
+  onStartServer,
+  onStopServer,
+  onRestartServer
 }) => {
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [showServerMenu, setShowServerMenu] = useState(false);
   const addMenuRef = useRef<HTMLDivElement>(null);
+  const serverMenuRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -28,13 +39,16 @@ export const WorkflowToolbar: React.FC<Props> = ({
       if (addMenuRef.current && !addMenuRef.current.contains(event.target as Node)) {
         setShowAddMenu(false);
       }
+      if (serverMenuRef.current && !serverMenuRef.current.contains(event.target as Node)) {
+        setShowServerMenu(false);
+      }
     };
 
-    if (showAddMenu) {
+    if (showAddMenu || showServerMenu) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [showAddMenu]);
+  }, [showAddMenu, showServerMenu]);
 
   const buttonStyle = (enabled: boolean) => ({
     background: enabled ? 'var(--vscode-button-background)' : 'var(--vscode-button-secondaryBackground)',
@@ -182,6 +196,160 @@ export const WorkflowToolbar: React.FC<Props> = ({
       >
         ⚙️ 設定
       </button>
+
+      {/* Server Control Section (Phase 10A) */}
+      <div style={{ width: '1px', height: '24px', background: 'var(--vscode-widget-border)' }} />
+      {serverStatus.state === ServerState.IDLE && (
+        <button
+          onClick={onStartServer}
+          style={buttonStyle(true)}
+          title="A2A サーバーを起動"
+        >
+          ▶️ サーバー起動
+        </button>
+      )}
+      {serverStatus.state === ServerState.STARTING && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 12px',
+            fontSize: '13px',
+            color: 'var(--vscode-foreground)',
+          }}
+        >
+          <span>⏳</span>
+          <span>起動中...</span>
+        </div>
+      )}
+      {serverStatus.state === ServerState.RUNNING && (
+        <>
+          <div style={{ position: 'relative' }} ref={serverMenuRef}>
+            <button
+              onClick={() => setShowServerMenu(!showServerMenu)}
+              style={{
+                ...buttonStyle(true),
+                background: 'transparent',
+                border: '1px solid var(--vscode-widget-border)',
+                position: 'relative',
+              }}
+              title={`サーバー情報を表示 (Port ${serverStatus.port || 3000})`}
+            >
+              <span
+                style={{
+                  display: 'inline-block',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: '#4ec9b0',
+                  animation: 'pulse 2s ease-in-out infinite',
+                }}
+              />
+              実行中
+            </button>
+            {showServerMenu && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  marginTop: '4px',
+                  background: 'var(--vscode-dropdown-background)',
+                  border: '1px solid var(--vscode-widget-border)',
+                  borderRadius: '4px',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
+                  overflow: 'hidden',
+                  minWidth: '280px',
+                  zIndex: 100,
+                }}
+              >
+                <div
+                  style={{
+                    padding: '12px 16px',
+                    fontSize: '12px',
+                    color: 'var(--vscode-descriptionForeground)',
+                  }}
+                >
+                  <div style={{ marginBottom: '8px', fontWeight: 'bold', color: 'var(--vscode-foreground)' }}>
+                    サーバー情報
+                  </div>
+                  <div style={{ marginBottom: '4px' }}>
+                    ポート: {serverStatus.port || 3000}
+                  </div>
+                  {serverStatus.endpoints && (
+                    <div style={{ marginTop: '8px', fontSize: '11px' }}>
+                      <div>エンドポイント:</div>
+                      <div
+                        style={{
+                          marginTop: '4px',
+                          padding: '6px',
+                          background: 'var(--vscode-textCodeBlock-background)',
+                          borderRadius: '3px',
+                          fontFamily: 'monospace',
+                          wordBreak: 'break-all',
+                        }}
+                      >
+                        <div>Agent Card:</div>
+                        <div style={{ color: 'var(--vscode-textLink-foreground)' }}>
+                          {serverStatus.endpoints.agentCard}
+                        </div>
+                        <div style={{ marginTop: '4px' }}>Message Send:</div>
+                        <div style={{ color: 'var(--vscode-textLink-foreground)' }}>
+                          {serverStatus.endpoints.messageSend}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={onRestartServer}
+            style={buttonStyle(true)}
+            title="サーバーを再起動"
+          >
+            🔄 再起動
+          </button>
+          <button
+            onClick={onStopServer}
+            style={{
+              ...buttonStyle(true),
+              background: 'var(--vscode-button-secondaryBackground)',
+              color: 'var(--vscode-button-secondaryForeground)',
+            }}
+            title="サーバーを停止"
+          >
+            ⏹️ 停止
+          </button>
+        </>
+      )}
+      {serverStatus.state === ServerState.ERROR && (
+        <>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 12px',
+              fontSize: '13px',
+              color: 'var(--vscode-errorForeground)',
+            }}
+          >
+            <span>❌</span>
+            <span>サーバーエラー</span>
+          </div>
+          <button
+            onClick={onStartServer}
+            style={buttonStyle(true)}
+            title="サーバーを再起動"
+          >
+            🔄 再起動
+          </button>
+        </>
+      )}
+
       <button
         onClick={onSave}
         disabled={!isDirty}

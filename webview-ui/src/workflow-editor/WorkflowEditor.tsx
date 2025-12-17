@@ -12,7 +12,7 @@ import {
   EdgeChange,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { WorkflowConfig, ReactFlowNode, ReactFlowEdge } from './types/workflow.types';
+import { WorkflowConfig, ReactFlowNode, ReactFlowEdge, ServerStatus, ServerState } from './types/workflow.types';
 import { jsonToFlow } from './converters/jsonToFlow';
 import { flowToJson } from './converters/flowToJson';
 import { WorkflowNode } from './WorkflowNode';
@@ -43,6 +43,11 @@ export const WorkflowEditor: React.FC = () => {
     nodeId?: string;
   } | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+
+  // Server state (Phase 10A)
+  const [serverStatus, setServerStatus] = useState<ServerStatus>({
+    state: ServerState.IDLE
+  });
 
   // Define custom node types
   const nodeTypes = useMemo(() => ({
@@ -127,6 +132,15 @@ export const WorkflowEditor: React.FC = () => {
         case 'saveError':
           setNotification({
             message: `保存に失敗しました: ${message.error}`,
+            type: 'error',
+          });
+          break;
+        case 'serverStatus':
+          setServerStatus(message.status);
+          break;
+        case 'serverError':
+          setNotification({
+            message: `Server error: ${message.error}`,
             type: 'error',
           });
           break;
@@ -390,6 +404,41 @@ export const WorkflowEditor: React.FC = () => {
     [setEdges]
   );
 
+  // Server control handlers (Phase 10A)
+  const handleStartServer = useCallback(() => {
+    if (!filePath) {
+      setNotification({
+        message: 'No workflow file loaded',
+        type: 'error',
+      });
+      return;
+    }
+
+    if (typeof vscode !== 'undefined') {
+      vscode.postMessage({
+        command: 'startA2AServer',
+        filePath,
+        port: 3000,
+      });
+    }
+  }, [filePath]);
+
+  const handleStopServer = useCallback(() => {
+    if (typeof vscode !== 'undefined') {
+      vscode.postMessage({
+        command: 'stopA2AServer',
+      });
+    }
+  }, []);
+
+  const handleRestartServer = useCallback(() => {
+    if (typeof vscode !== 'undefined') {
+      vscode.postMessage({
+        command: 'restartServer',
+      });
+    }
+  }, []);
+
   // Ctrl+S handling and Delete key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -423,6 +472,10 @@ export const WorkflowEditor: React.FC = () => {
         onToggleSettings={() => setShowSettings(!showSettings)}
         isDirty={isDirty}
         hasSelection={selectedNodes.length > 0 || selectedEdges.length > 0}
+        serverStatus={serverStatus}
+        onStartServer={handleStartServer}
+        onStopServer={handleStopServer}
+        onRestartServer={handleRestartServer}
       />
       <ReactFlow
         nodes={nodes}
