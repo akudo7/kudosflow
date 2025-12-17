@@ -19,6 +19,7 @@
     "@tabler/icons-react": "^3.29.0",
     "@types/lodash": "^4.17.15",
     "@xyflow/react": "^12.10.0",
+    "date-fns": "^4.1.0",
     "html-react-parser": "^5.2.2",
     "lodash": "^4.17.21",
     "monaco-editor": "^0.55.1",
@@ -26,11 +27,13 @@
     "react-dom": "^18.2.0",
     "react-perfect-scrollbar": "^1.5.8",
     "react-redux": "^9.2.0",
-    "reactflow": "^11.11.4"
+    "reactflow": "^11.11.4",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
+    "@types/uuid": "^11.0.0",
     "@types/vscode-webview": "^1.57.5",
     "@vitejs/plugin-react": "^4.2.1",
     "typescript": "^5.4.2",

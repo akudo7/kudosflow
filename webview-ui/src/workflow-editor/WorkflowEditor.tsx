@@ -12,7 +12,9 @@ import {
   EdgeChange,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { v4 as uuidv4 } from 'uuid';
 import { WorkflowConfig, ReactFlowNode, ReactFlowEdge, ServerStatus, ServerState } from './types/workflow.types';
+import { ChatMessage } from './types/chat.types';
 import { jsonToFlow } from './converters/jsonToFlow';
 import { flowToJson } from './converters/flowToJson';
 import { WorkflowNode } from './WorkflowNode';
@@ -21,6 +23,7 @@ import { WorkflowToolbar } from './WorkflowToolbar';
 import { SaveNotification } from './SaveNotification';
 import { ContextMenu } from './ContextMenu';
 import { WorkflowSettingsPanel } from './WorkflowSettingsPanel';
+import { ChatPanel } from './ChatPanel';
 
 // VSCode API
 declare const vscode: any;
@@ -48,6 +51,15 @@ export const WorkflowEditor: React.FC = () => {
   const [serverStatus, setServerStatus] = useState<ServerStatus>({
     state: ServerState.IDLE
   });
+
+  // Chat state (Phase 10B)
+  const [showChat, setShowChat] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [isExecuting, setIsExecuting] = useState(false);
+  const [isWaitingForInterrupt, setIsWaitingForInterrupt] = useState(false);
+  const [interruptMessage, setInterruptMessage] = useState('');
+  const [sessionId] = useState(() => uuidv4());
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Define custom node types
   const nodeTypes = useMemo(() => ({
@@ -144,6 +156,44 @@ export const WorkflowEditor: React.FC = () => {
             type: 'error',
           });
           break;
+
+        // Chat execution messages (Phase 10B)
+        case 'executionMessage':
+          const newMessage: ChatMessage = {
+            id: uuidv4(),
+            role: message.role,
+            content: message.content,
+            timestamp: new Date()
+          };
+          setChatMessages(prev => [...prev, newMessage]);
+
+          // Increment unread if chat is closed
+          if (!showChat) {
+            setUnreadCount(prev => prev + 1);
+          }
+          break;
+
+        case 'interruptRequired':
+          setIsWaitingForInterrupt(true);
+          setInterruptMessage(message.message);
+          setIsExecuting(false);
+          break;
+
+        case 'executionComplete':
+          setIsExecuting(false);
+          setIsWaitingForInterrupt(false);
+          break;
+
+        case 'executionError':
+          setIsExecuting(false);
+          const errorMessage: ChatMessage = {
+            id: uuidv4(),
+            role: 'system',
+            content: `Error: ${message.error}`,
+            timestamp: new Date()
+          };
+          setChatMessages(prev => [...prev, errorMessage]);
+          break;
       }
     };
 
@@ -155,7 +205,7 @@ export const WorkflowEditor: React.FC = () => {
     }
 
     return () => window.removeEventListener('message', handleMessage);
-  }, [loadWorkflow]);
+  }, [loadWorkflow, showChat]);
 
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -404,6 +454,57 @@ export const WorkflowEditor: React.FC = () => {
     [setEdges]
   );
 
+  // Chat handlers (Phase 10B)
+  const handleToggleChat = useCallback(() => {
+    setShowChat(!showChat);
+    if (!showChat) {
+      setUnreadCount(0); // Clear unread when opening
+    }
+  }, [showChat]);
+
+  const handleSendMessage = useCallback((message: string) => {
+    // Add user message to UI
+    const userMessage: ChatMessage = {
+      id: uuidv4(),
+      role: 'user',
+      content: message,
+      timestamp: new Date()
+    };
+    setChatMessages(prev => [...prev, userMessage]);
+
+    // Send to extension
+    if (isWaitingForInterrupt) {
+      // Resume workflow with user input
+      if (typeof vscode !== 'undefined') {
+        vscode.postMessage({
+          command: 'resumeWorkflow',
+          input: message,
+          sessionId
+        });
+      }
+    } else {
+      // Start new execution
+      if (typeof vscode !== 'undefined') {
+        vscode.postMessage({
+          command: 'executeWorkflow',
+          input: message,
+          sessionId,
+          filePath
+        });
+      }
+    }
+
+    setIsExecuting(true);
+  }, [isWaitingForInterrupt, sessionId, filePath]);
+
+  const handleClearChat = useCallback(() => {
+    setChatMessages([]);
+    setIsExecuting(false);
+    setIsWaitingForInterrupt(false);
+    setInterruptMessage('');
+    setUnreadCount(0);
+  }, []);
+
   // Server control handlers (Phase 10A)
   const handleStartServer = useCallback(() => {
     if (!filePath) {
@@ -470,12 +571,15 @@ export const WorkflowEditor: React.FC = () => {
         onDeleteSelected={handleDeleteSelected}
         onDuplicateSelected={handleDuplicateSelected}
         onToggleSettings={() => setShowSettings(!showSettings)}
+        onToggleChat={handleToggleChat}
         isDirty={isDirty}
         hasSelection={selectedNodes.length > 0 || selectedEdges.length > 0}
         serverStatus={serverStatus}
         onStartServer={handleStartServer}
         onStopServer={handleStopServer}
         onRestartServer={handleRestartServer}
+        showChat={showChat}
+        unreadCount={unreadCount}
       />
       <ReactFlow
         nodes={nodes}
@@ -520,6 +624,17 @@ export const WorkflowEditor: React.FC = () => {
           onUpdateEdges={handleUpdateEdges}
         />
       )}
+      <ChatPanel
+        open={showChat}
+        onClose={() => setShowChat(false)}
+        workflowPath={filePath}
+        messages={chatMessages}
+        onSendMessage={handleSendMessage}
+        isExecuting={isExecuting}
+        isWaitingForInterrupt={isWaitingForInterrupt}
+        interruptMessage={interruptMessage}
+        onClearChat={handleClearChat}
+      />
     </div>
   );
 };
