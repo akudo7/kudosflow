@@ -7,12 +7,15 @@ interface Props {
   onDeleteSelected: () => void;
   onDuplicateSelected: () => void;
   onToggleSettings: () => void;
+  onToggleChat: () => void;
   isDirty: boolean;
   hasSelection: boolean;
   serverStatus: ServerStatus;
   onStartServer: () => void;
   onStopServer: () => void;
   onRestartServer: () => void;
+  showChat: boolean;
+  unreadCount: number;
 }
 
 export const WorkflowToolbar: React.FC<Props> = ({
@@ -21,12 +24,15 @@ export const WorkflowToolbar: React.FC<Props> = ({
   onDeleteSelected,
   onDuplicateSelected,
   onToggleSettings,
+  onToggleChat,
   isDirty,
   hasSelection,
   serverStatus,
   onStartServer,
   onStopServer,
-  onRestartServer
+  onRestartServer,
+  showChat,
+  unreadCount
 }) => {
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [showServerMenu, setShowServerMenu] = useState(false);
@@ -195,6 +201,39 @@ export const WorkflowToolbar: React.FC<Props> = ({
         title="ワークフロー設定を開く"
       >
         ⚙️ 設定
+      </button>
+
+      {/* Chat Toggle (Phase 10B) */}
+      <button
+        onClick={onToggleChat}
+        style={{
+          ...buttonStyle(true),
+          background: showChat ? 'var(--vscode-button-background)' : 'transparent',
+          border: '1px solid var(--vscode-widget-border)',
+          position: 'relative',
+        }}
+        title="チャットを開く/閉じる"
+      >
+        💬 チャット
+        {unreadCount > 0 && (
+          <span
+            style={{
+              position: 'absolute',
+              top: '-4px',
+              right: '-4px',
+              background: 'var(--vscode-notificationsErrorIcon-foreground)',
+              color: 'white',
+              borderRadius: '10px',
+              padding: '2px 6px',
+              fontSize: '10px',
+              fontWeight: 'bold',
+              minWidth: '18px',
+              textAlign: 'center',
+            }}
+          >
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
+        )}
       </button>
 
       {/* Server Control Section (Phase 10A) */}
