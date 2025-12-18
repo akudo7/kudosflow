@@ -5,7 +5,7 @@ import { validateParameterName, validateOutputKey } from './utils/validation';
 import { NodeBadges } from './settings/NodeBadges';
 
 export const WorkflowNode = memo(({ data, id }: NodeProps) => {
-  const nodeData = data as CustomNodeData;
+  const nodeData = data as CustomNodeData & { isExecuting?: boolean; hasExecuted?: boolean };
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [code, setCode] = useState(nodeData.implementation || '');
@@ -234,11 +234,24 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
     setOutputError(null);
   }, [nodeData.output]);
 
+  // Get border color based on execution state
+  const getBorderColor = () => {
+    if (nodeData.isExecuting) return '#4caf50'; // Green - currently executing
+    if (nodeData.hasExecuted) return '#2196f3'; // Blue - has executed
+    return '#555'; // Default
+  };
+
+  const getBorderWidth = () => {
+    if (nodeData.isExecuting) return 3;
+    if (nodeData.hasExecuted) return 2;
+    return 2;
+  };
+
   return (
     <div
       style={{
         padding: '12px',
-        border: '2px solid #555',
+        border: `${getBorderWidth()}px solid ${getBorderColor()}`,
         borderRadius: '8px',
         background: 'linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%)',
         minWidth: isExpanded ? '600px' : '220px',
@@ -246,8 +259,29 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
         transition: 'all 0.3s ease',
         color: '#fff',
+        position: 'relative',
       }}
     >
+      {/* Executing badge */}
+      {nodeData.isExecuting && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '-8px',
+            right: '8px',
+            backgroundColor: '#4caf50',
+            color: '#fff',
+            padding: '2px 8px',
+            borderRadius: '12px',
+            fontSize: '10px',
+            fontWeight: 'bold',
+            zIndex: 10,
+          }}
+        >
+          Executing...
+        </div>
+      )}
+
       {/* Input Handle */}
       <Handle
         type="target"
