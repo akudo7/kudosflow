@@ -10,6 +10,7 @@ import {
 import { getUri } from "../utilities/getUri";
 import { getNonce } from "../utilities/getNonce";
 import { A2AServerLauncher } from "../execution/A2AServerLauncher";
+import { WorkflowExecutor } from "../execution/WorkflowExecutor";
 
 /**
  * This class manages the state and behavior of WorkflowEditor webview panels.
@@ -27,11 +28,13 @@ export class WorkflowEditorPanel {
   private _disposables: Disposable[] = [];
   private _filePath: string;
   private _serverLauncher: A2AServerLauncher;
+  private _workflowExecutor: WorkflowExecutor;
 
   private constructor(panel: WebviewPanel, extensionUri: Uri, filePath: string) {
     this._panel = panel;
     this._filePath = filePath;
     this._serverLauncher = new A2AServerLauncher();
+    this._workflowExecutor = new WorkflowExecutor(this._panel);
 
     // Listen to server status changes
     this._serverLauncher.onStatusChange(() => {
@@ -108,6 +111,9 @@ export class WorkflowEditorPanel {
     // Dispose of server launcher
     this._serverLauncher.dispose();
 
+    // Dispose of workflow executor
+    this._workflowExecutor.dispose();
+
     // Dispose of the current webview panel
     this._panel.dispose();
 
@@ -170,6 +176,21 @@ export class WorkflowEditorPanel {
             break;
           case "restartServer":
             await this._restartServer();
+            break;
+          case "initializeWorkflow":
+            await this._initializeWorkflow(message.sessionId, message.filePath);
+            break;
+          case "executeWorkflow":
+            await this._executeWorkflow(message.sessionId, message.input);
+            break;
+          case "resumeWorkflow":
+            await this._resumeWorkflow(message.sessionId, message.input);
+            break;
+          case "getExecutionState":
+            this._sendExecutionState(message.sessionId);
+            break;
+          case "clearSession":
+            this._clearSession(message.sessionId);
             break;
         }
       },
@@ -271,6 +292,57 @@ export class WorkflowEditorPanel {
       command: "serverStatus",
       status,
     });
+  }
+
+  /**
+   * Initialize workflow for execution
+   */
+  private async _initializeWorkflow(sessionId: string, filePath: string): Promise<void> {
+    try {
+      await this._workflowExecutor.initializeWorkflow(sessionId, filePath);
+    } catch (error: any) {
+      window.showErrorMessage(`Failed to initialize workflow: ${error.message}`);
+    }
+  }
+
+  /**
+   * Execute workflow with user input
+   */
+  private async _executeWorkflow(sessionId: string, input: string): Promise<void> {
+    try {
+      await this._workflowExecutor.execute(sessionId, input);
+    } catch (error: any) {
+      window.showErrorMessage(`Execution error: ${error.message}`);
+    }
+  }
+
+  /**
+   * Resume workflow after interrupt
+   */
+  private async _resumeWorkflow(sessionId: string, input: string): Promise<void> {
+    try {
+      await this._workflowExecutor.resume(sessionId, input);
+    } catch (error: any) {
+      window.showErrorMessage(`Resume error: ${error.message}`);
+    }
+  }
+
+  /**
+   * Send execution state to webview
+   */
+  private _sendExecutionState(sessionId: string): void {
+    const state = this._workflowExecutor.getExecutionState(sessionId);
+    this._panel.webview.postMessage({
+      command: "executionState",
+      state,
+    });
+  }
+
+  /**
+   * Clear execution session
+   */
+  private _clearSession(sessionId: string): void {
+    this._workflowExecutor.clearSession(sessionId);
   }
 
   /**

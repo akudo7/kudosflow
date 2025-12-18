@@ -126,6 +126,18 @@ export const WorkflowEditor: React.FC = () => {
     }
   }, [handleNodeNameChangeFromNode, setNodes, setEdges]);
 
+  // Initialize workflow execution when filePath changes (Phase 10C)
+  useEffect(() => {
+    if (filePath && typeof vscode !== 'undefined') {
+      console.log('[WorkflowEditor] Initializing workflow execution:', sessionId, filePath);
+      vscode.postMessage({
+        command: 'initializeWorkflow',
+        sessionId,
+        filePath
+      });
+    }
+  }, [filePath, sessionId]);
+
   // メッセージ受信
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -157,7 +169,16 @@ export const WorkflowEditor: React.FC = () => {
           });
           break;
 
-        // Chat execution messages (Phase 10B)
+        // Chat execution messages (Phase 10C)
+        case 'executionReady':
+          console.log('[WorkflowEditor] Execution ready:', message.sessionId, message.threadId);
+          break;
+
+        case 'executionStarted':
+          console.log('[WorkflowEditor] Execution started');
+          setIsExecuting(true);
+          break;
+
         case 'executionMessage':
           const newMessage: ChatMessage = {
             id: uuidv4(),

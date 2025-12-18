@@ -68,3 +68,89 @@ export interface GetServerStatusMessage {
 export interface RestartServerMessage {
   command: 'restartServer';
 }
+
+/**
+ * Execution-related types
+ */
+
+/**
+ * Execution state for a workflow session
+ */
+export interface ExecutionState {
+  sessionId: string;
+  threadId: string;
+  isExecuting: boolean;
+  isWaitingForInterrupt: boolean;
+  currentInterrupt?: any; // GraphInterrupt from @kudos/scene-graph-manager
+  engine?: any; // WorkflowEngine instance
+}
+
+/**
+ * Message types for Execution <-> Webview communication
+ */
+
+// Extension -> Webview
+export interface ExecutionReadyMessage {
+  command: 'executionReady';
+  sessionId: string;
+  threadId: string;
+}
+
+export interface ExecutionStartedMessage {
+  command: 'executionStarted';
+}
+
+export interface ExecutionMessageMessage {
+  command: 'executionMessage';
+  role: 'user' | 'assistant' | 'system' | 'interrupt';
+  content: string;
+}
+
+export interface InterruptRequiredMessage {
+  command: 'interruptRequired';
+  message: string;
+}
+
+export interface ExecutionCompleteMessage {
+  command: 'executionComplete';
+  result: any;
+}
+
+export interface ExecutionErrorMessage {
+  command: 'executionError';
+  error: string;
+}
+
+export interface ExecutionStateMessage {
+  command: 'executionState';
+  state?: ExecutionState;
+}
+
+// Webview -> Extension
+export interface InitializeWorkflowMessage {
+  command: 'initializeWorkflow';
+  sessionId: string;
+  filePath: string;
+}
+
+export interface ExecuteWorkflowMessage {
+  command: 'executeWorkflow';
+  sessionId: string;
+  input: string;
+}
+
+export interface ResumeWorkflowMessage {
+  command: 'resumeWorkflow';
+  sessionId: string;
+  input: string;
+}
+
+export interface GetExecutionStateMessage {
+  command: 'getExecutionState';
+  sessionId: string;
+}
+
+export interface ClearSessionMessage {
+  command: 'clearSession';
+  sessionId: string;
+}
