@@ -24,7 +24,7 @@ export function validateNodeName(
   if (!newName || newName.trim() === '') {
     return {
       valid: false,
-      error: 'ノード名を入力してください',
+      error: 'Please enter a node name',
     };
   }
 
@@ -34,7 +34,7 @@ export function validateNodeName(
   if (RESERVED_NODE_NAMES.includes(trimmedName)) {
     return {
       valid: false,
-      error: `予約語 "${trimmedName}" は使用できません`,
+      error: `Reserved word "${trimmedName}" cannot be used`,
     };
   }
 
@@ -45,7 +45,7 @@ export function validateNodeName(
   if (isDuplicate) {
     return {
       valid: false,
-      error: `ノード名 "${trimmedName}" は既に使用されています`,
+      error: `Node name "${trimmedName}" is already in use`,
     };
   }
 
@@ -66,7 +66,7 @@ export function validateStateGraph(
   if (annotationRef !== stateAnnotationName) {
     return {
       valid: false,
-      error: `annotationRef "${annotationRef}" は stateAnnotation.name "${stateAnnotationName}" と一致する必要があります`,
+      error: `annotationRef "${annotationRef}" must match stateAnnotation.name "${stateAnnotationName}"`,
     };
   }
 
@@ -120,7 +120,7 @@ export function validateFieldName(
   if (!fieldName || fieldName.trim() === '') {
     return {
       valid: false,
-      error: 'フィールド名を入力してください',
+      error: 'Please enter a field name',
     };
   }
 
@@ -131,7 +131,7 @@ export function validateFieldName(
   if (!jsIdentifierRegex.test(trimmedName)) {
     return {
       valid: false,
-      error: '有効なJavaScript識別子である必要があります（英字、数字、$、_ のみ使用可能）',
+      error: 'Must be a valid JavaScript identifier (letters, numbers, $, _ only)',
     };
   }
 
@@ -139,7 +139,7 @@ export function validateFieldName(
   if (isReservedKeyword(trimmedName)) {
     return {
       valid: false,
-      error: `予約語 "${trimmedName}" は使用できません`,
+      error: `Reserved word "${trimmedName}" cannot be used`,
     };
   }
 
@@ -147,7 +147,7 @@ export function validateFieldName(
   if (excludeField !== trimmedName && trimmedName in existingFields) {
     return {
       valid: false,
-      error: `フィールド名 "${trimmedName}" は既に使用されています`,
+      error: `Field name "${trimmedName}" is already in use`,
     };
   }
 
@@ -170,7 +170,7 @@ export function validateParameterName(
   if (!name || name.trim() === '') {
     return {
       valid: false,
-      error: 'パラメータ名を入力してください',
+      error: 'Please enter a parameter name',
     };
   }
 
@@ -181,7 +181,7 @@ export function validateParameterName(
   if (!jsIdentifierRegex.test(trimmedName)) {
     return {
       valid: false,
-      error: '有効なJavaScript識別子である必要があります（英字、数字、$、_ のみ使用可能）',
+      error: 'Must be a valid JavaScript identifier (letters, numbers, $, _ only)',
     };
   }
 
@@ -189,7 +189,7 @@ export function validateParameterName(
   if (isReservedKeyword(trimmedName)) {
     return {
       valid: false,
-      error: `予約語 "${trimmedName}" は使用できません`,
+      error: `Reserved word "${trimmedName}" cannot be used`,
     };
   }
 
@@ -200,7 +200,7 @@ export function validateParameterName(
   if (duplicates > 0) {
     return {
       valid: false,
-      error: 'パラメータ名が重複しています',
+      error: 'Parameter name is duplicated',
     };
   }
 
@@ -223,7 +223,7 @@ export function validateOutputKey(
   if (!key || key.trim() === '') {
     return {
       valid: false,
-      error: '出力キーを入力してください',
+      error: 'Please enter an output key',
     };
   }
 
@@ -234,7 +234,7 @@ export function validateOutputKey(
   if (!jsIdentifierRegex.test(trimmedKey)) {
     return {
       valid: false,
-      error: '有効なJavaScript識別子である必要があります（英字、数字、$、_ のみ使用可能）',
+      error: 'Must be a valid JavaScript identifier (letters, numbers, $, _ only)',
     };
   }
 
@@ -242,7 +242,7 @@ export function validateOutputKey(
   if (isReservedKeyword(trimmedKey)) {
     return {
       valid: false,
-      error: `予約語 "${trimmedKey}" は使用できません`,
+      error: `Reserved word "${trimmedKey}" cannot be used`,
     };
   }
 
@@ -251,7 +251,7 @@ export function validateOutputKey(
   if (keys.includes(trimmedKey)) {
     return {
       valid: false,
-      error: '出力キーが重複しています',
+      error: 'Output key is duplicated',
     };
   }
 
@@ -268,7 +268,7 @@ export function validateA2AClient(client: A2AClientConfig): ValidationResult {
   if (!client.cardUrl || client.cardUrl.trim() === '') {
     return {
       valid: false,
-      error: 'cardURLを入力してください',
+      error: 'Please enter a card URL',
     };
   }
 
@@ -280,7 +280,7 @@ export function validateA2AClient(client: A2AClientConfig): ValidationResult {
     if (url.protocol !== 'http:' && url.protocol !== 'https:') {
       return {
         valid: false,
-        error: 'cardURLは http または https で始まる必要があります',
+        error: 'Card URL must start with http or https',
       };
     }
 
@@ -288,13 +288,13 @@ export function validateA2AClient(client: A2AClientConfig): ValidationResult {
     if (!client.cardUrl.includes('agent.json')) {
       return {
         valid: false,
-        error: 'cardURLは agent.json エンドポイントを含む必要があります',
+        error: 'Card URL must include an agent.json endpoint',
       };
     }
   } catch (error) {
     return {
       valid: false,
-      error: '有効なURL形式ではありません',
+      error: 'Invalid URL format',
     };
   }
 
@@ -302,7 +302,7 @@ export function validateA2AClient(client: A2AClientConfig): ValidationResult {
   if (typeof client.timeout !== 'number' || client.timeout <= 0) {
     return {
       valid: false,
-      error: 'タイムアウトは正の数値である必要があります',
+      error: 'Timeout must be a positive number',
     };
   }
 
@@ -320,7 +320,7 @@ export function validateToolNode(node: WorkflowNode, workflowHasA2AClients: bool
   if (node.type !== 'ToolNode') {
     return {
       valid: false,
-      error: 'ノードタイプが "ToolNode" ではありません',
+      error: 'Node type is not "ToolNode"',
     };
   }
 
@@ -328,7 +328,7 @@ export function validateToolNode(node: WorkflowNode, workflowHasA2AClients: bool
   if (node.useA2AClients !== undefined && typeof node.useA2AClients !== 'boolean') {
     return {
       valid: false,
-      error: 'useA2AClientsはboolean型である必要があります',
+      error: 'useA2AClients must be a boolean',
     };
   }
 
@@ -336,7 +336,7 @@ export function validateToolNode(node: WorkflowNode, workflowHasA2AClients: bool
   if (node.function) {
     return {
       valid: false,
-      error: 'ToolNodeはfunctionプロパティを持つことができません',
+      error: 'ToolNode cannot have a function property',
     };
   }
 
@@ -344,7 +344,7 @@ export function validateToolNode(node: WorkflowNode, workflowHasA2AClients: bool
   if (node.useA2AClients && !workflowHasA2AClients) {
     return {
       valid: false,
-      error: 'useA2AClientsがtrueですが、ワークフローにA2Aクライアントが定義されていません',
+      error: 'useA2AClients is true, but no A2A clients are defined in the workflow',
     };
   }
 
@@ -365,7 +365,7 @@ export function validateConditionalEdge(
   if (!condition.name || condition.name.trim() === '') {
     return {
       valid: false,
-      error: '条件名を入力してください',
+      error: 'Please enter a condition name',
     };
   }
 
@@ -373,7 +373,7 @@ export function validateConditionalEdge(
   if (!condition.function) {
     return {
       valid: false,
-      error: '条件関数が定義されていません',
+      error: 'Condition function is not defined',
     };
   }
 
@@ -381,7 +381,7 @@ export function validateConditionalEdge(
   if (!Array.isArray(condition.function.parameters)) {
     return {
       valid: false,
-      error: 'パラメータは配列である必要があります',
+      error: 'Parameters must be an array',
     };
   }
 
@@ -389,7 +389,7 @@ export function validateConditionalEdge(
   if (typeof condition.function.output !== 'string') {
     return {
       valid: false,
-      error: '出力は文字列型である必要があります',
+      error: 'Output must be a string',
     };
   }
 
@@ -397,7 +397,7 @@ export function validateConditionalEdge(
   if (!condition.function.implementation || condition.function.implementation.trim() === '') {
     return {
       valid: false,
-      error: '実装コードを入力してください',
+      error: 'Please enter implementation code',
     };
   }
 
@@ -406,7 +406,7 @@ export function validateConditionalEdge(
     if (!Array.isArray(condition.possibleTargets)) {
       return {
         valid: false,
-        error: 'possibleTargetsは配列である必要があります',
+        error: 'possibleTargets must be an array',
       };
     }
 
@@ -416,7 +416,7 @@ export function validateConditionalEdge(
       if (!validNodeIds.includes(target)) {
         return {
           valid: false,
-          error: `無効なターゲット: "${target}" はワークフロー内に存在しません`,
+          error: `Invalid target: "${target}" does not exist in the workflow`,
         };
       }
     }
@@ -441,7 +441,7 @@ export function validateModelConfig(
   if (!model.id || model.id.trim() === '') {
     return {
       valid: false,
-      error: 'モデルIDを入力してください',
+      error: 'Please enter a model ID',
     };
   }
 
@@ -449,7 +449,7 @@ export function validateModelConfig(
   if (!model.type || model.type.trim() === '') {
     return {
       valid: false,
-      error: 'モデルタイプを選択してください',
+      error: 'Please select a model type',
     };
   }
 
@@ -457,7 +457,7 @@ export function validateModelConfig(
   if (!model.config) {
     return {
       valid: false,
-      error: 'モデル設定が必要です',
+      error: 'Model configuration is required',
     };
   }
 
@@ -465,7 +465,7 @@ export function validateModelConfig(
   if (!model.config.model || model.config.model.trim() === '') {
     return {
       valid: false,
-      error: 'モデル名を入力してください',
+      error: 'Please enter a model name',
     };
   }
 
@@ -474,13 +474,13 @@ export function validateModelConfig(
     if (typeof model.config.temperature !== 'number') {
       return {
         valid: false,
-        error: 'Temperatureは数値である必要があります',
+        error: 'Temperature must be a number',
       };
     }
     if (model.config.temperature < 0 || model.config.temperature > 2) {
       return {
         valid: false,
-        error: 'Temperatureは0から2の範囲である必要があります',
+        error: 'Temperature must be between 0 and 2',
       };
     }
   }
@@ -489,7 +489,7 @@ export function validateModelConfig(
   if (model.bindA2AClients && a2aClientsExist === false) {
     return {
       valid: false,
-      error: 'bindA2AClientsがtrueですが、ワークフローにA2Aクライアントが定義されていません',
+      error: 'bindA2AClients is true, but no A2A clients are defined in the workflow',
     };
   }
 
@@ -497,7 +497,7 @@ export function validateModelConfig(
   if (model.bindMcpServers && mcpServersExist === false) {
     return {
       valid: false,
-      error: 'bindMcpServersがtrueですが、ワークフローにMCPサーバーが定義されていません',
+      error: 'bindMcpServers is true, but no MCP servers are defined in the workflow',
     };
   }
 
@@ -514,7 +514,7 @@ export function validateMCPServer(server: MCPServerConfig): ValidationResult {
   if (!server.transport || (server.transport !== 'stdio' && server.transport !== 'sse')) {
     return {
       valid: false,
-      error: 'Transportは "stdio" または "sse" である必要があります',
+      error: 'Transport must be "stdio" or "sse"',
     };
   }
 
@@ -524,7 +524,7 @@ export function validateMCPServer(server: MCPServerConfig): ValidationResult {
     if (!server.command || server.command.trim() === '') {
       return {
         valid: false,
-        error: 'Commandを入力してください',
+        error: 'Please enter a command',
       };
     }
 
@@ -532,7 +532,7 @@ export function validateMCPServer(server: MCPServerConfig): ValidationResult {
     if (server.args !== undefined && !Array.isArray(server.args)) {
       return {
         valid: false,
-        error: 'Argsは配列である必要があります',
+        error: 'Args must be an array',
       };
     }
   } else if (server.transport === 'sse') {
@@ -540,7 +540,7 @@ export function validateMCPServer(server: MCPServerConfig): ValidationResult {
     if (!server.url || server.url.trim() === '') {
       return {
         valid: false,
-        error: 'URLを入力してください',
+        error: 'Please enter a URL',
       };
     }
 
@@ -552,13 +552,13 @@ export function validateMCPServer(server: MCPServerConfig): ValidationResult {
       if (url.protocol !== 'http:' && url.protocol !== 'https:') {
         return {
           valid: false,
-          error: 'URLは http または https で始まる必要があります',
+          error: 'URL must start with http or https',
         };
       }
     } catch (error) {
       return {
         valid: false,
-        error: '有効なURL形式ではありません',
+        error: 'Invalid URL format',
       };
     }
   }
