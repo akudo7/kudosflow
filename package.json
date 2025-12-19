@@ -69,16 +69,10 @@
     "@vscode/test-electron": "^2.4.1",
     "eslint": "^9.13.0",
     "ts-loader": "^9.5.1",
-    "typescript": "^5.6.3",
-    "webpack": "^5.95.0",
-    "webpack-cli": "^5.1.4"
+    "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@a2a-js/sdk": "^0.3.6",
     "@kudos/scene-graph-manager": "file:/Users/akirakudo/Desktop/MyWork/CLI/kudos-cli/src/SceneGraphManager",
-    "dotenv": "^17.2.3",
-    "express": "^5.2.1",
-    "lodash": "^4.17.21",
-    "moment": "^2.30.1"
+    "express": "^5.2.1"
   }
 }

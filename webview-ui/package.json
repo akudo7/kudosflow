@@ -13,7 +13,6 @@
     "@emotion/styled": "^11.14.0",
     "@monaco-editor/react": "^4.7.0",
     "@mui/icons-material": "^6.4.2",
-    "@mui/lab": "^6.0.0-beta.26",
     "@mui/material": "^6.4.1",
     "@mui/styled-engine": "^6.4.0",
     "@tabler/icons-react": "^3.29.0",
@@ -25,8 +24,6 @@
     "monaco-editor": "^0.55.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-perfect-scrollbar": "^1.5.8",
-    "react-redux": "^9.2.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
