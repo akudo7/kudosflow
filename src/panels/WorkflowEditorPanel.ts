@@ -84,7 +84,6 @@ export class WorkflowEditorPanel {
           localResourceRoots: [
             Uri.joinPath(extensionUri, "out"),
             Uri.joinPath(extensionUri, "webview-ui/build"),
-            Uri.joinPath(extensionUri, "resources"),
           ],
         }
       );

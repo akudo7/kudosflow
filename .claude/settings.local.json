@@ -18,7 +18,9 @@
       "Bash(ls:*)",
       "Bash(cat:*)",
       "Bash(find:*)",
-      "Bash(yarn remove:*)"
+      "Bash(yarn remove:*)",
+      "Bash(yarn run compile:*)",
+      "Bash(yarn package:*)"
     ],
     "deny": [],
     "ask": []

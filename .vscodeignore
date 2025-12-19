@@ -1,10 +1,62 @@
+# Development files
 .vscode/**
 .vscode-test/**
+.github/**
 src/**
+.git/**
 .gitignore
 .yarnrc
+
+# Documentation
 vsc-extension-quickstart.md
+README.md
+CLAUDE.md
+docs/**
+*.md
+
+# Configuration files
 **/tsconfig.json
 **/.eslintrc.json
+webpack.config.js
+.prettierrc
+.editorconfig
+
+# Source maps and TypeScript
 **/*.map
 **/*.ts
+
+# Build artifacts
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Node modules (should already be excluded)
+node_modules/**
+**/node_modules/**
+
+# Webview source (keep only built files)
+webview-ui/src/**
+webview-ui/node_modules/**
+webview-ui/public/**
+webview-ui/.gitignore
+webview-ui/tsconfig.json
+webview-ui/vite.config.ts
+webview-ui/package.json
+webview-ui/yarn.lock
+
+# Test files
+**/*.test.ts
+**/*.spec.ts
+**/test/**
+**/__tests__/**
+
+# IDE files
+.idea/**
+*.swp
+*.swo
+*~
+
+# Plan files
+.claude/**
