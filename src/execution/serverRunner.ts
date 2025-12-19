@@ -1,7 +1,9 @@
-import express from 'express';
 import * as fs from 'fs';
 import { WorkflowEngine } from '@kudos/scene-graph-manager';
 import type { WorkflowConfig } from '@kudos/scene-graph-manager';
+
+// Use require for Express 5.x CommonJS compatibility
+const express = require('express');
 
 /**
  * Run A2A server for a workflow configuration
