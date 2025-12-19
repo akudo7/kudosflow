@@ -67,12 +67,14 @@ The extension consists of two separate build systems:
 ### Key Components
 
 #### Extension Side
-- [ComponentGalleryPanel.ts](src/panels/ComponentGalleryPanel.ts): Manages webview panel lifecycle, HTML injection, and message passing
+
+- [WorkflowEditorPanel.ts](src/panels/WorkflowEditorPanel.ts): Manages webview panel lifecycle, HTML injection, and message passing for the workflow editor
 - [extension.ts](src/extension.ts): Extension activation and command registration
 - [utilities/getUri.ts](src/utilities/getUri.ts): Helper for converting file paths to webview URIs
 - [utilities/getNonce.ts](src/utilities/getNonce.ts): Generates CSP nonces for security
 
 #### Webview Side
+
 - [App.tsx](webview-ui/src/App.tsx): Main React Flow canvas component with drag-and-drop support
 - [ReactFlowContext.tsx](webview-ui/src/ReactFlowContext.tsx): Context provider managing React Flow instance and node/edge operations (delete, duplicate)
 - [CanvasNode.tsx](webview-ui/src/CanvasNode.tsx): Custom node component for the canvas
@@ -98,8 +100,8 @@ vscode.postMessage({ command: 'error', target: '...', value: '...' })
 
 The webview has restricted access to resources. All file paths must be converted to webview URIs:
 - Use `getUri()` utility to convert extension paths to webview-compatible URIs
-- Resource roots are configured in `ComponentGalleryPanel.render()`: `out/`, `webview-ui/build/`, and `resources/`
-- Icons and assets in `resources/` are accessed via message passing to get proper webview URIs
+- Resource roots are configured in `WorkflowEditorPanel.render()`: `out/` and `webview-ui/build/`
+- Assets are bundled with the webview build and referenced using relative paths
 
 ### Security
 
@@ -129,6 +131,6 @@ Node operations (duplicate, delete) handle updating all anchors, params, and con
 ## Important Notes
 
 - The webview must be built before packaging the extension
-- TypeScript compilation outputs to `out/`, but webpack is configured to output to `dist/` (currently unused)
+- TypeScript compilation outputs to `out/` directory
 - The extension uses `retainContextWhenHidden: true` to preserve webview state when hidden
-- Symlink exists: `webview-ui/resources` → `../resources` for accessing shared icons
+- Only WorkflowEditorPanel is used for the workflow editor (legacy ComponentGalleryPanel was removed in Phase 12)
