@@ -111,57 +111,6 @@ class VSCodeAPIWrapper {
     }
   }
 
-  /**
-   * アイコンのパスを取得するためのメッセージを送信する
-   * @param filename アイコンのファイル名
-   * @returns Promise<string> アイコンのパス
-   */
-  public async getIconPath(filename: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const messageHandler = (event: MessageEvent) => {
-        const message = event.data;
-        if (message.command === "iconPath" && message.filename === filename) {
-          window.removeEventListener("message", messageHandler);
-          resolve(message.path);
-        }
-      };
-
-      // メッセージハンドラーを設定
-      window.addEventListener("message", messageHandler);
-
-      // リトライメカニズムの実装
-      const maxRetries = 3;
-      let retryCount = 0;
-
-      const tryPostMessage = () => {
-        if (retryCount >= maxRetries) {
-          window.removeEventListener("message", messageHandler);
-          reject(new Error(`Failed to get icon path after ${maxRetries} attempts`));
-          return;
-        }
-
-        this.postMessage({
-          command: "getIconPath",
-          filename: filename
-        });
-
-        retryCount++;
-        setTimeout(() => {
-          if (retryCount < maxRetries) {
-            tryPostMessage();
-          }
-        }, 2000); // 2秒後にリトライ
-      };
-
-      tryPostMessage();
-
-      // 開発環境のフォールバック
-      if (!this.vsCodeApi) {
-        window.removeEventListener("message", messageHandler);
-        resolve(`resources/icons/${filename}`);
-      }
-    });
-  }
 }
 
 // シングルトンインスタンスをエクスポート
