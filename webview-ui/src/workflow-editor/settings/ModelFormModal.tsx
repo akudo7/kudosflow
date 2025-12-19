@@ -239,7 +239,7 @@ export const ModelFormModal: React.FC<Props> = ({
     <div style={overlayStyle} onClick={onCancel} onKeyDown={handleKeyDown}>
       <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
         <div style={headerStyle}>
-          {initialModelConfig ? 'モデル編集' : 'モデル追加'}
+          {initialModelConfig ? 'Edit Model' : 'Add Model'}
         </div>
 
         <div style={bodyStyle}>
@@ -251,11 +251,11 @@ export const ModelFormModal: React.FC<Props> = ({
               type="text"
               value={modelId}
               onChange={(e) => setModelId(e.target.value)}
-              placeholder="例: mainModel"
+              placeholder="Example: mainModel"
               style={inputStyle}
               autoFocus
             />
-            <div style={hintStyle}>一意の識別子</div>
+            <div style={hintStyle}>Unique identifier</div>
           </div>
 
           <div style={{ marginBottom: '16px' }}>
@@ -270,7 +270,7 @@ export const ModelFormModal: React.FC<Props> = ({
               <option value="Ollama">Ollama</option>
               <option value="Custom">Custom</option>
             </select>
-            <div style={hintStyle}>モデルプロバイダー</div>
+            <div style={hintStyle}>Model provider</div>
           </div>
 
           <div style={{ marginBottom: '16px' }}>
@@ -279,10 +279,10 @@ export const ModelFormModal: React.FC<Props> = ({
               type="text"
               value={modelName}
               onChange={(e) => setModelName(e.target.value)}
-              placeholder="例: gpt-4o-mini, claude-3-opus-20240229"
+              placeholder="Example: gpt-4o-mini, claude-3-opus-20240229"
               style={inputStyle}
             />
-            <div style={hintStyle}>使用するモデル名</div>
+            <div style={hintStyle}>Model name to use</div>
           </div>
 
           <div style={{ marginBottom: '16px' }}>
@@ -296,7 +296,7 @@ export const ModelFormModal: React.FC<Props> = ({
               onChange={(e) => setTemperature(e.target.value)}
               style={inputStyle}
             />
-            <div style={hintStyle}>0.0 (決定的) から 2.0 (創造的)</div>
+            <div style={hintStyle}>0.0 (deterministic) to 2.0 (creative)</div>
           </div>
 
           <div style={{ marginBottom: '16px' }}>
@@ -310,8 +310,8 @@ export const ModelFormModal: React.FC<Props> = ({
               <span>Bind A2A Clients</span>
             </label>
             <div style={hintStyle}>
-              A2Aクライアントをこのモデルにバインドする
-              {!a2aClientsExist && ' (現在A2Aクライアントは設定されていません)'}
+              Bind A2A clients to this model
+              {!a2aClientsExist && ' (No A2A clients configured)'}
             </div>
           </div>
 
@@ -326,29 +326,29 @@ export const ModelFormModal: React.FC<Props> = ({
               <span>Bind MCP Servers</span>
             </label>
             <div style={hintStyle}>
-              MCPサーバーをこのモデルにバインドする
-              {!mcpServersExist && ' (現在MCPサーバーは設定されていません)'}
+              Bind MCP servers to this model
+              {!mcpServersExist && ' (No MCP servers configured)'}
             </div>
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={labelStyle}>System Prompt (任意)</label>
+            <label style={labelStyle}>System Prompt (optional)</label>
             <textarea
               value={systemPrompt}
               onChange={(e) => setSystemPrompt(e.target.value)}
               placeholder="You are a helpful assistant..."
               style={textareaStyle}
             />
-            <div style={hintStyle}>モデルのシステムプロンプト</div>
+            <div style={hintStyle}>System prompt for the model</div>
           </div>
         </div>
 
         <div style={footerStyle}>
           <button onClick={onCancel} style={secondaryButtonStyle}>
-            キャンセル
+            Cancel
           </button>
           <button onClick={handleSave} style={primaryButtonStyle}>
-            保存
+            Save
           </button>
         </div>
       </div>

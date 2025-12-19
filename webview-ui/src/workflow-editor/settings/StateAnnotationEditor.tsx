@@ -65,21 +65,21 @@ export const StateAnnotationEditor: React.FC<Props> = ({
       <div style={fieldStyle}>
         <label style={labelStyle}>State Annotation Name</label>
         <div style={descriptionStyle}>
-          ワークフローの状態アノテーション名
+          Workflow state annotation name
         </div>
         <input
           type="text"
           value={stateAnnotation.name}
           onChange={(e) => handleNameChange(e.target.value)}
           style={inputStyle}
-          placeholder="例: InterruptWorkflowState"
+          placeholder="Example: InterruptWorkflowState"
         />
       </div>
 
       <div style={fieldStyle}>
         <label style={labelStyle}>State Annotation Type</label>
         <div style={descriptionStyle}>
-          タイプは常に固定です (編集不可)
+          Type is always fixed (read-only)
         </div>
         <input
           type="text"

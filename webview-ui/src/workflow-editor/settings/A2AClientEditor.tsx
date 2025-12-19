@@ -203,12 +203,12 @@ export const A2AClientEditor: React.FC<Props> = ({
       <div style={headerStyle}>
         <div style={titleStyle}>A2A Clients</div>
         <button onClick={handleAddClient} style={addButtonStyle}>
-          + A2Aクライアント追加
+          + Add A2A Client
         </button>
       </div>
 
       {clientIds.length === 0 ? (
-        <div style={emptyStyle}>A2Aクライアントがありません</div>
+        <div style={emptyStyle}>No A2A clients</div>
       ) : (
         <table style={tableStyle}>
           <thead>
@@ -237,14 +237,14 @@ export const A2AClientEditor: React.FC<Props> = ({
                     <button
                       onClick={() => handleEditClient(clientId)}
                       style={actionButtonStyle}
-                      title="編集"
+                      title="Edit"
                     >
                       ✏️
                     </button>
                     <button
                       onClick={() => handleDeleteClient(clientId)}
                       style={deleteButtonStyle}
-                      title="削除"
+                      title="Delete"
                     >
                       🗑️
                     </button>
@@ -269,14 +269,14 @@ export const A2AClientEditor: React.FC<Props> = ({
         <div style={confirmOverlayStyle} onClick={cancelDelete}>
           <div style={confirmDialogStyle} onClick={(e) => e.stopPropagation()}>
             <div style={confirmTextStyle}>
-              A2Aクライアント "<strong>{deletingClientId}</strong>" を削除しますか?
+              Delete A2A client "<strong>{deletingClientId}</strong>"?
             </div>
             <div style={confirmButtonsStyle}>
               <button onClick={cancelDelete} style={cancelButtonStyle}>
-                キャンセル
+                Cancel
               </button>
               <button onClick={confirmDelete} style={deleteConfirmButtonStyle}>
-                削除
+                Delete
               </button>
             </div>
           </div>

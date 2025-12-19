@@ -44,18 +44,18 @@ export const MCPServerFormModal: React.FC<Props> = ({
   const handleSave = () => {
     // Validate server ID
     if (!formServerId.trim()) {
-      setError('Server IDを入力してください');
+      setError('Please enter a server ID');
       return;
     }
 
     if (!isValidJSIdentifier(formServerId)) {
-      setError('Server IDは有効なJavaScript識別子である必要があります');
+      setError('Server ID must be a valid JavaScript identifier');
       return;
     }
 
     // Check if server ID already exists (only when creating new or changing ID)
     if ((!isEditing || formServerId !== serverId) && existingServerIds.includes(formServerId)) {
-      setError('このServer IDは既に存在します');
+      setError('This server ID already exists');
       return;
     }
 
@@ -66,7 +66,7 @@ export const MCPServerFormModal: React.FC<Props> = ({
 
     if (transport === 'stdio') {
       if (!command.trim()) {
-        setError('Commandを入力してください');
+        setError('Please enter a command');
         return;
       }
       newServerConfig.command = command;
@@ -76,13 +76,13 @@ export const MCPServerFormModal: React.FC<Props> = ({
     } else {
       // sse
       if (!url.trim()) {
-        setError('URLを入力してください');
+        setError('Please enter a URL');
         return;
       }
       try {
         new URL(url);
       } catch {
-        setError('有効なURLを入力してください');
+        setError('Please enter a valid URL');
         return;
       }
       newServerConfig.url = url;
@@ -91,7 +91,7 @@ export const MCPServerFormModal: React.FC<Props> = ({
     // Validate server config
     const validationResult = validateMCPServer(newServerConfig);
     if (!validationResult.valid) {
-      setError(validationResult.error || 'バリデーションエラー');
+      setError(validationResult.error || 'Validation error');
       return;
     }
 
@@ -264,7 +264,7 @@ export const MCPServerFormModal: React.FC<Props> = ({
     <div style={overlayStyle} onClick={onCancel}>
       <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
         <div style={headerStyle}>
-          {isEditing ? `MCPサーバー編集: ${serverId}` : 'MCPサーバー追加'}
+          {isEditing ? `Edit MCP Server: ${serverId}` : 'Add MCP Server'}
         </div>
 
         <div style={formStyle}>
@@ -321,13 +321,13 @@ export const MCPServerFormModal: React.FC<Props> = ({
                         onClick={() => handleRemoveArg(index)}
                         style={removeArgButtonStyle}
                       >
-                        削除
+                        Delete
                       </button>
                     </div>
                   ))}
                 </div>
                 <button onClick={handleAddArg} style={addArgButtonStyle}>
-                  + 引数追加
+                  + Add Argument
                 </button>
               </div>
             </>
@@ -349,10 +349,10 @@ export const MCPServerFormModal: React.FC<Props> = ({
 
         <div style={footerStyle}>
           <button onClick={onCancel} style={cancelButtonStyle}>
-            キャンセル
+            Cancel
           </button>
           <button onClick={handleSave} style={saveButtonStyle}>
-            保存
+            Save
           </button>
         </div>
       </div>

@@ -157,8 +157,8 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
   return (
     <div style={panelStyle}>
       <div style={headerStyle}>
-        <div style={titleStyle}>ワークフロー設定</div>
-        <button onClick={onClose} style={closeButtonStyle} title="閉じる">
+        <div style={titleStyle}>Workflow Settings</div>
+        <button onClick={onClose} style={closeButtonStyle} title="Close">
           ×
         </button>
       </div>
@@ -168,13 +168,13 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
           onClick={() => setActiveTab('nodes')}
           style={getTabStyle(activeTab === 'nodes')}
         >
-          ノード
+          Nodes
         </button>
         <button
           onClick={() => setActiveTab('settings')}
           style={getTabStyle(activeTab === 'settings')}
         >
-          設定
+          Settings
         </button>
         <button
           onClick={() => setActiveTab('stateGraph')}

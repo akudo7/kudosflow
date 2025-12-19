@@ -40,7 +40,7 @@ export const ModelEditor: React.FC<Props> = ({
     if (referencingNodes.length > 0) {
       const nodeNames = referencingNodes.map((n) => n.data.label).join(', ');
       alert(
-        `モデル "${modelId}" は以下のノードで参照されています:\n${nodeNames}\n\n先にノードのパラメータから参照を削除してください。`
+        `Model "${modelId}" is referenced by the following nodes:\n${nodeNames}\n\nPlease remove references from node parameters first.`
       );
       return;
     }
@@ -222,12 +222,12 @@ export const ModelEditor: React.FC<Props> = ({
       <div style={headerStyle}>
         <div style={titleStyle}>Models</div>
         <button onClick={handleAddModel} style={addButtonStyle}>
-          + モデル追加
+          + Add Model
         </button>
       </div>
 
       {models.length === 0 ? (
-        <div style={emptyStyle}>モデルがありません</div>
+        <div style={emptyStyle}>No models</div>
       ) : (
         <table style={tableStyle}>
           <thead>
@@ -260,14 +260,14 @@ export const ModelEditor: React.FC<Props> = ({
                   <button
                     onClick={() => handleEditModel(model.id)}
                     style={actionButtonStyle}
-                    title="編集"
+                    title="Edit"
                   >
                     ✏️
                   </button>
                   <button
                     onClick={() => handleDeleteModel(model.id)}
                     style={deleteButtonStyle}
-                    title="削除"
+                    title="Delete"
                   >
                     🗑️
                   </button>
@@ -292,14 +292,14 @@ export const ModelEditor: React.FC<Props> = ({
         <div style={confirmOverlayStyle} onClick={cancelDelete}>
           <div style={confirmDialogStyle} onClick={(e) => e.stopPropagation()}>
             <div style={confirmTextStyle}>
-              モデル "<strong>{deletingModelId}</strong>" を削除しますか?
+              Delete model "<strong>{deletingModelId}</strong>"?
             </div>
             <div style={confirmButtonsStyle}>
               <button onClick={cancelDelete} style={cancelButtonStyle}>
-                キャンセル
+                Cancel
               </button>
               <button onClick={confirmDelete} style={deleteConfirmButtonStyle}>
-                削除
+                Delete
               </button>
             </div>
           </div>

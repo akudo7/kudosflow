@@ -204,12 +204,12 @@ export class WorkflowEditorPanel {
    */
   private async _saveWorkflow(data: any) {
     const answer = await window.showWarningMessage(
-      "ワークフローを保存しますか？",
-      "はい",
-      "いいえ"
+      "Save workflow?",
+      "Yes",
+      "No"
     );
 
-    if (answer === "はい") {
+    if (answer === "Yes") {
       try {
         const content = JSON.stringify(data, null, 2);
         await workspace.fs.writeFile(
@@ -218,13 +218,13 @@ export class WorkflowEditorPanel {
         );
 
         this._panel.webview.postMessage({ command: "saveSuccess" });
-        window.showInformationMessage("ワークフローを保存しました");
+        window.showInformationMessage("Workflow saved successfully");
       } catch (error) {
         this._panel.webview.postMessage({
           command: "saveError",
           error: String(error),
         });
-        window.showErrorMessage(`保存に失敗しました: ${error}`);
+        window.showErrorMessage(`Failed to save: ${error}`);
       }
     }
   }

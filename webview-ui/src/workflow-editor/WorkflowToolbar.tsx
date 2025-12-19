@@ -97,9 +97,9 @@ export const WorkflowToolbar: React.FC<Props> = ({
         <button
           onClick={() => setShowAddMenu(!showAddMenu)}
           style={buttonStyle(true)}
-          title="新しいノードを追加"
+          title="Add new node"
         >
-          ➕ ノード追加
+          ➕ Add Node
         </button>
         {showAddMenu && (
           <div
@@ -143,7 +143,7 @@ export const WorkflowToolbar: React.FC<Props> = ({
               <span style={{ fontSize: '16px' }}>⚙️</span>
               <div>
                 <div style={{ fontWeight: 'bold' }}>Function Node</div>
-                <div style={{ fontSize: '11px', opacity: 0.7 }}>通常の関数ノード</div>
+                <div style={{ fontSize: '11px', opacity: 0.7 }}>Standard function node</div>
               </div>
             </button>
             <button
@@ -172,7 +172,7 @@ export const WorkflowToolbar: React.FC<Props> = ({
               <span style={{ fontSize: '16px' }}>🛠️</span>
               <div>
                 <div style={{ fontWeight: 'bold' }}>ToolNode</div>
-                <div style={{ fontSize: '11px', opacity: 0.7 }}>ツールコールを実行</div>
+                <div style={{ fontSize: '11px', opacity: 0.7 }}>Execute tool calls</div>
               </div>
             </button>
           </div>
@@ -182,25 +182,25 @@ export const WorkflowToolbar: React.FC<Props> = ({
         onClick={onDuplicateSelected}
         disabled={!hasSelection}
         style={buttonStyle(hasSelection)}
-        title="選択したノードを複製"
+        title="Duplicate selected node"
       >
-        📋 複製
+        📋 Duplicate
       </button>
       <button
         onClick={onDeleteSelected}
         disabled={!hasSelection}
         style={buttonStyle(hasSelection)}
-        title="選択したアイテムを削除 (Delete)"
+        title="Delete selected items (Delete)"
       >
-        🗑️ 削除
+        🗑️ Delete
       </button>
       <div style={{ width: '1px', height: '24px', background: 'var(--vscode-widget-border)' }} />
       <button
         onClick={onToggleSettings}
         style={buttonStyle(true)}
-        title="ワークフロー設定を開く"
+        title="Open workflow settings"
       >
-        ⚙️ 設定
+        ⚙️ Settings
       </button>
 
       {/* Chat Toggle (Phase 10B) */}
@@ -212,9 +212,9 @@ export const WorkflowToolbar: React.FC<Props> = ({
           border: '1px solid var(--vscode-widget-border)',
           position: 'relative',
         }}
-        title="チャットを開く/閉じる"
+        title="Open/close chat"
       >
-        💬 チャット
+        💬 Chat
         {unreadCount > 0 && (
           <span
             style={{
@@ -242,9 +242,9 @@ export const WorkflowToolbar: React.FC<Props> = ({
         <button
           onClick={onStartServer}
           style={buttonStyle(true)}
-          title="A2A サーバーを起動"
+          title="Start A2A server"
         >
-          ▶️ サーバー起動
+          ▶️ Start Server
         </button>
       )}
       {serverStatus.state === ServerState.STARTING && (
@@ -259,7 +259,7 @@ export const WorkflowToolbar: React.FC<Props> = ({
           }}
         >
           <span>⏳</span>
-          <span>起動中...</span>
+          <span>Starting...</span>
         </div>
       )}
       {serverStatus.state === ServerState.RUNNING && (
@@ -273,7 +273,7 @@ export const WorkflowToolbar: React.FC<Props> = ({
                 border: '1px solid var(--vscode-widget-border)',
                 position: 'relative',
               }}
-              title={`サーバー情報を表示 (Port ${serverStatus.port || 3000})`}
+              title={`Show server info (Port ${serverStatus.port || 3000})`}
             >
               <span
                 style={{
@@ -285,7 +285,7 @@ export const WorkflowToolbar: React.FC<Props> = ({
                   animation: 'pulse 2s ease-in-out infinite',
                 }}
               />
-              実行中
+              Running
             </button>
             {showServerMenu && (
               <div
@@ -311,14 +311,14 @@ export const WorkflowToolbar: React.FC<Props> = ({
                   }}
                 >
                   <div style={{ marginBottom: '8px', fontWeight: 'bold', color: 'var(--vscode-foreground)' }}>
-                    サーバー情報
+                    Server Info
                   </div>
                   <div style={{ marginBottom: '4px' }}>
-                    ポート: {serverStatus.port || 3000}
+                    Port: {serverStatus.port || 3000}
                   </div>
                   {serverStatus.endpoints && (
                     <div style={{ marginTop: '8px', fontSize: '11px' }}>
-                      <div>エンドポイント:</div>
+                      <div>Endpoints:</div>
                       <div
                         style={{
                           marginTop: '4px',
@@ -347,9 +347,9 @@ export const WorkflowToolbar: React.FC<Props> = ({
           <button
             onClick={onRestartServer}
             style={buttonStyle(true)}
-            title="サーバーを再起動"
+            title="Restart server"
           >
-            🔄 再起動
+            🔄 Restart
           </button>
           <button
             onClick={onStopServer}
@@ -358,9 +358,9 @@ export const WorkflowToolbar: React.FC<Props> = ({
               background: 'var(--vscode-button-secondaryBackground)',
               color: 'var(--vscode-button-secondaryForeground)',
             }}
-            title="サーバーを停止"
+            title="Stop server"
           >
-            ⏹️ 停止
+            ⏹️ Stop
           </button>
         </>
       )}
@@ -377,14 +377,14 @@ export const WorkflowToolbar: React.FC<Props> = ({
             }}
           >
             <span>❌</span>
-            <span>サーバーエラー</span>
+            <span>Server Error</span>
           </div>
           <button
             onClick={onStartServer}
             style={buttonStyle(true)}
-            title="サーバーを再起動"
+            title="Restart server"
           >
-            🔄 再起動
+            🔄 Restart
           </button>
         </>
       )}
@@ -393,9 +393,9 @@ export const WorkflowToolbar: React.FC<Props> = ({
         onClick={onSave}
         disabled={!isDirty}
         style={buttonStyle(isDirty)}
-        title="ワークフローを保存 (Ctrl+S)"
+        title="Save workflow (Ctrl+S)"
       >
-        💾 保存
+        💾 Save
         {isDirty && (
           <span
             style={{

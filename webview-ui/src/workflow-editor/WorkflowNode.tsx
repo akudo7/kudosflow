@@ -96,7 +96,7 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
   const handleNameSave = useCallback(() => {
     const trimmedName = nameValue.trim();
     if (!trimmedName) {
-      setNameError('ノード名を入力してください');
+      setNameError('Please enter a node name');
       return;
     }
 
@@ -162,11 +162,11 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
       const param = paramsValue[i];
       const validation = validateParameterName(param.name, paramsValue, i);
       if (!validation.valid) {
-        setParamsError(`パラメータ ${i + 1}: ${validation.error}`);
+        setParamsError(`Parameter ${i + 1}: ${validation.error}`);
         return;
       }
       if (!param.type.trim()) {
-        setParamsError(`パラメータ ${i + 1}: 型を入力してください`);
+        setParamsError(`Parameter ${i + 1}: Please enter a type`);
         return;
       }
     }
@@ -212,11 +212,11 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
       const output = outputValue[i];
       const validation = validateOutputKey(output.key, tempOutput);
       if (!validation.valid) {
-        setOutputError(`出力 ${i + 1}: ${validation.error}`);
+        setOutputError(`Output ${i + 1}: ${validation.error}`);
         return;
       }
       if (!output.type.trim()) {
-        setOutputError(`出力 ${i + 1}: 型を入力してください`);
+        setOutputError(`Output ${i + 1}: Please enter a type`);
         return;
       }
       tempOutput[output.key] = output.type;
@@ -369,7 +369,7 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
                 cursor: 'pointer',
               }}
               onDoubleClick={handleNameDoubleClick}
-              title="ダブルクリックして名前を編集"
+              title="Double-click to edit name"
             >
               {nodeData.label}
             </strong>
@@ -397,7 +397,7 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
           onMouseEnter={(e) => (e.currentTarget.style.background = '#3a7fd5')}
           onMouseLeave={(e) => (e.currentTarget.style.background = '#4a9eff')}
         >
-          {isExpanded ? '折りたたむ' : '展開'}
+          {isExpanded ? 'Collapse' : 'Expand'}
         </button>
       </div>
 
@@ -430,7 +430,7 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
                   fontWeight: 'bold',
                 }}
               >
-                {isEditingParams ? '✓ 完了' : '✏️ 編集'}
+                {isEditingParams ? '✓ Done' : '✏️ Edit'}
               </button>
             </div>
 
@@ -445,7 +445,7 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
               >
                 {paramsValue.length === 0 ? (
                   <div style={{ fontSize: '10px', color: '#999', marginBottom: '8px' }}>
-                    パラメータなし
+                    No parameters
                   </div>
                 ) : (
                   paramsValue.map((param, index) => (
@@ -560,7 +560,7 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
                     marginTop: '4px',
                   }}
                 >
-                  + パラメータ追加
+                  + Add Parameter
                 </button>
                 {paramsError && (
                   <div style={{ marginTop: '8px', fontSize: '10px', color: '#ff6b6b' }}>
@@ -581,7 +581,7 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
                       fontSize: '10px',
                     }}
                   >
-                    キャンセル
+                    Cancel
                   </button>
                 </div>
               </div>
@@ -597,7 +597,7 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
                 }}
               >
                 {!nodeData.parameters || nodeData.parameters.length === 0 ? (
-                  <div style={{ color: '#999' }}>パラメータなし</div>
+                  <div style={{ color: '#999' }}>No parameters</div>
                 ) : (
                   nodeData.parameters.map((param, index) => (
                     <div key={index} style={{ marginBottom: '4px' }}>
@@ -640,7 +640,7 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
                   fontWeight: 'bold',
                 }}
               >
-                {isEditingOutput ? '✓ 完了' : '✏️ 編集'}
+                {isEditingOutput ? '✓ Done' : '✏️ Edit'}
               </button>
             </div>
 
@@ -655,7 +655,7 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
               >
                 {outputValue.length === 0 ? (
                   <div style={{ fontSize: '10px', color: '#999', marginBottom: '8px' }}>
-                    出力なし
+                    No output
                   </div>
                 ) : (
                   outputValue.map((output, index) => (
@@ -741,7 +741,7 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
                     marginTop: '4px',
                   }}
                 >
-                  + 出力追加
+                  + Add Output
                 </button>
                 {outputError && (
                   <div style={{ marginTop: '8px', fontSize: '10px', color: '#ff6b6b' }}>
@@ -762,7 +762,7 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
                       fontSize: '10px',
                     }}
                   >
-                    キャンセル
+                    Cancel
                   </button>
                 </div>
               </div>
@@ -778,7 +778,7 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
                 }}
               >
                 {!nodeData.output || Object.keys(nodeData.output).length === 0 ? (
-                  <div style={{ color: '#999' }}>(出力なし)</div>
+                  <div style={{ color: '#999' }}>(No output)</div>
                 ) : (
                   Object.entries(nodeData.output).map(([key, type], index) => (
                     <div key={index} style={{ marginBottom: '4px' }}>
@@ -812,7 +812,7 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
                 onMouseEnter={(e) => (e.currentTarget.style.background = isEditing ? '#3a7fd5' : '#666')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = isEditing ? '#4a9eff' : '#555')}
               >
-                {isEditing ? '✓ 完了' : '✏️ 編集'}
+                {isEditing ? '✓ Done' : '✏️ Edit'}
               </button>
             </div>
 
@@ -861,7 +861,7 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
                   border: '1px solid #555',
                 }}
                 onClick={() => setIsEditing(true)}
-                title="クリックして編集"
+                title="Click to edit"
               >
                 {code || '// No implementation'}
               </pre>

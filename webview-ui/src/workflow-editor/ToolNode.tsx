@@ -42,7 +42,7 @@ export const ToolNode = memo(({ data, id }: NodeProps) => {
   const handleNameSave = useCallback(() => {
     const trimmedName = nameValue.trim();
     if (!trimmedName) {
-      setNameError('ノード名を入力してください');
+      setNameError('Please enter a node name');
       return;
     }
 
@@ -192,7 +192,7 @@ export const ToolNode = memo(({ data, id }: NodeProps) => {
               borderRadius: '4px',
               background: 'rgba(255, 255, 255, 0.05)',
             }}
-            title="ダブルクリックで編集"
+            title="Double-click to edit"
           >
             {nodeData.label}
           </div>
@@ -233,7 +233,7 @@ export const ToolNode = memo(({ data, id }: NodeProps) => {
             border: '1px solid rgba(230, 126, 34, 0.3)',
           }}
         >
-          このノードはツールコールをオーケストレートします
+          This node orchestrates tool calls
         </div>
       </div>
 

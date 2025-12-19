@@ -30,7 +30,7 @@ export const NodeNameEditor: React.FC<Props> = ({ nodes, onNodeNameChange }) => 
     // Validate
     const validation = validateNodeName(trimmedValue, nodes, oldId);
     if (!validation.valid) {
-      setError(validation.error || '無効なノード名です');
+      setError(validation.error || 'Invalid node name');
       return;
     }
 
@@ -109,7 +109,7 @@ export const NodeNameEditor: React.FC<Props> = ({ nodes, onNodeNameChange }) => 
         color: 'var(--vscode-descriptionForeground)',
         marginBottom: '4px'
       }}>
-        ノード名をダブルクリックして編集できます
+        Double-click a node name to edit
       </div>
       {nodes.map((node) => (
         <div key={node.id} style={nodeItemStyle}>
@@ -125,10 +125,10 @@ export const NodeNameEditor: React.FC<Props> = ({ nodes, onNodeNameChange }) => 
                   autoFocus
                 />
                 <button onClick={() => handleSaveEdit(node.id)} style={buttonStyle}>
-                  保存
+                  Save
                 </button>
                 <button onClick={handleCancelEdit} style={cancelButtonStyle}>
-                  キャンセル
+                  Cancel
                 </button>
               </div>
               {error && <div style={errorStyle}>{error}</div>}
@@ -142,7 +142,7 @@ export const NodeNameEditor: React.FC<Props> = ({ nodes, onNodeNameChange }) => 
                 fontFamily: 'var(--vscode-editor-font-family)',
               }}
               onDoubleClick={() => handleStartEdit(node.id)}
-              title="ダブルクリックして編集"
+              title="Double-click to edit"
             >
               {node.id}
             </div>

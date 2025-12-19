@@ -192,12 +192,12 @@ export const AnnotationFieldsEditor: React.FC<Props> = ({ annotation, onAnnotati
       <div style={headerStyle}>
         <div style={titleStyle}>Annotation Fields</div>
         <button onClick={handleAddField} style={addButtonStyle}>
-          + フィールド追加
+          + Add Field
         </button>
       </div>
 
       {fieldEntries.length === 0 ? (
-        <div style={emptyStyle}>フィールドがありません</div>
+        <div style={emptyStyle}>No fields</div>
       ) : (
         <table style={tableStyle}>
           <thead>
@@ -228,14 +228,14 @@ export const AnnotationFieldsEditor: React.FC<Props> = ({ annotation, onAnnotati
                   <button
                     onClick={() => handleEditField(fieldName)}
                     style={actionButtonStyle}
-                    title="編集"
+                    title="Edit"
                   >
                     ✏️
                   </button>
                   <button
                     onClick={() => handleDeleteField(fieldName)}
                     style={deleteButtonStyle}
-                    title="削除"
+                    title="Delete"
                   >
                     🗑️
                   </button>
@@ -259,14 +259,14 @@ export const AnnotationFieldsEditor: React.FC<Props> = ({ annotation, onAnnotati
         <div style={confirmOverlayStyle} onClick={cancelDelete}>
           <div style={confirmDialogStyle} onClick={(e) => e.stopPropagation()}>
             <div style={confirmTextStyle}>
-              フィールド "<strong>{deletingField}</strong>" を削除しますか?
+              Delete field "<strong>{deletingField}</strong>"?
             </div>
             <div style={confirmButtonsStyle}>
               <button onClick={cancelDelete} style={cancelButtonStyle}>
-                キャンセル
+                Cancel
               </button>
               <button onClick={confirmDelete} style={deleteConfirmButtonStyle}>
-                削除
+                Delete
               </button>
             </div>
           </div>

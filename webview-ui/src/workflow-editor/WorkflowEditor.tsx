@@ -149,13 +149,13 @@ export const WorkflowEditor: React.FC = () => {
         case 'saveSuccess':
           setIsDirty(false);
           setNotification({
-            message: 'ワークフローを保存しました',
+            message: 'Workflow saved successfully',
             type: 'success',
           });
           break;
         case 'saveError':
           setNotification({
-            message: `保存に失敗しました: ${message.error}`,
+            message: `Failed to save: ${message.error}`,
             type: 'error',
           });
           break;
@@ -309,7 +309,7 @@ export const WorkflowEditor: React.FC = () => {
         type: 'toolNode',
         position: { x: 250, y: 250 },
         data: {
-          label: '新しいToolNode',
+          label: 'New ToolNode',
           nodeType: 'ToolNode',
           useA2AClients: true,
           onNodeNameChange: handleNodeNameChangeFromNode,
@@ -323,8 +323,8 @@ export const WorkflowEditor: React.FC = () => {
         type: 'workflowNode',
         position: { x: 250, y: 250 },
         data: {
-          label: '新しいノード',
-          implementation: '// コードをここに書く\nreturn state;',
+          label: 'New Node',
+          implementation: '// Write code here\nreturn state;',
           parameters: [{ name: 'state', type: 'any' }],
           output: {},
           onNodeNameChange: handleNodeNameChangeFromNode,
@@ -343,7 +343,7 @@ export const WorkflowEditor: React.FC = () => {
 
     const itemCount = selectedNodes.length + selectedEdges.length;
     const confirmed = window.confirm(
-      `選択した${itemCount}個のアイテムを削除しますか？`
+      `Delete ${itemCount} selected item(s)?`
     );
     if (!confirmed) {
       return;
@@ -372,7 +372,7 @@ export const WorkflowEditor: React.FC = () => {
       },
       data: {
         ...node.data,
-        label: `${node.data.label} (コピー)`,
+        label: `${node.data.label} (Copy)`,
         onNodeNameChange: handleNodeNameChangeFromNode,
       },
     }));
@@ -413,7 +413,7 @@ export const WorkflowEditor: React.FC = () => {
       // Node context menu
       items.push(
         {
-          label: '複製',
+          label: 'Duplicate',
           icon: '📋',
           onClick: () => {
             setSelectedNodes([contextMenu.nodeId!]);
@@ -421,7 +421,7 @@ export const WorkflowEditor: React.FC = () => {
           },
         },
         {
-          label: '削除',
+          label: 'Delete',
           icon: '🗑️',
           onClick: () => {
             setSelectedNodes([contextMenu.nodeId!]);
@@ -433,12 +433,12 @@ export const WorkflowEditor: React.FC = () => {
       // Canvas context menu - Add submenu for node types
       items.push(
         {
-          label: 'Function Node追加',
+          label: 'Add Function Node',
           icon: '⚙️',
           onClick: () => handleAddNode('function'),
         },
         {
-          label: 'ToolNode追加',
+          label: 'Add ToolNode',
           icon: '🛠️',
           onClick: () => handleAddNode('tool'),
         }

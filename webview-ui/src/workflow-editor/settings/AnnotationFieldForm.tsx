@@ -49,7 +49,7 @@ export const AnnotationFieldForm: React.FC<Props> = ({
 
     // Validate type
     if (!type.trim()) {
-      setError('型を入力してください');
+      setError('Please enter a type');
       return;
     }
 
@@ -59,7 +59,7 @@ export const AnnotationFieldForm: React.FC<Props> = ({
       try {
         parsedDefault = JSON.parse(defaultValue);
       } catch (e) {
-        setError('デフォルト値は有効なJSONである必要があります');
+        setError('Default value must be valid JSON');
         return;
       }
     }

@@ -194,7 +194,7 @@ export const A2AClientFormModal: React.FC<Props> = ({
     <div style={overlayStyle} onClick={onCancel}>
       <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
         <div style={headerStyle}>
-          {isEditing ? 'A2Aクライアント編集' : 'A2Aクライアント追加'}
+          {isEditing ? 'Edit A2A Client' : 'Add A2A Client'}
         </div>
 
         <div style={bodyStyle}>
@@ -209,7 +209,7 @@ export const A2AClientFormModal: React.FC<Props> = ({
               onChange={(e) => setFormClientId(e.target.value)}
               placeholder="task_agent"
             />
-            <div style={hintStyle}>有効なJavaScript識別子（例: task_agent, research_agent）</div>
+            <div style={hintStyle}>Valid JavaScript identifier (e.g., task_agent, research_agent)</div>
           </div>
 
           <div style={fieldStyle}>
@@ -222,7 +222,7 @@ export const A2AClientFormModal: React.FC<Props> = ({
               placeholder="http://localhost:3001/.well-known/agent.json"
             />
             <div style={hintStyle}>
-              エージェントカードのエンドポイントURL（例: http://localhost:3001/.well-known/agent.json）
+              Agent card endpoint URL (e.g., http://localhost:3001/.well-known/agent.json)
             </div>
           </div>
 
@@ -236,16 +236,16 @@ export const A2AClientFormModal: React.FC<Props> = ({
               placeholder="30000"
               min="1"
             />
-            <div style={hintStyle}>リクエストタイムアウト（ミリ秒）</div>
+            <div style={hintStyle}>Request timeout (milliseconds)</div>
           </div>
         </div>
 
         <div style={footerStyle}>
           <button onClick={onCancel} style={cancelButtonStyle}>
-            キャンセル
+            Cancel
           </button>
           <button onClick={handleSave} style={saveButtonStyle}>
-            保存
+            Save
           </button>
         </div>
       </div>

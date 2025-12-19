@@ -21,7 +21,7 @@ export function activate(context: vscode.ExtensionContext): void {
   // Register commands
   context.subscriptions.push(
     vscode.commands.registerCommand("reactflowtest.helloworld", () => {
-      // ComponentGalleryPanelのrenderメソッドを呼び出し
+      // Call the render method of ComponentGalleryPanel
       ComponentGalleryPanel.render(context.extensionUri);
     })
   );

@@ -104,8 +104,8 @@ export const StateGraphEditor: React.FC<Props> = ({
           <div style={warningStyle}>
             <span style={warningIconStyle}>⚠️</span>
             <span>
-              Annotation Referenceが State Annotation名 "{stateAnnotationName}" と一致しません。
-              不一致の場合、ワークフローが正しく動作しない可能性があります。
+              Annotation Reference does not match State Annotation name "{stateAnnotationName}".
+              If mismatched, the workflow may not function correctly.
             </span>
           </div>
         )}

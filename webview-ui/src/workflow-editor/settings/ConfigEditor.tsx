@@ -73,7 +73,7 @@ export const ConfigEditor: React.FC<Props> = ({ config, onConfigChange }) => {
       <div style={fieldStyle}>
         <label style={labelStyle}>Recursion Limit</label>
         <div style={descriptionStyle}>
-          ワークフローの最大再帰回数 (デフォルト: 25)
+          Maximum workflow recursion limit (default: 25)
         </div>
         <input
           type="number"
@@ -87,7 +87,7 @@ export const ConfigEditor: React.FC<Props> = ({ config, onConfigChange }) => {
       <div style={fieldStyle}>
         <label style={labelStyle}>Default Max Listeners</label>
         <div style={descriptionStyle}>
-          イベントエミッターの最大リスナー数 (デフォルト: 25)
+          Maximum event emitter listeners (default: 25)
         </div>
         <input
           type="number"

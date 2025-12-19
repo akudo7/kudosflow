@@ -203,12 +203,12 @@ export const MCPServerEditor: React.FC<Props> = ({
       <div style={headerStyle}>
         <div style={titleStyle}>MCP Servers</div>
         <button onClick={handleAddServer} style={addButtonStyle}>
-          + MCPサーバー追加
+          + Add MCP Server
         </button>
       </div>
 
       {serverIds.length === 0 ? (
-        <div style={emptyStyle}>MCPサーバーがありません</div>
+        <div style={emptyStyle}>No MCP servers</div>
       ) : (
         <table style={tableStyle}>
           <thead>
@@ -241,14 +241,14 @@ export const MCPServerEditor: React.FC<Props> = ({
                     <button
                       onClick={() => handleEditServer(serverId)}
                       style={actionButtonStyle}
-                      title="編集"
+                      title="Edit"
                     >
                       ✏️
                     </button>
                     <button
                       onClick={() => handleDeleteServer(serverId)}
                       style={deleteButtonStyle}
-                      title="削除"
+                      title="Delete"
                     >
                       🗑️
                     </button>
@@ -273,14 +273,14 @@ export const MCPServerEditor: React.FC<Props> = ({
         <div style={confirmOverlayStyle} onClick={cancelDelete}>
           <div style={confirmDialogStyle} onClick={(e) => e.stopPropagation()}>
             <div style={confirmTextStyle}>
-              MCPサーバー "<strong>{deletingServerId}</strong>" を削除しますか?
+              Delete MCP server "<strong>{deletingServerId}</strong>"?
             </div>
             <div style={confirmButtonsStyle}>
               <button onClick={cancelDelete} style={cancelButtonStyle}>
-                キャンセル
+                Cancel
               </button>
               <button onClick={confirmDelete} style={deleteConfirmButtonStyle}>
-                削除
+                Delete
               </button>
             </div>
           </div>
