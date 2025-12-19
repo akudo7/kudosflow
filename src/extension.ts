@@ -1,7 +1,6 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
-import { ComponentGalleryPanel } from "./panels/ComponentGalleryPanel";
 import { WorkflowEditorPanel } from "./panels/WorkflowEditorPanel";
 import { StatusBarManager } from "./execution/StatusBarManager";
 
@@ -17,14 +16,6 @@ export function activate(context: vscode.ExtensionContext): void {
   // Initialize StatusBarManager
   statusBarManager = new StatusBarManager();
   context.subscriptions.push(statusBarManager);
-
-  // Register commands
-  context.subscriptions.push(
-    vscode.commands.registerCommand("reactflowtest.helloworld", () => {
-      // Call the render method of ComponentGalleryPanel
-      ComponentGalleryPanel.render(context.extensionUri);
-    })
-  );
 
   // Register Workflow Editor command
   context.subscriptions.push(

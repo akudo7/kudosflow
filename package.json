@@ -28,10 +28,6 @@
     },
     "commands": [
       {
-        "command": "reactflowtest.helloworld",
-        "title": "Hello World"
-      },
-      {
         "command": "kudosflow.openWorkflowEditor",
         "title": "Open Workflow Editor",
         "category": "Kudosflow"
