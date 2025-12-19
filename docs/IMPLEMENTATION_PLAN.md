@@ -265,6 +265,49 @@ A2Aサーバーとチャット形式でのワークフロー実行機能の実�
 - 残りのコンポーネントを完全に翻訳
 - 推定時間: 2-3時間
 
+#### [Phase 12: プロジェクトの減量化と最適化](phases/PHASE12_PROJECT_REDUCTION.md) ⬜
+
+レガシーコード削除、未使用依存関係の削減、ビルド最適化によるプロジェクト減量化
+
+**概要:**
+- 20ファイル削除 (~1,678行のコード)
+- 10個の未使用依存関係削除 (~260MB)
+- ビルドシステム最適化
+- パッケージサイズ33%削減
+
+##### [Phase 12A: Legacy Command and Panel Removal](phases/phase12/PHASE12A_LEGACY_COMMAND.md) ⬜
+
+- `reactflowtest.helloworld`コマンド削除
+- ComponentGalleryPanel.ts削除 (~208行)
+- 推定時間: 2-3時間 | 優先度: 高
+
+##### [Phase 12B: Legacy Canvas Components Removal](phases/phase12/PHASE12B_LEGACY_CANVAS.md) ⬜
+
+- 16+のレガシーキャンバスコンポーネント削除
+- App.tsx, CanvasNode.tsx, ReactFlowContext.tsx等
+- reactflow@11パッケージ削除
+- 推定時間: 3-4時間 | 優先度: 高
+
+##### [Phase 12C: Unused Dependencies Cleanup](phases/phase12/PHASE12C_DEPENDENCIES.md) ⬜
+
+- webpack, dotenv, @a2a-js/sdk等の未使用パッケージ削除
+- @mui/lab, react-redux等の削除
+- 推定時間: 2-3時間 | 優先度: 中
+
+##### [Phase 12D: Build System Optimization](phases/phase12/PHASE12D_BUILD_OPTIMIZATION.md) ⬜
+
+- webpack.config.js削除
+- .vscodeignore最適化
+- tsconfig.json最適化（インクリメンタルビルド）
+- 推定時間: 2-3時間 | 優先度: 中
+
+##### [Phase 12E: Final Cleanup and Documentation](phases/phase12/PHASE12E_FINAL_CLEANUP.md) ⬜
+
+- 未使用SCSSファイル削除
+- CHANGELOG.md更新
+- SIZE_COMPARISON.mdレポート作成
+- 推定時間: 1-2時間 | 優先度: 低
+
 ## フェーズ実行方法
 
 各フェーズは独立して実装可能です。以下のコマンドで実装を開始してください:
