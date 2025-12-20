@@ -7,10 +7,13 @@ import {
   ViewColumn,
   workspace,
 } from "vscode";
+import * as path from "path";
 import { getUri } from "../utilities/getUri";
 import { getNonce } from "../utilities/getNonce";
 import { A2AServerLauncher } from "../execution/A2AServerLauncher";
 import { WorkflowExecutor } from "../execution/WorkflowExecutor";
+import { getPanelRegistry } from "../extension";
+import { getPortManager } from "../extension";
 
 /**
  * This class manages the state and behavior of WorkflowEditor webview panels.
@@ -23,18 +26,29 @@ import { WorkflowExecutor } from "../execution/WorkflowExecutor";
  * - Properly cleaning up and disposing of webview resources when the panel is closed
  */
 export class WorkflowEditorPanel {
-  public static currentPanel: WorkflowEditorPanel | undefined;
+  private readonly panelId: string;
+  private assignedPort: number | undefined;
   private readonly _panel: WebviewPanel;
   private _disposables: Disposable[] = [];
   private _filePath: string;
   private _serverLauncher: A2AServerLauncher;
   private _workflowExecutor: WorkflowExecutor;
 
-  private constructor(panel: WebviewPanel, extensionUri: Uri, filePath: string) {
+  constructor(panelId: string, panel: WebviewPanel, extensionUri: Uri, filePath: string) {
+    this.panelId = panelId;
     this._panel = panel;
     this._filePath = filePath;
     this._serverLauncher = new A2AServerLauncher();
     this._workflowExecutor = new WorkflowExecutor(this._panel);
+
+    // Pre-allocate port for this panel
+    const portManager = getPortManager();
+    portManager.allocatePort(this.panelId).then(port => {
+      this.assignedPort = port;
+      console.log(`[WorkflowEditorPanel] Panel ${this.panelId} assigned port ${port}`);
+    }).catch(error => {
+      console.error(`[WorkflowEditorPanel] Failed to allocate port for panel ${this.panelId}:`, error);
+    });
 
     // Listen to server status changes
     this._serverLauncher.onStatusChange(() => {
@@ -59,48 +73,52 @@ export class WorkflowEditorPanel {
   }
 
   /**
-   * Renders the current webview panel if it exists otherwise a new webview panel
-   * will be created and displayed.
+   * Creates and renders a new webview panel for workflow editing.
+   * Each invocation creates a new instance, enabling multi-instance support.
    *
    * @param extensionUri The URI of the directory containing the extension
    * @param filePath The path to the JSON workflow file to open
+   * @returns The newly created WorkflowEditorPanel instance
    */
-  public static render(extensionUri: Uri, filePath: string) {
-    if (WorkflowEditorPanel.currentPanel) {
-      // If the webview panel already exists reveal it
-      WorkflowEditorPanel.currentPanel._panel.reveal(ViewColumn.One);
-      // Update the file path and reload
-      WorkflowEditorPanel.currentPanel._filePath = filePath;
-      WorkflowEditorPanel.currentPanel._loadWorkflow();
-    } else {
-      // If a webview panel does not already exist create and show a new one
-      const panel = window.createWebviewPanel(
-        "workflowEditor",
-        "Workflow Editor",
-        ViewColumn.One,
-        {
-          enableScripts: true,
-          retainContextWhenHidden: true,
-          localResourceRoots: [
-            Uri.joinPath(extensionUri, "out"),
-            Uri.joinPath(extensionUri, "webview-ui/build"),
-          ],
-        }
-      );
+  public static render(extensionUri: Uri, filePath: string): WorkflowEditorPanel {
+    const panelRegistry = getPanelRegistry();
+    const panelId = panelRegistry.generateId();
 
-      WorkflowEditorPanel.currentPanel = new WorkflowEditorPanel(
-        panel,
-        extensionUri,
-        filePath
-      );
-    }
+    const panel = window.createWebviewPanel(
+      `workflowEditor-${panelId}`,
+      `Workflow: ${path.basename(filePath)}`,
+      ViewColumn.One,
+      {
+        enableScripts: true,
+        retainContextWhenHidden: true,
+        localResourceRoots: [
+          Uri.joinPath(extensionUri, "out"),
+          Uri.joinPath(extensionUri, "webview-ui/build"),
+        ],
+      }
+    );
+
+    // Create panel instance
+    const editorPanel = new WorkflowEditorPanel(
+      panelId,
+      panel,
+      extensionUri,
+      filePath
+    );
+
+    // Register in global registry
+    panelRegistry.register(editorPanel);
+
+    return editorPanel;
   }
 
   /**
    * Cleans up and disposes of webview resources when the webview panel is closed.
    */
   public dispose() {
-    WorkflowEditorPanel.currentPanel = undefined;
+    // Unregister from panel registry
+    const panelRegistry = getPanelRegistry();
+    panelRegistry.unregister(this.panelId);
 
     // Stop server if running
     if (this._serverLauncher.isServerRunning()) {
@@ -112,6 +130,12 @@ export class WorkflowEditorPanel {
 
     // Dispose of workflow executor
     this._workflowExecutor.dispose();
+
+    // Release allocated port
+    const portManager = getPortManager();
+    if (this.assignedPort !== undefined) {
+      portManager.releasePort(this.panelId);
+    }
 
     // Dispose of the current webview panel
     this._panel.dispose();
@@ -135,11 +159,12 @@ export class WorkflowEditorPanel {
 
       this._panel.webview.postMessage({
         command: "loadWorkflow",
+        panelId: this.panelId,
         data: workflow,
         filePath: this._filePath,
       });
 
-      console.log(`Loaded workflow from: ${this._filePath}`);
+      console.log(`[Panel ${this.panelId}] Loaded workflow from: ${this._filePath}`);
       console.log("Workflow data:", JSON.stringify(workflow, null, 2));
     } catch (error) {
       window.showErrorMessage(`Failed to load workflow: ${error}`);
@@ -216,11 +241,15 @@ export class WorkflowEditorPanel {
           Buffer.from(content, "utf8")
         );
 
-        this._panel.webview.postMessage({ command: "saveSuccess" });
+        this._panel.webview.postMessage({
+          command: "saveSuccess",
+          panelId: this.panelId
+        });
         window.showInformationMessage("Workflow saved successfully");
       } catch (error) {
         this._panel.webview.postMessage({
           command: "saveError",
+          panelId: this.panelId,
           error: String(error),
         });
         window.showErrorMessage(`Failed to save: ${error}`);
@@ -233,7 +262,8 @@ export class WorkflowEditorPanel {
    */
   private async _startA2AServer(filePath: string, port?: number): Promise<void> {
     try {
-      const serverPort = port || 3000;
+      // Use pre-allocated port if no port specified
+      const serverPort = port || this.assignedPort || 3000;
       await this._serverLauncher.launchServer(filePath, serverPort);
       this._sendServerStatus();
       window.showInformationMessage(
@@ -242,6 +272,7 @@ export class WorkflowEditorPanel {
     } catch (error: any) {
       this._panel.webview.postMessage({
         command: "serverError",
+        panelId: this.panelId,
         error: error.message,
       });
       window.showErrorMessage(`Failed to start server: ${error.message}`);
@@ -259,6 +290,7 @@ export class WorkflowEditorPanel {
     } catch (error: any) {
       this._panel.webview.postMessage({
         command: "serverError",
+        panelId: this.panelId,
         error: error.message,
       });
       window.showErrorMessage(`Failed to stop server: ${error.message}`);
@@ -276,6 +308,7 @@ export class WorkflowEditorPanel {
     } catch (error: any) {
       this._panel.webview.postMessage({
         command: "serverError",
+        panelId: this.panelId,
         error: error.message,
       });
       window.showErrorMessage(`Failed to restart server: ${error.message}`);
@@ -289,6 +322,7 @@ export class WorkflowEditorPanel {
     const status = this._serverLauncher.getServerStatus();
     this._panel.webview.postMessage({
       command: "serverStatus",
+      panelId: this.panelId,
       status,
     });
   }
@@ -333,6 +367,7 @@ export class WorkflowEditorPanel {
     const state = this._workflowExecutor.getExecutionState(sessionId);
     this._panel.webview.postMessage({
       command: "executionState",
+      panelId: this.panelId,
       state,
     });
   }
@@ -342,6 +377,41 @@ export class WorkflowEditorPanel {
    */
   private _clearSession(sessionId: string): void {
     this._workflowExecutor.clearSession(sessionId);
+  }
+
+  /**
+   * Get the panel ID for this instance.
+   */
+  public getPanelId(): string {
+    return this.panelId;
+  }
+
+  /**
+   * Get the file path being edited.
+   */
+  public getFilePath(): string {
+    return this._filePath;
+  }
+
+  /**
+   * Get the webview instance.
+   */
+  public getWebview(): Webview {
+    return this._panel.webview;
+  }
+
+  /**
+   * Get the assigned port for this panel's A2A server.
+   */
+  public getAssignedPort(): number | undefined {
+    return this.assignedPort;
+  }
+
+  /**
+   * Reveal this panel in the editor.
+   */
+  public reveal(): void {
+    this._panel.reveal(ViewColumn.One);
   }
 
   /**

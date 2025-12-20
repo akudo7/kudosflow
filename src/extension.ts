@@ -3,9 +3,13 @@
 import * as vscode from "vscode";
 import { WorkflowEditorPanel } from "./panels/WorkflowEditorPanel";
 import { StatusBarManager } from "./execution/StatusBarManager";
+import { PanelRegistry } from "./managers/PanelRegistry";
+import { PortManager } from "./managers/PortManager";
 
-// Global StatusBarManager instance
+// Global instances
 let statusBarManager: StatusBarManager | undefined;
+let panelRegistry: PanelRegistry;
+let portManager: PortManager;
 
 /**
  * Activates the extension and sets up the RAG Explorer
@@ -13,6 +17,12 @@ let statusBarManager: StatusBarManager | undefined;
  * @returns {void}
  */
 export function activate(context: vscode.ExtensionContext): void {
+  // Initialize managers
+  panelRegistry = new PanelRegistry();
+  portManager = new PortManager();
+
+  console.log('[Extension] Initialized PanelRegistry and PortManager');
+
   // Initialize StatusBarManager
   statusBarManager = new StatusBarManager();
   context.subscriptions.push(statusBarManager);
@@ -38,10 +48,44 @@ export function activate(context: vscode.ExtensionContext): void {
 }
 
 /**
+ * Deactivates the extension and cleans up resources
+ */
+export function deactivate() {
+  // Dispose all panels
+  if (panelRegistry) {
+    panelRegistry.disposeAll();
+  }
+
+  console.log('[Extension] Deactivated, all panels disposed');
+}
+
+/**
  * Get the global StatusBarManager instance
  * @returns {StatusBarManager | undefined} The StatusBarManager instance
  */
 export function getStatusBarManager(): StatusBarManager | undefined {
   return statusBarManager;
+}
+
+/**
+ * Get the global PanelRegistry instance.
+ * @returns The panel registry
+ */
+export function getPanelRegistry(): PanelRegistry {
+  if (!panelRegistry) {
+    throw new Error('PanelRegistry not initialized');
+  }
+  return panelRegistry;
+}
+
+/**
+ * Get the global PortManager instance.
+ * @returns The port manager
+ */
+export function getPortManager(): PortManager {
+  if (!portManager) {
+    throw new Error('PortManager not initialized');
+  }
+  return portManager;
 }
 
