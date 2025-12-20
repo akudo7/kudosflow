@@ -86,13 +86,6 @@ export class WorkflowExecutor {
       session.isExecuting = true;
       this.sendMessage({ command: 'executionStarted' });
 
-      // Send user message to chat
-      this.sendMessage({
-        command: 'executionMessage',
-        role: 'user',
-        content: input
-      });
-
       // Execute workflow
       const result = await session.engine.invoke(
         { input },
@@ -154,13 +147,6 @@ export class WorkflowExecutor {
       // Update state
       session.isExecuting = true;
       session.isWaitingForInterrupt = false;
-
-      // Send user input to chat
-      this.sendMessage({
-        command: 'executionMessage',
-        role: 'user',
-        content: input
-      });
 
       // Resume execution with Command to resume from interrupt
       // Import Command from @kudos/scene-graph-manager if needed
