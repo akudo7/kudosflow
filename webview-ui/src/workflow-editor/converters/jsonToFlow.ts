@@ -71,6 +71,9 @@ export function jsonToFlow(workflow: WorkflowConfig): {
         type: edge.type === 'conditional' ? 'smoothstep' : 'default',
         animated: edge.type === 'conditional',
         label: edge.condition ? 'conditional' : undefined,
+        markerEnd: {
+          type: 'arrowclosed',
+        },
         data: edge.condition
           ? {
               condition: edge.condition,

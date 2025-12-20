@@ -230,7 +230,12 @@ export const WorkflowEditor: React.FC = () => {
 
   const onConnect = useCallback(
     (connection: Connection) => {
-      setEdges((eds) => addEdge(connection, eds));
+      setEdges((eds) => addEdge({
+        ...connection,
+        markerEnd: {
+          type: 'arrowclosed',
+        },
+      }, eds));
       setIsDirty(true);
     },
     [setEdges]
