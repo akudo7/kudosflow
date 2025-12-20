@@ -13,7 +13,7 @@ export class TerminalManager {
   /**
    * Create and configure VSCode terminal
    */
-  createTerminal(name: string): vscode.Terminal {
+  createTerminal(name: string, panelId?: string): vscode.Terminal {
     // Dispose existing terminal if any
     if (this.terminal) {
       this.dispose();
@@ -25,6 +25,11 @@ export class TerminalManager {
       hideFromUser: false,
       isTransient: false
     });
+
+    // Track terminal for this panel
+    if (panelId) {
+      console.log(`[TerminalManager] Created terminal for panel ${panelId}: ${name}`);
+    }
 
     // Listen for terminal close event
     this.terminalCloseListener = vscode.window.onDidCloseTerminal((closedTerminal) => {

@@ -14,6 +14,7 @@ import { A2AServerLauncher } from "../execution/A2AServerLauncher";
 import { WorkflowExecutor } from "../execution/WorkflowExecutor";
 import { getPanelRegistry } from "../extension";
 import { getPortManager } from "../extension";
+import { getServerInstanceManager } from "../extension";
 
 /**
  * This class manages the state and behavior of WorkflowEditor webview panels.
@@ -28,6 +29,7 @@ import { getPortManager } from "../extension";
 export class WorkflowEditorPanel {
   private readonly panelId: string;
   private assignedPort: number | undefined;
+  private configuredPort: number | undefined; // Port from workflow JSON
   private readonly _panel: WebviewPanel;
   private _disposables: Disposable[] = [];
   private _filePath: string;
@@ -38,17 +40,14 @@ export class WorkflowEditorPanel {
     this.panelId = panelId;
     this._panel = panel;
     this._filePath = filePath;
-    this._serverLauncher = new A2AServerLauncher();
+
+    // Create A2A server launcher with panelId
+    this._serverLauncher = new A2AServerLauncher(this.panelId);
     this._workflowExecutor = new WorkflowExecutor(this._panel);
 
-    // Pre-allocate port for this panel
-    const portManager = getPortManager();
-    portManager.allocatePort(this.panelId).then(port => {
-      this.assignedPort = port;
-      console.log(`[WorkflowEditorPanel] Panel ${this.panelId} assigned port ${port}`);
-    }).catch(error => {
-      console.error(`[WorkflowEditorPanel] Failed to allocate port for panel ${this.panelId}:`, error);
-    });
+    // Register with ServerInstanceManager
+    const serverManager = getServerInstanceManager();
+    serverManager.register(this.panelId, this._serverLauncher);
 
     // Listen to server status changes
     this._serverLauncher.onStatusChange(() => {
@@ -67,6 +66,9 @@ export class WorkflowEditorPanel {
 
     // Set up message listener
     this._setWebviewMessageListener(this._panel.webview);
+
+    // Initialize port configuration synchronously before loading workflow
+    this._initializePortConfiguration();
 
     // Load the workflow from the JSON file
     this._loadWorkflow();
@@ -116,14 +118,17 @@ export class WorkflowEditorPanel {
    * Cleans up and disposes of webview resources when the webview panel is closed.
    */
   public dispose() {
-    // Unregister from panel registry
-    const panelRegistry = getPanelRegistry();
-    panelRegistry.unregister(this.panelId);
+    console.log(`[WorkflowEditorPanel] Disposing panel ${this.panelId.slice(-6)}`);
 
     // Stop server if running
     if (this._serverLauncher.isServerRunning()) {
+      console.log(`[WorkflowEditorPanel] Stopping server for panel ${this.panelId.slice(-6)}`);
       this._serverLauncher.stopServer().catch(console.error);
     }
+
+    // Unregister from ServerInstanceManager
+    const serverManager = getServerInstanceManager();
+    serverManager.unregister(this.panelId);
 
     // Dispose of server launcher
     this._serverLauncher.dispose();
@@ -131,11 +136,16 @@ export class WorkflowEditorPanel {
     // Dispose of workflow executor
     this._workflowExecutor.dispose();
 
-    // Release allocated port
-    const portManager = getPortManager();
+    // Release allocated port (only for auto-allocated ports, not configured ports)
     if (this.assignedPort !== undefined) {
+      const portManager = getPortManager();
       portManager.releasePort(this.panelId);
+      console.log(`[WorkflowEditorPanel] Released auto-allocated port ${this.assignedPort} for panel ${this.panelId.slice(-6)}`);
     }
+
+    // Unregister from panel registry
+    const panelRegistry = getPanelRegistry();
+    panelRegistry.unregister(this.panelId);
 
     // Dispose of the current webview panel
     this._panel.dispose();
@@ -150,12 +160,40 @@ export class WorkflowEditorPanel {
   }
 
   /**
+   * Initialize port configuration by reading the workflow JSON synchronously
+   */
+  private _initializePortConfiguration(): void {
+    try {
+      const fs = require('fs');
+      const fileContent = fs.readFileSync(this._filePath, 'utf-8');
+      const workflow = JSON.parse(fileContent);
+
+      // Extract port from workflow config if specified
+      if (workflow.port && typeof workflow.port === 'number') {
+        this.configuredPort = workflow.port;
+        console.log(`[WorkflowEditorPanel] Panel ${this.panelId.slice(-6)} using configured port ${this.configuredPort} from JSON`);
+      } else {
+        console.log(`[WorkflowEditorPanel] Panel ${this.panelId.slice(-6)} will use auto-allocated port`);
+      }
+    } catch (error) {
+      console.error(`[WorkflowEditorPanel] Failed to read port configuration:`, error);
+    }
+  }
+
+  /**
    * Loads the workflow from the JSON file and sends it to the webview
    */
   private async _loadWorkflow() {
     try {
       const fileContent = await workspace.fs.readFile(Uri.file(this._filePath));
       const workflow = JSON.parse(fileContent.toString());
+
+      // Allocate fallback port if not configured
+      if (!this.configuredPort) {
+        const portManager = getPortManager();
+        this.assignedPort = await portManager.allocatePort(this.panelId);
+        console.log(`[WorkflowEditorPanel] Panel ${this.panelId.slice(-6)} assigned auto-allocated port ${this.assignedPort}`);
+      }
 
       this._panel.webview.postMessage({
         command: "loadWorkflow",
@@ -165,7 +203,6 @@ export class WorkflowEditorPanel {
       });
 
       console.log(`[Panel ${this.panelId}] Loaded workflow from: ${this._filePath}`);
-      console.log("Workflow data:", JSON.stringify(workflow, null, 2));
     } catch (error) {
       window.showErrorMessage(`Failed to load workflow: ${error}`);
       console.error("Error loading workflow:", error);
@@ -262,14 +299,22 @@ export class WorkflowEditorPanel {
    */
   private async _startA2AServer(filePath: string, port?: number): Promise<void> {
     try {
-      // Use pre-allocated port if no port specified
-      const serverPort = port || this.assignedPort || 3000;
+      // Priority: 1. Explicit port parameter, 2. Configured port from JSON, 3. Auto-allocated port
+      const serverPort = port || this.configuredPort || this.assignedPort;
+
+      if (!serverPort) {
+        window.showErrorMessage('No port available for this panel.');
+        return;
+      }
+
       await this._serverLauncher.launchServer(filePath, serverPort);
+      console.log(`[WorkflowEditorPanel] Server started on port ${serverPort}`);
       this._sendServerStatus();
       window.showInformationMessage(
         `A2A Server started on port ${serverPort}`
       );
     } catch (error: any) {
+      console.error(`[WorkflowEditorPanel] Failed to start server:`, error);
       this._panel.webview.postMessage({
         command: "serverError",
         panelId: this.panelId,

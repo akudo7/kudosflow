@@ -15,6 +15,7 @@ export enum ServerState {
  */
 export interface ServerStatus {
   state: ServerState;
+  panelId?: string;
   port?: number;
   pid?: number;
   endpoints?: ServerEndpoints;

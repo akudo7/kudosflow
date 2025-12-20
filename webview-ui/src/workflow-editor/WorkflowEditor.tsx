@@ -545,7 +545,6 @@ export const WorkflowEditor: React.FC = () => {
       vscode.postMessage({
         command: 'startA2AServer',
         filePath,
-        port: 3000,
       });
     }
   }, [filePath]);

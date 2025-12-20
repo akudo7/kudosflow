@@ -5,11 +5,13 @@ import { WorkflowEditorPanel } from "./panels/WorkflowEditorPanel";
 import { StatusBarManager } from "./execution/StatusBarManager";
 import { PanelRegistry } from "./managers/PanelRegistry";
 import { PortManager } from "./managers/PortManager";
+import { ServerInstanceManager } from "./execution/ServerInstanceManager";
 
 // Global instances
 let statusBarManager: StatusBarManager | undefined;
 let panelRegistry: PanelRegistry;
 let portManager: PortManager;
+let serverInstanceManager: ServerInstanceManager;
 
 /**
  * Activates the extension and sets up the RAG Explorer
@@ -20,8 +22,9 @@ export function activate(context: vscode.ExtensionContext): void {
   // Initialize managers
   panelRegistry = new PanelRegistry();
   portManager = new PortManager();
+  serverInstanceManager = new ServerInstanceManager();
 
-  console.log('[Extension] Initialized PanelRegistry and PortManager');
+  console.log('[Extension] Initialized all managers');
 
   // Initialize StatusBarManager
   statusBarManager = new StatusBarManager();
@@ -50,13 +53,18 @@ export function activate(context: vscode.ExtensionContext): void {
 /**
  * Deactivates the extension and cleans up resources
  */
-export function deactivate() {
+export async function deactivate() {
+  // Stop all servers
+  if (serverInstanceManager) {
+    await serverInstanceManager.stopAll();
+  }
+
   // Dispose all panels
   if (panelRegistry) {
     panelRegistry.disposeAll();
   }
 
-  console.log('[Extension] Deactivated, all panels disposed');
+  console.log('[Extension] Deactivated');
 }
 
 /**
@@ -87,5 +95,16 @@ export function getPortManager(): PortManager {
     throw new Error('PortManager not initialized');
   }
   return portManager;
+}
+
+/**
+ * Get the global ServerInstanceManager instance.
+ * @returns The server instance manager
+ */
+export function getServerInstanceManager(): ServerInstanceManager {
+  if (!serverInstanceManager) {
+    throw new Error('ServerInstanceManager not initialized');
+  }
+  return serverInstanceManager;
 }
 

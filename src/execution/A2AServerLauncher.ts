@@ -7,14 +7,20 @@ import { ServerState, ServerStatus, ServerEndpoints } from './types';
  * A2AServerLauncher orchestrates A2A server launch and lifecycle management
  */
 export class A2AServerLauncher {
+  private readonly panelId: string;
+  private readonly instanceId: string;
   private terminalManager: TerminalManager;
   private currentPort: number | undefined;
   private currentFilePath: string | undefined;
   private startTime: Date | undefined;
   private statusChangeCallback?: () => void;
 
-  constructor() {
+  constructor(panelId: string) {
+    this.panelId = panelId;
+    this.instanceId = `server-${panelId}`;
     this.terminalManager = new TerminalManager();
+
+    console.log(`[A2AServerLauncher] Created instance ${this.instanceId}`);
 
     // Listen to terminal status changes
     this.terminalManager.listenToOutput((output: string) => {
@@ -45,7 +51,7 @@ export class A2AServerLauncher {
   /**
    * Launch A2A server for workflow
    */
-  async launchServer(configPath: string, port?: number): Promise<void> {
+  async launchServer(configPath: string, port: number): Promise<void> {
     // Validate config file exists
     if (!fs.existsSync(configPath)) {
       throw new Error(`Workflow config not found: ${configPath}`);
@@ -59,17 +65,20 @@ export class A2AServerLauncher {
       throw new Error(`Invalid workflow JSON: ${error.message}`);
     }
 
-    // Check if server is already running
-    if (this.isServerRunning()) {
-      throw new Error('Server is already running. Stop it first.');
+    // Check if server is already running for this instance
+    if (this.currentPort !== undefined) {
+      throw new Error(
+        `Server already running on port ${this.currentPort} for panel ${this.panelId.slice(-6)}`
+      );
     }
 
-    // Use default port if not specified
-    const serverPort = port || 3000;
+    // Use the specified port (required parameter)
+    const serverPort = port;
 
-    // Create terminal with descriptive name
-    const terminalName = `A2A Server - ${path.basename(configPath)} (Port ${serverPort})`;
-    this.terminalManager.createTerminal(terminalName);
+    // Create terminal with descriptive name including panel ID
+    const filename = path.basename(configPath);
+    const terminalName = `A2A Server [${this.panelId.slice(-6)}] - ${filename} (Port ${serverPort})`;
+    this.terminalManager.createTerminal(terminalName, this.panelId);
 
     // Update status to starting
     this.terminalManager.setStatus(ServerState.STARTING);
@@ -139,7 +148,7 @@ export class A2AServerLauncher {
    * Restart server with current configuration
    */
   async restartServer(): Promise<void> {
-    if (!this.currentFilePath) {
+    if (!this.currentFilePath || !this.currentPort) {
       throw new Error('No active server to restart');
     }
 
@@ -187,6 +196,20 @@ export class A2AServerLauncher {
   isServerRunning(): boolean {
     const status = this.terminalManager.getStatus();
     return status === ServerState.RUNNING || status === ServerState.STARTING;
+  }
+
+  /**
+   * Get the panel ID this server is associated with.
+   */
+  getPanelId(): string {
+    return this.panelId;
+  }
+
+  /**
+   * Get the unique instance ID.
+   */
+  getInstanceId(): string {
+    return this.instanceId;
   }
 
   /**
