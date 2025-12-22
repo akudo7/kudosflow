@@ -386,49 +386,54 @@ A2Aサーバーとチャット形式でのワークフロー実行機能の実�
 **更新日**: 2025-12-22 (JSONポート設定機能追加)
 **詳細**: [PHASE13_MULTI_INSTANCE.md](phases/PHASE13_MULTI_INSTANCE.md)
 
-#### [Phase 14: 新規ワークフロー作成機能](phases/PHASE14_NEW_WORKFLOW.md) ⬜
+#### [Phase 14: 新規ワークフロー作成機能](phases/PHASE14_NEW_WORKFLOW.md) ☑
 
 フォルダコンテキストメニューから新規ワークフローを作成する機能の実装
 
 **概要:**
 
 - フォルダ右クリック → "Create New Workflow Here"
-- 最小限のテンプレート (start + end ノードのみ、エッジなし)
+- 最小限のテンプレート (start + end ノードのみ)
 - 初回保存時にファイル作成ダイアログ表示
 - デフォルトファイル名: `untitled-workflow.json`
 - 保存後は通常のワークフローとして動作
 
 **実装フェーズ:**
 
-##### Phase 14A: Template and Command Registration ⬜
+##### Phase 14A: Template and Command Registration ☑
 
-- テンプレートプロバイダー作成 (WorkflowTemplate.ts)
-- コマンド登録 (kudosflow.createNewWorkflow)
-- フォルダコンテキストメニュー追加
-- 基本的なrenderNew()メソッド実装
-- 推定時間: 2-3時間
+- テンプレートプロバイダー作成 (WorkflowTemplate.ts) ✅
+- コマンド登録 (kudosflow.createNewWorkflow) ✅
+- フォルダコンテキストメニュー追加 ✅
+- 基本的なrenderNew()メソッド実装 ✅
+- 完了日: 2025-12-22
 
-##### Phase 14B: Panel State Management and Template Loading ⬜
+##### Phase 14B: Panel State Management and Template Loading ☑
 
-- WorkflowEditorPanelのfilePath型をstring | undefinedに更新
-- テンプレートローディングロジック実装
-- ポート割り当ての遅延処理
-- サーバーコントロールの無効化 (未保存ワークフロー用)
-- 推定時間: 3-4時間
+- WorkflowEditorPanelのfilePath型をstring | undefinedに更新 ✅
+- テンプレートローディングロジック実装 ✅
+- ポート割り当ての遅延処理 ✅
+- サーバーコントロールの無効化 (未保存ワークフロー用) ✅
+- 完了日: 2025-12-22
 
-##### Phase 14C: Save Dialog and File Creation ⬜
+##### Phase 14C: Save Dialog and File Creation ☑
 
-- 保存ダイアログの実装 (初回保存時)
-- パネル状態の更新 (保存後: filePath, title, port)
-- キャンセル処理の実装
-- Webviewへのファイルパス更新通知
-- 推定時間: 2-3時間
+- 保存ダイアログの実装 (初回保存時) ✅
+- パネル状態の更新 (保存後: filePath, title, port) ✅
+- キャンセル処理の実装 ✅
+- Webviewへのファイルパス更新通知 ✅
+- 完了日: 2025-12-22
 
 **実績:**
 
-- N/A (未実装)
+- ✅ フォルダ右クリックからの新規ワークフロー作成
+- ✅ テンプレートベースの初期化 (start → end エッジ)
+- ✅ 初回保存時の保存ダイアログ
+- ✅ 未保存ワークフローでのサーバー操作無効化
+- ✅ 保存後の自動ポート割り当て
+- ✅ マルチインスタンス対応
 
-**完了日**: N/A
+**Phase 14完了日**: 2025-12-22
 **詳細**: [PHASE14_NEW_WORKFLOW.md](phases/PHASE14_NEW_WORKFLOW.md)
 
 ## フェーズ実行方法

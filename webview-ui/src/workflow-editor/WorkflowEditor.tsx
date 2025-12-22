@@ -91,7 +91,7 @@ export const WorkflowEditor: React.FC = () => {
 
   const loadWorkflow = useCallback((config: WorkflowConfig, path: string) => {
     setWorkflowConfig(config);
-    setFilePath(path);
+    setFilePath(path);  // May be empty string for new workflows
     setIsDirty(false);
 
     // Log A2A clients for Phase 9B verification
@@ -100,6 +100,13 @@ export const WorkflowEditor: React.FC = () => {
       console.log('[Phase 9B] A2A Client count:', Object.keys(config.a2aClients).length);
     } else {
       console.log('[Phase 9B] No A2A Clients in workflow');
+    }
+
+    // Log workflow type (Phase 14B)
+    if (!path || path === '') {
+      console.log('[Phase 14B] Loaded new workflow (no file path)');
+    } else {
+      console.log('[Phase 14B] Loaded existing workflow:', path);
     }
 
     try {
@@ -554,20 +561,34 @@ export const WorkflowEditor: React.FC = () => {
   }, [filePath]);
 
   const handleStopServer = useCallback(() => {
+    if (!filePath || filePath === '') {
+      return; // Silently ignore if no file path
+    }
+
     if (typeof vscode !== 'undefined') {
       vscode.postMessage({
         command: 'stopA2AServer',
+        filePath,
       });
     }
-  }, []);
+  }, [filePath]);
 
   const handleRestartServer = useCallback(() => {
+    if (!filePath || filePath === '') {
+      setNotification({
+        message: 'Please save the workflow before restarting the server',
+        type: 'error',
+      });
+      return;
+    }
+
     if (typeof vscode !== 'undefined') {
       vscode.postMessage({
         command: 'restartServer',
+        filePath,
       });
     }
-  }, []);
+  }, [filePath]);
 
   // Ctrl+S handling and Delete key
   useEffect(() => {

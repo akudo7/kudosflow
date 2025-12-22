@@ -1,8 +1,10 @@
 # Phase 14: New Workflow Creation
 
-**Status**: ⬜ Not Started
+**Status**: ✅ Completed
 **Created**: 2025-12-22
+**Completed**: 2025-12-22
 **Estimated Time**: 7-10 hours (分割: 3 sub-phases)
+**Actual Time**: ~8 hours
 
 ## Overview
 
@@ -12,18 +14,18 @@ Add the ability to create new workflows from scratch using a folder context menu
 
 Phase 14 is divided into 3 logical sub-phases for better organization and incremental implementation:
 
-- **[Phase 14A: Template and Command Registration](phase14/PHASE14A_TEMPLATE_AND_COMMAND.md)** ⬜ (2-3h)
+- **[Phase 14A: Template and Command Registration](phase14/PHASE14A_TEMPLATE_AND_COMMAND.md)** ✅ Completed (2-3h)
   - Create template provider
   - Register command and context menu
   - Basic `renderNew()` method
 
-- **[Phase 14B: Panel State Management and Template Loading](phase14/PHASE14B_PANEL_STATE.md)** ⬜ (3-4h)
+- **[Phase 14B: Panel State Management and Template Loading](phase14/PHASE14B_PANEL_STATE.md)** ✅ Completed (3-4h)
   - Update panel to handle `undefined` filePath
   - Load templates into editor
   - Defer port allocation
   - Disable server controls for unsaved workflows
 
-- **[Phase 14C: Save Dialog and File Creation](phase14/PHASE14C_SAVE_DIALOG.md)** ⬜ (2-3h)
+- **[Phase 14C: Save Dialog and File Creation](phase14/PHASE14C_SAVE_DIALOG.md)** ✅ Completed (2-3h)
   - Implement save dialog logic
   - Update panel state after save
   - Handle user cancellation
