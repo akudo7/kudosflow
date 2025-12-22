@@ -9,6 +9,8 @@
 
 Remove unused npm dependencies from both the extension and webview package.json files. This reduces node_modules size (~200-300MB), speeds up `yarn install`, and simplifies dependency management.
 
+**Note**: `dotenv` was initially removed in this phase but was later restored as it is required for environment variable reference in model configurations (Phase 9D requirement). The A2A server runner uses dotenv to load `.env` files for API keys and other environment variables needed by workflow nodes.
+
 ## Goal
 
 Clean up package dependencies by:
@@ -23,7 +25,7 @@ Clean up package dependencies by:
 ### Extension Side (package.json)
 
 1. **webpack** + **webpack-cli** - Build system not used (project uses `tsc` directly)
-2. **dotenv** - Not imported or used anywhere
+2. ~~**dotenv**~~ - **RESTORED** - Required for environment variable loading in A2A server (model API keys, etc.)
 3. **@a2a-js/sdk** - Not imported anywhere
 4. **moment** - Only used in one place for date formatting (can use native Date)
 5. **lodash** - Duplicate (also in webview), minimal usage
@@ -56,12 +58,14 @@ cd ..
 ### Task 2: Remove Extension Dependencies
 
 ```bash
-# Remove unused packages
-yarn remove webpack webpack-cli dotenv @a2a-js/sdk moment lodash
+# Remove unused packages (NOTE: dotenv is kept for environment variable loading)
+yarn remove webpack webpack-cli @a2a-js/sdk moment lodash
 
 # Verify package.json no longer lists them
-cat package.json | grep -E "webpack|dotenv|@a2a-js/sdk|moment|lodash"
+cat package.json | grep -E "webpack|@a2a-js/sdk|moment|lodash"
 ```
+
+**Important**: Do NOT remove `dotenv` - it is required by the A2A server for loading environment variables from `.env` files.
 
 ### Task 3: Replace moment with Native Date (if needed)
 
@@ -171,10 +175,11 @@ Phase 12C: Remove unused dependencies
 
 Extension side removals:
 - webpack, webpack-cli (build system not used)
-- dotenv (not imported)
 - @a2a-js/sdk (not imported)
 - moment (replaced with native Date)
 - lodash (duplicate, minimal usage)
+
+Note: dotenv was kept (required for A2A server environment variables)
 
 Webview side removals:
 - @mui/lab (not used in components)
@@ -248,8 +253,8 @@ yarn install:all
 npx depcheck
 cd webview-ui && npx depcheck && cd ..
 
-# Remove extension dependencies
-yarn remove webpack webpack-cli dotenv @a2a-js/sdk moment lodash
+# Remove extension dependencies (keep dotenv for environment variable loading)
+yarn remove webpack webpack-cli @a2a-js/sdk moment lodash
 
 # Remove webview dependencies
 cd webview-ui
@@ -293,9 +298,12 @@ du -sh webview-ui/node_modules
 - Vite for webview bundling
 - webpack.config.js exists but is not used
 
-**dotenv**:
-- No `.env` file in project
-- No `require('dotenv')` or `import 'dotenv'` found
+**~~dotenv~~** - **RESTORED**:
+
+- Initially removed as unused
+- Later restored for Phase 9D model configuration requirements
+- Used by A2A server runner to load environment variables from `.env` files
+- Required for API keys (OPENAI_API_KEY, ANTHROPIC_API_KEY, etc.)
 
 **@a2a-js/sdk**:
 - Listed in package.json but never imported
