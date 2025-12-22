@@ -1,0 +1,145 @@
+{
+  "config": {
+    "recursionLimit": 25,
+    "eventEmitter": {
+      "defaultMaxListeners": 10
+    }
+  },
+  "stateAnnotation": {
+    "name": "TestWorkflowState",
+    "type": "Annotation.Root"
+  },
+  "annotation": {
+    "messages": {
+      "type": "string[]",
+      "reducer": "(x, y) => x.concat(y)",
+      "default": []
+    },
+    "userName": {
+      "type": "string",
+      "reducer": "(x, y) => y || x",
+      "default": ""
+    },
+    "userJob": {
+      "type": "string",
+      "reducer": "(x, y) => y || x",
+      "default": ""
+    },
+    "advice": {
+      "type": "string",
+      "reducer": "(x, y) => y || x",
+      "default": ""
+    }
+  },
+  "models": [
+    {
+      "id": "adviceModel",
+      "type": "OpenAI",
+      "config": {
+        "model": "gpt-4o-mini",
+        "temperature": 0.7
+      },
+      "systemPrompt": "あなたは職業カウンセラーです。ユーザーの職業に基づいて、適切なアドバイスを100文字以内で提供してください。簡潔で実践的なアドバイスを心がけてください。"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "askName",
+      "function": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof TestWorkflowState.State"
+          }
+        ],
+        "output": {
+          "messages": "string[]",
+          "userName": "string"
+        },
+        "implementation": "const userInput = interrupt('あなたの名前は？');\n\nif (!userInput) {\n  return {\n    messages: ['名前が入力されませんでした'],\n    userName: ''\n  };\n}\n\nconst userName = String(userInput).trim();\nconst result = {\n  messages: [`こんにちは ${userName} さん！`],\n  userName: userName\n};\n\nreturn result;"
+      }
+    },
+    {
+      "id": "askJob",
+      "function": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof TestWorkflowState.State"
+          }
+        ],
+        "output": {
+          "messages": "string[]",
+          "userJob": "string"
+        },
+        "implementation": "const userInput = interrupt('あなたの職業は？');\n\nif (!userInput) {\n  return {\n    messages: ['職業が入力されませんでした'],\n    userJob: ''\n  };\n}\n\nconst userJob = String(userInput).trim();\nconst result = {\n  messages: [`職業: ${userJob}を承りました。アドバイスを生成中...`],\n  userJob: userJob\n};\n\nreturn result;"
+      }
+    },
+    {
+      "id": "generateAdvice",
+      "function": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof TestWorkflowState.State"
+          },
+          {
+            "name": "model",
+            "type": "ModelConfig",
+            "modelRef": "adviceModel"
+          }
+        ],
+        "output": {
+          "messages": "string[]",
+          "advice": "string"
+        },
+        "implementation": "try {\n  console.log('🔍 職業に基づくアドバイス生成中...');\n  console.log('👤 名前:', state.userName);\n  console.log('💼 職業:', state.userJob);\n\n  if (!state.userJob || state.userJob === '') {\n    return {\n      messages: ['職業が設定されていないため、アドバイスを生成できません'],\n      advice: ''\n    };\n  }\n\n  const prompt = `${state.userJob}として働く${state.userName}さんに対して、キャリアアップや仕事の質を向上させるための実践的なアドバイスを100文字以内で提供してください。`;\n\n  const response = await model.invoke([{ role: 'user', content: prompt }]);\n\n  const adviceText = response.content || 'アドバイスの生成に失敗しました';\n  \n  console.log('📋 生成されたアドバイス:', adviceText);\n\n  return {\n    messages: [`アドバイスを生成しました`],\n    advice: adviceText\n  };\n} catch (error) {\n  console.error('❌ エラー:', error);\n  return {\n    messages: [`エラーが発生しました: ${error.message}`],\n    advice: ''\n  };\n}"
+      }
+    },
+    {
+      "id": "showResult",
+      "function": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof TestWorkflowState.State"
+          }
+        ],
+        "output": {
+          "messages": "string[]"
+        },
+        "implementation": "const adviceMessage = `【${state.userName}さん（${state.userJob}）へのアドバイス】\\n\\n${state.advice}`;\n\ninterrupt(adviceMessage);\n\nconsole.log('🔍 最終結果:', adviceMessage);\n\nreturn {\n  messages: [adviceMessage, '処理が完了しました']\n};"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "__start__",
+      "to": "askName"
+    },
+    {
+      "from": "askName",
+      "to": "askJob"
+    },
+    {
+      "from": "askJob",
+      "to": "generateAdvice"
+    },
+    {
+      "from": "generateAdvice",
+      "to": "showResult"
+    },
+    {
+      "from": "showResult",
+      "to": "__end__"
+    }
+  ],
+  "stateGraph": {
+    "annotationRef": "TestWorkflowState",
+    "config": {
+      "checkpointer": {
+        "type": "MemorySaver"
+      }
+    }
+  }
+}
