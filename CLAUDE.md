@@ -26,6 +26,25 @@ yarn lint
 yarn pretest
 ```
 
+### Environment Configuration
+
+The extension requires environment variables for API keys and other configurations. Create a `.env` file in the project root:
+
+```bash
+# Copy the example file
+cp .env.example .env
+
+# Edit .env with your actual API keys
+```
+
+The `.env` file is loaded automatically when the A2A server starts. The server looks for `.env` files in:
+
+1. Extension root directory
+2. Same directory as the workflow config file
+3. Current working directory
+
+See [.env.example](.env.example) for available configuration options.
+
 ### Webview Development
 ```bash
 # Start webview development server (from root)

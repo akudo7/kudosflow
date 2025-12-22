@@ -83,6 +83,7 @@
   },
   "dependencies": {
     "@kudos/scene-graph-manager": "file:/Users/akirakudo/Desktop/MyWork/CLI/kudos-cli/src/SceneGraphManager",
+    "dotenv": "^17.2.3",
     "express": "^5.2.1"
   }
 }

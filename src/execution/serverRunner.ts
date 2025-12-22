@@ -1,6 +1,10 @@
 import * as fs from 'fs';
+import * as path from 'path';
 import { WorkflowEngine } from '@kudos/scene-graph-manager';
 import type { WorkflowConfig } from '@kudos/scene-graph-manager';
+
+// Load environment variables from .env file
+import * as dotenv from 'dotenv';
 
 // Use require for Express 5.x CommonJS compatibility
 const express = require('express');
@@ -11,6 +15,32 @@ const express = require('express');
  */
 export async function runServer(configPath: string, port: number): Promise<void> {
   try {
+    // Load .env file from multiple possible locations
+    const possibleEnvPaths = [
+      // 1. Extension root directory (3 levels up from out/execution/serverRunner.js)
+      path.resolve(__dirname, '..', '..', '.env'),
+      // 2. Same directory as the workflow config file
+      path.join(path.dirname(configPath), '.env'),
+      // 3. Current working directory
+      path.join(process.cwd(), '.env')
+    ];
+
+    let envLoaded = false;
+    for (const envPath of possibleEnvPaths) {
+      if (fs.existsSync(envPath)) {
+        dotenv.config({ path: envPath });
+        console.log(`✓ Loaded environment variables from: ${envPath}`);
+        envLoaded = true;
+        break;
+      }
+    }
+
+    if (!envLoaded) {
+      console.log(`⚠️  No .env file found in any of these locations:`);
+      possibleEnvPaths.forEach(p => console.log(`   - ${p}`));
+      console.log(`   Continuing without .env file...`);
+    }
+
     console.log(`\n🚀 Starting A2A Server...`);
     console.log(`   Config: ${configPath}`);
     console.log(`   Port: ${port}\n`);

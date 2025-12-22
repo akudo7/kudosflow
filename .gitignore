@@ -11,6 +11,11 @@ node_modules
 # OS files
 .DS_Store
 
+# Environment variables
+.env
+.env.local
+.env.*.local
+
 # Logs
 *.log
 npm-debug.log*

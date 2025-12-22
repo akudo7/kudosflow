@@ -1,6 +1,9 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
+import * as path from "path";
+import * as fs from "fs";
+import * as dotenv from "dotenv";
 import { WorkflowEditorPanel } from "./panels/WorkflowEditorPanel";
 import { StatusBarManager } from "./execution/StatusBarManager";
 import { PanelRegistry } from "./managers/PanelRegistry";
@@ -19,6 +22,18 @@ let serverInstanceManager: ServerInstanceManager;
  * @returns {void}
  */
 export function activate(context: vscode.ExtensionContext): void {
+  // Load .env file from extension root directory
+  const extensionRoot = path.resolve(__dirname, '..');
+  const envPath = path.join(extensionRoot, '.env');
+
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+    console.log(`[Extension] Loaded environment variables from: ${envPath}`);
+  } else {
+    console.log(`[Extension] No .env file found at: ${envPath}`);
+    console.log('[Extension] Continuing without .env file...');
+  }
+
   // Initialize managers
   panelRegistry = new PanelRegistry();
   portManager = new PortManager();
