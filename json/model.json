@@ -39,7 +39,7 @@
         "model": "gpt-4o-mini",
         "temperature": 0.7
       },
-      "systemPrompt": "あなたは職業カウンセラーです。ユーザーの職業に基づいて、適切なアドバイスを100文字以内で提供してください。簡潔で実践的なアドバイスを心がけてください。"
+      "systemPrompt": "You are a career counselor. Based on the user's occupation, provide appropriate advice within 100 characters. Keep it concise and practical."
     }
   ],
   "nodes": [
@@ -56,7 +56,7 @@
           "messages": "string[]",
           "userName": "string"
         },
-        "implementation": "const userInput = interrupt('あなたの名前は？');\n\nif (!userInput) {\n  return {\n    messages: ['名前が入力されませんでした'],\n    userName: ''\n  };\n}\n\nconst userName = String(userInput).trim();\nconst result = {\n  messages: [`こんにちは ${userName} さん！`],\n  userName: userName\n};\n\nreturn result;"
+        "implementation": "const userInput = interrupt('What is your name?');\n\nif (!userInput) {\n  return {\n    messages: ['Name was not entered'],\n    userName: ''\n  };\n}\n\nconst userName = String(userInput).trim();\nconst result = {\n  messages: [`Hello ${userName}!`],\n  userName: userName\n};\n\nreturn result;"
       }
     },
     {
@@ -72,7 +72,7 @@
           "messages": "string[]",
           "userJob": "string"
         },
-        "implementation": "const userInput = interrupt('あなたの職業は？');\n\nif (!userInput) {\n  return {\n    messages: ['職業が入力されませんでした'],\n    userJob: ''\n  };\n}\n\nconst userJob = String(userInput).trim();\nconst result = {\n  messages: [`職業: ${userJob}を承りました。アドバイスを生成中...`],\n  userJob: userJob\n};\n\nreturn result;"
+        "implementation": "const userInput = interrupt('What is your occupation?');\n\nif (!userInput) {\n  return {\n    messages: ['Occupation was not entered'],\n    userJob: ''\n  };\n}\n\nconst userJob = String(userInput).trim();\nconst result = {\n  messages: [`Occupation: ${userJob} received. Generating advice...`],\n  userJob: userJob\n};\n\nreturn result;"
       }
     },
     {
@@ -93,7 +93,7 @@
           "messages": "string[]",
           "advice": "string"
         },
-        "implementation": "try {\n  console.log('🔍 職業に基づくアドバイス生成中...');\n  console.log('👤 名前:', state.userName);\n  console.log('💼 職業:', state.userJob);\n\n  if (!state.userJob || state.userJob === '') {\n    return {\n      messages: ['職業が設定されていないため、アドバイスを生成できません'],\n      advice: ''\n    };\n  }\n\n  const prompt = `${state.userJob}として働く${state.userName}さんに対して、キャリアアップや仕事の質を向上させるための実践的なアドバイスを100文字以内で提供してください。`;\n\n  const response = await model.invoke([{ role: 'user', content: prompt }]);\n\n  const adviceText = response.content || 'アドバイスの生成に失敗しました';\n  \n  console.log('📋 生成されたアドバイス:', adviceText);\n\n  return {\n    messages: [`アドバイスを生成しました`],\n    advice: adviceText\n  };\n} catch (error) {\n  console.error('❌ エラー:', error);\n  return {\n    messages: [`エラーが発生しました: ${error.message}`],\n    advice: ''\n  };\n}"
+        "implementation": "try {\n  console.log('🔍 Generating advice based on occupation...');\n  console.log('👤 Name:', state.userName);\n  console.log('💼 Occupation:', state.userJob);\n\n  if (!state.userJob || state.userJob === '') {\n    return {\n      messages: ['Cannot generate advice because occupation is not set'],\n      advice: ''\n    };\n  }\n\n  const prompt = `Provide practical advice within 100 characters for ${state.userName} working as a ${state.userJob} to help with career advancement and improving work quality.`;\n\n  const response = await model.invoke([{ role: 'user', content: prompt }]);\n\n  const adviceText = response.content || 'Failed to generate advice';\n  \n  console.log('📋 Generated advice:', adviceText);\n\n  return {\n    messages: [`Advice generated`],\n    advice: adviceText\n  };\n} catch (error) {\n  console.error('❌ Error:', error);\n  return {\n    messages: [`An error occurred: ${error.message}`],\n    advice: ''\n  };\n}"
       }
     },
     {
@@ -108,7 +108,7 @@
         "output": {
           "messages": "string[]"
         },
-        "implementation": "const adviceMessage = `【${state.userName}さん（${state.userJob}）へのアドバイス】\\n\\n${state.advice}`;\n\ninterrupt(adviceMessage);\n\nconsole.log('🔍 最終結果:', adviceMessage);\n\nreturn {\n  messages: [adviceMessage, '処理が完了しました']\n};"
+        "implementation": "const adviceMessage = `[Advice for ${state.userName} (${state.userJob})]\\n\\n${state.advice}`;\n\ninterrupt(adviceMessage);\n\nconsole.log('🔍 Final result:', adviceMessage);\n\nreturn {\n  messages: [adviceMessage, 'Process completed']\n};"
       }
     }
   ],
