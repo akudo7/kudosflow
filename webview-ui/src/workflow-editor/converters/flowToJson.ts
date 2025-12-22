@@ -52,22 +52,70 @@ export function flowToJson(
   });
 
   // Convert React Flow edges back to workflow edges
+  const processedGroups = new Set<string>();
+
   edges.forEach((edge) => {
-    const workflowEdge: WorkflowEdge = {
-      from: edge.source,
-      to: edge.target,
-    };
+    // Check if this edge is part of a conditional group
+    if (edge.data?.conditionalGroupId && edge.data?.isConditional) {
+      const groupId = edge.data.conditionalGroupId;
 
-    if (edge.animated || edge.type === 'smoothstep') {
-      workflowEdge.type = 'conditional';
+      // Only process each group once
+      if (!processedGroups.has(groupId)) {
+        processedGroups.add(groupId);
+
+        // Find all edges in this conditional group
+        const groupEdges = edges.filter(
+          (e) => e.data?.conditionalGroupId === groupId
+        );
+
+        // Extract possibleTargets from all edges in group
+        const possibleTargets = groupEdges.map((e) => e.target);
+
+        // Create single conditional edge with possibleTargets
+        // Store possibleTargets in function.possibleTargets to match original JSON format
+        const workflowEdge: WorkflowEdge = {
+          from: edge.source,
+          type: 'conditional',
+          condition: edge.data.condition
+            ? {
+                ...edge.data.condition,
+                function: edge.data.condition.function
+                  ? {
+                      ...edge.data.condition.function,
+                      possibleTargets: possibleTargets,
+                    }
+                  : {
+                      parameters: [],
+                      output: '',
+                      implementation: '',
+                      possibleTargets: possibleTargets,
+                    },
+              }
+            : undefined,
+        };
+
+        workflowEdges.push(workflowEdge);
+      }
+      // Skip this edge if already processed as part of a group
+    } else {
+      // Regular edge or old-style conditional edge
+      const workflowEdge: WorkflowEdge = {
+        from: edge.source,
+        to: edge.target,
+      };
+
+      // Check for old-style conditional edge (backwards compatibility)
+      if (
+        (edge.animated || edge.type === 'smoothstep') &&
+        edge.data?.condition &&
+        !edge.data?.isConditional
+      ) {
+        workflowEdge.type = 'conditional';
+        workflowEdge.condition = edge.data.condition as any;
+      }
+
+      workflowEdges.push(workflowEdge);
     }
-
-    // Preserve condition data including possibleTargets
-    if (edge.data?.condition) {
-      workflowEdge.condition = edge.data.condition as any;
-    }
-
-    workflowEdges.push(workflowEdge);
   });
 
   // Preserve original workflow structure

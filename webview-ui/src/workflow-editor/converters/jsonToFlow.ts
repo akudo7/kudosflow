@@ -15,6 +15,15 @@ export function jsonToFlow(workflow: WorkflowConfig): {
   workflow.edges.forEach(edge => {
     if (edge.from === '__start__' || edge.to === '__start__') specialNodes.add('__start__');
     if (edge.from === '__end__' || edge.to === '__end__') specialNodes.add('__end__');
+
+    // Check possibleTargets in conditional edges
+    if (edge.type === 'conditional' && edge.condition) {
+      const possibleTargets = edge.condition.function?.possibleTargets || edge.condition.possibleTargets || [];
+      possibleTargets.forEach(target => {
+        if (target === '__start__') specialNodes.add('__start__');
+        if (target === '__end__') specialNodes.add('__end__');
+      });
+    }
   });
 
   // Add special start node if needed
@@ -63,23 +72,63 @@ export function jsonToFlow(workflow: WorkflowConfig): {
 
   // Convert workflow edges to React Flow edges
   workflow.edges.forEach((edge, index) => {
-    if (edge.to) {
+    if (edge.type === 'conditional' && edge.condition) {
+      // Check possibleTargets in both function and top-level (support both formats)
+      const possibleTargets = edge.condition.function?.possibleTargets || edge.condition.possibleTargets || [];
+
+      if (possibleTargets.length > 0) {
+        // Create one edge per possibleTarget
+        const groupId = `conditional-${edge.from}-${index}`;
+
+        possibleTargets.forEach((target, targetIndex) => {
+          edges.push({
+            id: `${groupId}-${target}`,
+            source: edge.from,
+            target: target,
+            type: 'smoothstep',
+            animated: true,
+            // Only show label on first edge to avoid clutter
+            label: targetIndex === 0 ? (edge.condition!.name || 'conditional') : undefined,
+            markerEnd: {
+              type: 'arrowclosed',
+            },
+            data: {
+              conditionalGroupId: groupId,
+              condition: edge.condition,
+              possibleTargets: possibleTargets,
+              isConditional: true,
+            },
+          });
+        });
+      } else {
+        // Fallback: conditional edge without possibleTargets
+        // (backwards compatibility or malformed data)
+        edges.push({
+          id: `e${edge.from}-${edge.to || 'undefined'}-${index}`,
+          source: edge.from,
+          target: edge.to || '',
+          type: 'smoothstep',
+          animated: true,
+          label: edge.condition.name || 'conditional',
+          markerEnd: {
+            type: 'arrowclosed',
+          },
+          data: {
+            condition: edge.condition,
+            isConditional: true,
+          },
+        });
+      }
+    } else if (edge.to) {
+      // Regular edge
       edges.push({
         id: `e${edge.from}-${edge.to}-${index}`,
         source: edge.from,
         target: edge.to,
-        type: edge.type === 'conditional' ? 'smoothstep' : 'default',
-        animated: edge.type === 'conditional',
-        label: edge.condition ? 'conditional' : undefined,
+        type: 'default',
         markerEnd: {
           type: 'arrowclosed',
         },
-        data: edge.condition
-          ? {
-              condition: edge.condition,
-              possibleTargets: edge.condition.possibleTargets,
-            }
-          : undefined,
       });
     }
   });

@@ -67,8 +67,9 @@ export interface ConditionalEdgeCondition {
     parameters: Array<{ name: string; type: string; modelRef?: string }>;
     output: string;  // Target node ID
     implementation: string;
+    possibleTargets?: string[];  // Possible target node IDs
   };
-  possibleTargets?: string[];  // Possible target node IDs
+  possibleTargets?: string[];  // Possible target node IDs (legacy or top-level)
 }
 
 export interface WorkflowEdge {
@@ -111,7 +112,16 @@ export interface CustomNodeData extends Record<string, unknown> {
 }
 
 export type ReactFlowNode = FlowNode<CustomNodeData>;
-export type ReactFlowEdge = FlowEdge;
+
+// Extended ReactFlowEdge with conditional edge support
+export interface ReactFlowEdge extends FlowEdge {
+  data?: {
+    condition?: ConditionalEdgeCondition;
+    possibleTargets?: string[];
+    conditionalGroupId?: string;  // Group identifier for conditional edges
+    isConditional?: boolean;       // Flag to identify conditional edges
+  };
+}
 
 // Validation types
 export interface ValidationResult {
