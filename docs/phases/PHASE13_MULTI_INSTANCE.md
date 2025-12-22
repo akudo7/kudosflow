@@ -3,6 +3,7 @@
 **Status**: ☑ Completed (Phase 13A & 13B only)
 **Created**: 2025-12-20
 **Completed**: 2025-12-20
+**Updated**: 2025-12-22 (JSON-based port configuration support)
 **Actual Time**: 14-16 hours (Phase 13A: 8-10h, Phase 13B: 6-8h)
 
 ## Overview
@@ -77,8 +78,10 @@ Remove singleton pattern and implement panel registry system.
 
 **Key Deliverables**:
 - ✅ PanelRegistry.ts - Track all active panels
-- ✅ PortManager.ts - Automatic port allocation
+- ✅ PortManager.ts - Automatic port allocation (3000, 3001, 3002...)
+- ✅ PortManager.ts - JSON-based port configuration support (config.a2aEndpoint.port)
 - ✅ WorkflowEditorPanel refactoring - Remove singleton
+- ✅ WorkflowEditorPanel - JSON port configuration reading
 - ✅ Message format updates - Add panelId
 
 ### [Phase 13B: Server Instance Management](#phase-13b) ☑
@@ -212,6 +215,7 @@ Automatic port allocation and management for A2A servers.
 
 **Features**:
 - Automatic port allocation (starting from 3000)
+- JSON-based port configuration support (config.a2aEndpoint.port)
 - Port reservation and release
 - System-level port availability checking
 - panelId → port mapping
@@ -228,6 +232,12 @@ export class PortManager {
    * Automatically finds next available port starting from basePort
    */
   async allocatePort(panelId: string): Promise<number>;
+
+  /**
+   * Reserve a specific port for a panel (from workflow JSON config)
+   * Used when port is explicitly configured at config.a2aEndpoint.port
+   */
+  reservePort(panelId: string, port: number): number;
 
   /**
    * Release a port when panel closes
@@ -278,7 +288,16 @@ private async isPortAvailable(port: number): Promise<boolean> {
 - ✅ **Add**: Instance properties
   ```typescript
   private readonly panelId: string;
-  private assignedPort: number;
+  private assignedPort: number | undefined;  // Auto-allocated port
+  private configuredPort: number | undefined; // Port from workflow JSON
+  ```
+- ✅ **Add**: JSON port configuration reading
+  ```typescript
+  private _initializePortConfiguration(): void {
+    // Read config.a2aEndpoint.port from workflow JSON
+    const port = workflow.config?.a2aEndpoint?.port;
+    if (port) this.configuredPort = port;
+  }
   ```
 - ✅ **Modify**: Constructor
   ```typescript
@@ -468,9 +487,10 @@ export class ServerInstanceManager {
 
 **Changes**:
 
-- ✅ **Modify**: Constructor - Pre-allocate port
-- ✅ **Modify**: `_startA2AServer()` - Use pre-allocated port
-- ✅ **Modify**: `dispose()` - Clean up server and port
+- ✅ **Modify**: Constructor - Initialize port configuration
+- ✅ **Modify**: `_loadWorkflow()` - Reserve configured port or allocate automatic port
+- ✅ **Modify**: `_startA2AServer()` - Use configured or pre-allocated port (priority: explicit > configured > auto-allocated)
+- ✅ **Modify**: `dispose()` - Clean up server and release port
 
 #### 3. `src/execution/TerminalManager.ts`
 
@@ -983,6 +1003,7 @@ Phase 13 transforms KudosFlow extension from single-instance to multi-instance a
 - ✅ Independent A2A server instances with auto port management
 - ✅ PanelRegistry for tracking all active panels
 - ✅ PortManager for automatic port allocation (3000, 3001, 3002...)
+- ✅ PortManager for JSON-based port configuration (config.a2aEndpoint.port)
 - ✅ ServerInstanceManager for independent server instances
 - ✅ Unique panel IDs and viewTypes
 
@@ -999,3 +1020,44 @@ Phase 13 transforms KudosFlow extension from single-instance to multi-instance a
 - ❌ Formal test suite (Phase 13E) - Manual testing confirms functionality
 
 **Result**: All user requirements met with Phase 13A & 13B implementation.
+
+---
+
+## Update History
+
+### 2025-12-22: JSON-Based Port Configuration Support
+
+**Enhancement**: Added support for reading port configuration from workflow JSON files.
+
+**Changes**:
+
+1. **PortManager.ts**:
+   - Added `reservePort(panelId: string, port: number)` method
+   - Supports explicit port reservation from workflow configuration
+   - Prevents port conflicts between configured and auto-allocated ports
+
+2. **WorkflowEditorPanel.ts**:
+   - Added `configuredPort` property to store JSON-configured port
+   - Added `_initializePortConfiguration()` method to read `config.a2aEndpoint.port`
+   - Modified `_loadWorkflow()` to use `reservePort()` for configured ports
+   - Updated `dispose()` to release both configured and auto-allocated ports
+   - Port priority: explicit parameter > configured JSON > auto-allocated
+
+**Configuration Format**:
+
+```json
+{
+  "config": {
+    "a2aEndpoint": {
+      "port": 3002
+    }
+  }
+}
+```
+
+**Benefits**:
+
+- Workflows can specify their preferred port in JSON
+- Maintains compatibility with auto-allocation for workflows without port config
+- Prevents accidental port conflicts in multi-instance scenarios
+- Follows reference implementation pattern from CLI server

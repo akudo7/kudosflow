@@ -64,6 +64,49 @@ export class PortManager {
   }
 
   /**
+   * Reserve a specific port for a panel (e.g., from workflow JSON config).
+   *
+   * This method is used when the port is explicitly configured in the workflow JSON
+   * at config.a2aEndpoint.port. It reserves the port without checking system availability,
+   * assuming the configured port is intentional.
+   *
+   * @param panelId - The panel ID requesting the port
+   * @param port - The specific port number to reserve
+   * @returns The reserved port number
+   * @throws Error if the port is already allocated to another panel
+   */
+  reservePort(panelId: string, port: number): number {
+    // Check if this panel already has a port allocated
+    const existingPort = this.allocatedPorts.get(panelId);
+    if (existingPort !== undefined) {
+      if (existingPort === port) {
+        console.log(`[PortManager] Panel ${panelId} already has reserved port ${port}`);
+        return port;
+      } else {
+        // Release old port and reserve new one
+        this.usedPorts.delete(existingPort);
+        console.log(`[PortManager] Panel ${panelId} changing from port ${existingPort} to ${port}`);
+      }
+    }
+
+    // Check if the port is already used by another panel
+    if (this.usedPorts.has(port)) {
+      const existingPanelId = Array.from(this.allocatedPorts.entries())
+        .find(([_, p]) => p === port)?.[0];
+      throw new Error(
+        `Port ${port} is already reserved by panel ${existingPanelId}. ` +
+        `Please use a different port in your workflow configuration.`
+      );
+    }
+
+    // Reserve the port
+    this.allocatedPorts.set(panelId, port);
+    this.usedPorts.add(port);
+    console.log(`[PortManager] Reserved configured port ${port} for panel ${panelId}`);
+    return port;
+  }
+
+  /**
    * Release a port when panel closes.
    * Makes the port available for reuse.
    *

@@ -136,11 +136,13 @@ export class WorkflowEditorPanel {
     // Dispose of workflow executor
     this._workflowExecutor.dispose();
 
-    // Release allocated port (only for auto-allocated ports, not configured ports)
-    if (this.assignedPort !== undefined) {
-      const portManager = getPortManager();
+    // Release port (both configured and auto-allocated ports)
+    const portManager = getPortManager();
+    const releasedPort = this.configuredPort || this.assignedPort;
+    if (releasedPort !== undefined) {
       portManager.releasePort(this.panelId);
-      console.log(`[WorkflowEditorPanel] Released auto-allocated port ${this.assignedPort} for panel ${this.panelId.slice(-6)}`);
+      const portType = this.configuredPort ? 'configured' : 'auto-allocated';
+      console.log(`[WorkflowEditorPanel] Released ${portType} port ${releasedPort} for panel ${this.panelId.slice(-6)}`);
     }
 
     // Unregister from panel registry
@@ -169,11 +171,13 @@ export class WorkflowEditorPanel {
       const workflow = JSON.parse(fileContent);
 
       // Extract port from workflow config if specified
-      if (workflow.port && typeof workflow.port === 'number') {
-        this.configuredPort = workflow.port;
-        console.log(`[WorkflowEditorPanel] Panel ${this.panelId.slice(-6)} using configured port ${this.configuredPort} from JSON`);
+      // Check for port at: config.a2aEndpoint.port (following reference implementation)
+      const port = workflow.config?.a2aEndpoint?.port;
+      if (port && typeof port === 'number') {
+        this.configuredPort = port;
+        console.log(`[WorkflowEditorPanel] Panel ${this.panelId.slice(-6)} using configured port ${this.configuredPort} from JSON (config.a2aEndpoint.port)`);
       } else {
-        console.log(`[WorkflowEditorPanel] Panel ${this.panelId.slice(-6)} will use auto-allocated port`);
+        console.log(`[WorkflowEditorPanel] Panel ${this.panelId.slice(-6)} will use auto-allocated port (no config.a2aEndpoint.port found)`);
       }
     } catch (error) {
       console.error(`[WorkflowEditorPanel] Failed to read port configuration:`, error);
@@ -188,9 +192,20 @@ export class WorkflowEditorPanel {
       const fileContent = await workspace.fs.readFile(Uri.file(this._filePath));
       const workflow = JSON.parse(fileContent.toString());
 
-      // Allocate fallback port if not configured
-      if (!this.configuredPort) {
-        const portManager = getPortManager();
+      const portManager = getPortManager();
+
+      // Use configured port if available, otherwise auto-allocate
+      if (this.configuredPort) {
+        // Reserve the configured port from workflow JSON
+        try {
+          portManager.reservePort(this.panelId, this.configuredPort);
+          console.log(`[WorkflowEditorPanel] Panel ${this.panelId.slice(-6)} reserved configured port ${this.configuredPort}`);
+        } catch (error) {
+          window.showErrorMessage(`Failed to reserve configured port ${this.configuredPort}: ${error}`);
+          throw error;
+        }
+      } else {
+        // Auto-allocate port when not configured
         this.assignedPort = await portManager.allocatePort(this.panelId);
         console.log(`[WorkflowEditorPanel] Panel ${this.panelId.slice(-6)} assigned auto-allocated port ${this.assignedPort}`);
       }

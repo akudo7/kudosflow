@@ -342,8 +342,10 @@ A2Aサーバーとチャット形式でのワークフロー実行機能の実�
 
 - PanelRegistryでパネル追跡管理 ✅
 - PortManagerで自動ポート割り当て (3000, 3001, 3002...) ✅
+- PortManagerでJSONベースのポート設定対応 (config.a2aEndpoint.port) ✅
 - 一意のpanelId生成システム ✅
 - 完了日: 2025-12-20
+- 更新日: 2025-12-22 (JSONポート設定機能追加)
 
 ##### Phase 13B: Server Instance Management ☑
 
@@ -377,9 +379,11 @@ A2Aサーバーとチャット形式でのワークフロー実行機能の実�
 
 - ✅ 複数パネル同時起動
 - ✅ 独立したA2Aサーバー (ポート自動割り当て)
+- ✅ JSONベースのポート設定対応 (config.a2aEndpoint.port)
 - ✅ パネル間の完全分離
 - ✅ すべてのユーザー要件達成
 **完了日**: 2025-12-20
+**更新日**: 2025-12-22 (JSONポート設定機能追加)
 **詳細**: [PHASE13_MULTI_INSTANCE.md](phases/PHASE13_MULTI_INSTANCE.md)
 
 ## フェーズ実行方法
