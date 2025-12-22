@@ -386,6 +386,51 @@ A2Aサーバーとチャット形式でのワークフロー実行機能の実�
 **更新日**: 2025-12-22 (JSONポート設定機能追加)
 **詳細**: [PHASE13_MULTI_INSTANCE.md](phases/PHASE13_MULTI_INSTANCE.md)
 
+#### [Phase 14: 新規ワークフロー作成機能](phases/PHASE14_NEW_WORKFLOW.md) ⬜
+
+フォルダコンテキストメニューから新規ワークフローを作成する機能の実装
+
+**概要:**
+
+- フォルダ右クリック → "Create New Workflow Here"
+- 最小限のテンプレート (start + end ノードのみ、エッジなし)
+- 初回保存時にファイル作成ダイアログ表示
+- デフォルトファイル名: `untitled-workflow.json`
+- 保存後は通常のワークフローとして動作
+
+**実装フェーズ:**
+
+##### Phase 14A: Template and Command Registration ⬜
+
+- テンプレートプロバイダー作成 (WorkflowTemplate.ts)
+- コマンド登録 (kudosflow.createNewWorkflow)
+- フォルダコンテキストメニュー追加
+- 基本的なrenderNew()メソッド実装
+- 推定時間: 2-3時間
+
+##### Phase 14B: Panel State Management and Template Loading ⬜
+
+- WorkflowEditorPanelのfilePath型をstring | undefinedに更新
+- テンプレートローディングロジック実装
+- ポート割り当ての遅延処理
+- サーバーコントロールの無効化 (未保存ワークフロー用)
+- 推定時間: 3-4時間
+
+##### Phase 14C: Save Dialog and File Creation ⬜
+
+- 保存ダイアログの実装 (初回保存時)
+- パネル状態の更新 (保存後: filePath, title, port)
+- キャンセル処理の実装
+- Webviewへのファイルパス更新通知
+- 推定時間: 2-3時間
+
+**実績:**
+
+- N/A (未実装)
+
+**完了日**: N/A
+**詳細**: [PHASE14_NEW_WORKFLOW.md](phases/PHASE14_NEW_WORKFLOW.md)
+
 ## フェーズ実行方法
 
 各フェーズは独立して実装可能です。以下のコマンドで実装を開始してください:
