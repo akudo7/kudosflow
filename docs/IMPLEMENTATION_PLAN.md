@@ -437,6 +437,44 @@ A2Aサーバーとチャット形式でのワークフロー実行機能の実�
 **Phase 14完了日**: 2025-12-22
 **詳細**: [PHASE14_NEW_WORKFLOW.md](phases/PHASE14_NEW_WORKFLOW.md)
 
+#### [Phase 15: Conditional Edge Support](phases/PHASE15_CONDITIONAL_EDGES.md) ⬜
+
+Conditional edgeのpossibleTargets配列を使用した包括的なサポートの実装
+
+**概要:**
+- Visual representation: possibleTargetごとに複数のエッジを描画
+- Editing UI: 条件ロジックを編集するモーダルダイアログ
+- Edge management: 設定パネルに専用のEdgesタブ追加
+- JSON compatibility: 既存の構造を維持
+
+**実装フェーズ:**
+
+##### Phase 15A: Visual Representation ⬜
+- jsonToFlow/flowToJsonコンバーターの修正
+- possibleTargets用の複数エッジのレンダリング
+- グループ化のためのconditionalGroupId追加
+
+##### Phase 15B: Edge Editor Tab ⬜
+- 設定パネルにEdgesタブを追加
+- EdgeListEditorコンポーネント作成
+- Conditional edgeの視覚的なグループ化
+- 編集/削除機能
+
+##### Phase 15C: Conditional Edge Modal ⬜
+- ConditionalEdgeFormModalの作成
+- 条件名、パラメータ、実装の編集
+- possibleTargetsのマルチセレクトインターフェース
+- バリデーション統合
+
+##### Phase 15D: Integration and Testing ⬜
+- エッジ作成フローの拡張
+- コンテキストメニュー(オプション)
+- 包括的なテスト
+- ドキュメント作成
+
+**Phase 15完了日**: TBD
+**詳細**: [PHASE15_CONDITIONAL_EDGES.md](phases/PHASE15_CONDITIONAL_EDGES.md)
+
 ## フェーズ実行方法
 
 各フェーズは独立して実装可能です。以下のコマンドで実装を開始してください:
