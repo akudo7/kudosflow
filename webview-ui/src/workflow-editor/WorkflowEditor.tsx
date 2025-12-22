@@ -148,6 +148,10 @@ export const WorkflowEditor: React.FC = () => {
           break;
         case 'saveSuccess':
           setIsDirty(false);
+          // Update filePath if it was a new workflow (first save)
+          if (message.filePath && message.filePath !== filePath) {
+            setFilePath(message.filePath);
+          }
           setNotification({
             message: 'Workflow saved successfully',
             type: 'success',
@@ -535,7 +539,7 @@ export const WorkflowEditor: React.FC = () => {
   const handleStartServer = useCallback(() => {
     if (!filePath) {
       setNotification({
-        message: 'No workflow file loaded',
+        message: 'Please save the workflow before starting the server',
         type: 'error',
       });
       return;

@@ -32,11 +32,11 @@ export class WorkflowEditorPanel {
   private configuredPort: number | undefined; // Port from workflow JSON
   private readonly _panel: WebviewPanel;
   private _disposables: Disposable[] = [];
-  private _filePath: string;
+  private _filePath: string | undefined;
   private _serverLauncher: A2AServerLauncher;
   private _workflowExecutor: WorkflowExecutor;
 
-  constructor(panelId: string, panel: WebviewPanel, extensionUri: Uri, filePath: string) {
+  constructor(panelId: string, panel: WebviewPanel, extensionUri: Uri, filePath: string | undefined) {
     this.panelId = panelId;
     this._panel = panel;
     this._filePath = filePath;
@@ -115,6 +115,49 @@ export class WorkflowEditorPanel {
   }
 
   /**
+   * Creates and renders a new webview panel for creating a new workflow.
+   * The workflow starts with a template and has no file path until first save.
+   *
+   * @param extensionUri The URI of the directory containing the extension
+   * @param defaultFolder The folder where the workflow will be saved (used as default in save dialog)
+   * @returns The newly created WorkflowEditorPanel instance
+   */
+  public static renderNew(extensionUri: Uri, defaultFolder?: Uri): WorkflowEditorPanel {
+    const panelRegistry = getPanelRegistry();
+    const panelId = panelRegistry.generateId();
+
+    const panel = window.createWebviewPanel(
+      `workflowEditor-${panelId}`,
+      'Workflow: Untitled',  // Initial title for new workflows
+      ViewColumn.One,
+      {
+        enableScripts: true,
+        retainContextWhenHidden: true,
+        localResourceRoots: [
+          Uri.joinPath(extensionUri, "out"),
+          Uri.joinPath(extensionUri, "webview-ui/build"),
+        ],
+      }
+    );
+
+    // Create panel instance with undefined filePath
+    const editorPanel = new WorkflowEditorPanel(
+      panelId,
+      panel,
+      extensionUri,
+      undefined  // No file path for new workflows
+    );
+
+    // Store default folder for save dialog
+    (editorPanel as any)._defaultFolder = defaultFolder;
+
+    // Register in global registry
+    panelRegistry.register(editorPanel);
+
+    return editorPanel;
+  }
+
+  /**
    * Cleans up and disposes of webview resources when the webview panel is closed.
    */
   public dispose() {
@@ -165,6 +208,12 @@ export class WorkflowEditorPanel {
    * Initialize port configuration by reading the workflow JSON synchronously
    */
   private _initializePortConfiguration(): void {
+    // Skip port initialization for new workflows (no file yet)
+    if (!this._filePath) {
+      console.log(`[WorkflowEditorPanel] Panel ${this.panelId.slice(-6)} is new workflow, skipping port initialization`);
+      return;
+    }
+
     try {
       const fs = require('fs');
       const fileContent = fs.readFileSync(this._filePath, 'utf-8');
@@ -189,35 +238,44 @@ export class WorkflowEditorPanel {
    */
   private async _loadWorkflow() {
     try {
-      const fileContent = await workspace.fs.readFile(Uri.file(this._filePath));
-      const workflow = JSON.parse(fileContent.toString());
+      let workflow: any;
+
+      if (!this._filePath) {
+        // New workflow - use template
+        const { getDefaultWorkflowTemplate } = require('../templates/WorkflowTemplate');
+        workflow = getDefaultWorkflowTemplate();
+        console.log(`[Panel ${this.panelId}] Loaded new workflow template`);
+      } else {
+        // Existing workflow - load from file
+        const fileContent = await workspace.fs.readFile(Uri.file(this._filePath));
+        workflow = JSON.parse(fileContent.toString());
+        console.log(`[Panel ${this.panelId}] Loaded workflow from: ${this._filePath}`);
+      }
 
       const portManager = getPortManager();
 
-      // Use configured port if available, otherwise auto-allocate
-      if (this.configuredPort) {
-        // Reserve the configured port from workflow JSON
-        try {
-          portManager.reservePort(this.panelId, this.configuredPort);
-          console.log(`[WorkflowEditorPanel] Panel ${this.panelId.slice(-6)} reserved configured port ${this.configuredPort}`);
-        } catch (error) {
-          window.showErrorMessage(`Failed to reserve configured port ${this.configuredPort}: ${error}`);
-          throw error;
+      // Only allocate port for existing workflows with file path
+      if (this._filePath) {
+        if (this.configuredPort) {
+          try {
+            portManager.reservePort(this.panelId, this.configuredPort);
+            console.log(`[WorkflowEditorPanel] Panel ${this.panelId.slice(-6)} reserved configured port ${this.configuredPort}`);
+          } catch (error) {
+            window.showErrorMessage(`Failed to reserve configured port ${this.configuredPort}: ${error}`);
+            throw error;
+          }
+        } else {
+          this.assignedPort = await portManager.allocatePort(this.panelId);
+          console.log(`[WorkflowEditorPanel] Panel ${this.panelId.slice(-6)} assigned auto-allocated port ${this.assignedPort}`);
         }
-      } else {
-        // Auto-allocate port when not configured
-        this.assignedPort = await portManager.allocatePort(this.panelId);
-        console.log(`[WorkflowEditorPanel] Panel ${this.panelId.slice(-6)} assigned auto-allocated port ${this.assignedPort}`);
       }
 
       this._panel.webview.postMessage({
         command: "loadWorkflow",
         panelId: this.panelId,
         data: workflow,
-        filePath: this._filePath,
+        filePath: this._filePath || '',  // Empty string for new workflows
       });
-
-      console.log(`[Panel ${this.panelId}] Loaded workflow from: ${this._filePath}`);
     } catch (error) {
       window.showErrorMessage(`Failed to load workflow: ${error}`);
       console.error("Error loading workflow:", error);
@@ -279,33 +337,79 @@ export class WorkflowEditorPanel {
    * Saves the workflow data to the JSON file
    */
   private async _saveWorkflow(data: any) {
-    const answer = await window.showWarningMessage(
-      "Save workflow?",
-      "Yes",
-      "No"
-    );
+    try {
+      let targetPath = this._filePath;
 
-    if (answer === "Yes") {
-      try {
-        const content = JSON.stringify(data, null, 2);
-        await workspace.fs.writeFile(
-          Uri.file(this._filePath),
-          Buffer.from(content, "utf8")
+      // If no file path (new workflow), show save dialog
+      if (!targetPath) {
+        const defaultFolder = (this as any)._defaultFolder as Uri | undefined;
+        const saveUri = await window.showSaveDialog({
+          defaultUri: defaultFolder
+            ? Uri.joinPath(defaultFolder, 'untitled-workflow.json')
+            : undefined,
+          filters: {
+            'JSON Files': ['json']
+          },
+          saveLabel: 'Save Workflow'
+        });
+
+        if (!saveUri) {
+          // User cancelled save dialog
+          console.log(`[Panel ${this.panelId}] Save cancelled by user`);
+          return;
+        }
+
+        targetPath = saveUri.fsPath;
+
+        // Update panel state after first save
+        this._filePath = targetPath;
+        this._panel.title = `Workflow: ${path.basename(targetPath)}`;
+
+        // Initialize port configuration from saved workflow
+        this._initializePortConfiguration();
+
+        // Allocate port if needed
+        if (!this.configuredPort && !this.assignedPort) {
+          const portManager = getPortManager();
+          this.assignedPort = await portManager.allocatePort(this.panelId);
+          console.log(`[WorkflowEditorPanel] Panel ${this.panelId.slice(-6)} assigned port ${this.assignedPort} after first save`);
+        }
+
+        console.log(`[Panel ${this.panelId}] First save to: ${targetPath}`);
+      } else {
+        // Existing file - show confirmation
+        const answer = await window.showWarningMessage(
+          "Save workflow?",
+          "Yes",
+          "No"
         );
 
-        this._panel.webview.postMessage({
-          command: "saveSuccess",
-          panelId: this.panelId
-        });
-        window.showInformationMessage("Workflow saved successfully");
-      } catch (error) {
-        this._panel.webview.postMessage({
-          command: "saveError",
-          panelId: this.panelId,
-          error: String(error),
-        });
-        window.showErrorMessage(`Failed to save: ${error}`);
+        if (answer !== "Yes") {
+          return;
+        }
       }
+
+      // Write file
+      const content = JSON.stringify(data, null, 2);
+      await workspace.fs.writeFile(
+        Uri.file(targetPath),
+        Buffer.from(content, "utf8")
+      );
+
+      this._panel.webview.postMessage({
+        command: "saveSuccess",
+        panelId: this.panelId,
+        filePath: targetPath  // Send updated file path to webview
+      });
+
+      window.showInformationMessage("Workflow saved successfully");
+    } catch (error) {
+      this._panel.webview.postMessage({
+        command: "saveError",
+        panelId: this.panelId,
+        error: String(error),
+      });
+      window.showErrorMessage(`Failed to save: ${error}`);
     }
   }
 
@@ -449,8 +553,15 @@ export class WorkflowEditorPanel {
   /**
    * Get the file path being edited.
    */
-  public getFilePath(): string {
+  public getFilePath(): string | undefined {
     return this._filePath;
+  }
+
+  /**
+   * Check if this is a new workflow (not yet saved)
+   */
+  public isNewWorkflow(): boolean {
+    return this._filePath === undefined;
   }
 
   /**

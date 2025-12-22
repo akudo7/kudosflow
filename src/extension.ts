@@ -40,6 +40,15 @@ export function activate(context: vscode.ExtensionContext): void {
     })
   );
 
+  // Register Create New Workflow command
+  context.subscriptions.push(
+    vscode.commands.registerCommand("kudosflow.createNewWorkflow", (uri: vscode.Uri) => {
+      // Get the folder path from the URI
+      const folderUri = uri;
+      WorkflowEditorPanel.renderNew(context.extensionUri, folderUri);
+    })
+  );
+
   // Register show server status command
   context.subscriptions.push(
     vscode.commands.registerCommand("kudosflow.showServerStatus", () => {
