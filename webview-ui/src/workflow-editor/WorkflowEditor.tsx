@@ -19,11 +19,13 @@ import { jsonToFlow } from './converters/jsonToFlow';
 import { flowToJson } from './converters/flowToJson';
 import { WorkflowNode } from './WorkflowNode';
 import { ToolNode } from './ToolNode';
+import { ConditionalEdge } from './ConditionalEdge';
 import { WorkflowToolbar } from './WorkflowToolbar';
 import { SaveNotification } from './SaveNotification';
 import { ContextMenu } from './ContextMenu';
 import { WorkflowSettingsPanel } from './WorkflowSettingsPanel';
 import { ChatPanel } from './ChatPanel';
+import { ConditionalEdgeFormModal } from './settings/ConditionalEdgeFormModal';
 
 // VSCode API
 declare const vscode: any;
@@ -61,10 +63,19 @@ export const WorkflowEditor: React.FC = () => {
   const [sessionId] = useState(() => uuidv4());
   const [unreadCount, setUnreadCount] = useState(0);
 
+  // Conditional edge modal state
+  const [showConditionalModal, setShowConditionalModal] = useState(false);
+  const [editingEdgeGroup, setEditingEdgeGroup] = useState<ReactFlowEdge[] | null>(null);
+
   // Define custom node types
   const nodeTypes = useMemo(() => ({
     workflowNode: WorkflowNode,
     toolNode: ToolNode,
+  }), []);
+
+  // Define custom edge types
+  const edgeTypes = useMemo(() => ({
+    conditional: ConditionalEdge,
   }), []);
 
   // Handle node name change from inline editing
@@ -89,6 +100,12 @@ export const WorkflowEditor: React.FC = () => {
     [setNodes, setEdges]
   );
 
+  // Add double-click handler to conditional edges
+  const handleConditionalEdgeDoubleClick = useCallback((edgeGroup: ReactFlowEdge[]) => {
+    setEditingEdgeGroup(edgeGroup);
+    setShowConditionalModal(true);
+  }, []);
+
   const loadWorkflow = useCallback((config: WorkflowConfig, path: string) => {
     setWorkflowConfig(config);
     setFilePath(path);  // May be empty string for new workflows
@@ -111,6 +128,7 @@ export const WorkflowEditor: React.FC = () => {
 
     try {
       const { nodes: flowNodes, edges: flowEdges } = jsonToFlow(config);
+
       // Add onNodeNameChange callback and models to all nodes
       const nodesWithCallback = flowNodes.map(node => ({
         ...node,
@@ -120,8 +138,24 @@ export const WorkflowEditor: React.FC = () => {
           onNodeNameChange: handleNodeNameChangeFromNode,
         }
       }));
+
+      // Add double-click handler to conditional edges
+      const edgesWithHandler = flowEdges.map(edge => {
+        if (edge.data?.isConditional && edge.data?.conditionalGroupId) {
+          return {
+            ...edge,
+            data: {
+              ...edge.data,
+              onDoubleClick: handleConditionalEdgeDoubleClick,
+              allEdges: flowEdges,
+            },
+          };
+        }
+        return edge;
+      });
+
       setNodes(nodesWithCallback);
-      setEdges(flowEdges);
+      setEdges(edgesWithHandler);
     } catch (error) {
       console.error('Error converting workflow to flow:', error);
       if (typeof vscode !== 'undefined') {
@@ -131,7 +165,27 @@ export const WorkflowEditor: React.FC = () => {
         });
       }
     }
-  }, [handleNodeNameChangeFromNode, setNodes, setEdges]);
+  }, [handleNodeNameChangeFromNode, handleConditionalEdgeDoubleClick, setNodes, setEdges]);
+
+  // Handle save conditional edge from modal
+  const handleSaveConditionalEdge = useCallback((updatedEdges: ReactFlowEdge[]) => {
+    const groupId = updatedEdges[0]?.data?.conditionalGroupId;
+
+    setEdges((currentEdges) => {
+      // Remove old edges in group
+      const filteredEdges = currentEdges.filter(
+        (e) => e.data?.conditionalGroupId !== groupId
+      );
+
+      // Add updated edges
+      return [...filteredEdges, ...updatedEdges];
+    });
+
+    setShowConditionalModal(false);
+    setEditingEdgeGroup(null);
+    setIsDirty(true);
+  }, [setEdges]);
+
 
   // Initialize workflow execution when filePath changes (Phase 10C)
   useEffect(() => {
@@ -641,6 +695,7 @@ export const WorkflowEditor: React.FC = () => {
         onNodeContextMenu={onNodeContextMenu}
         onPaneContextMenu={onPaneContextMenu}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView
       >
         <Background />
@@ -684,6 +739,16 @@ export const WorkflowEditor: React.FC = () => {
         isWaitingForInterrupt={isWaitingForInterrupt}
         interruptMessage={interruptMessage}
         onClearChat={handleClearChat}
+      />
+      <ConditionalEdgeFormModal
+        show={showConditionalModal}
+        edgeGroup={editingEdgeGroup || undefined}
+        allNodes={nodes}
+        onSave={handleSaveConditionalEdge}
+        onCancel={() => {
+          setShowConditionalModal(false);
+          setEditingEdgeGroup(null);
+        }}
       />
     </div>
   );

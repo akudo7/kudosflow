@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ReactFlowEdge, ReactFlowNode } from '../types/workflow.types';
+import { ConditionalEdgeFormModal } from './ConditionalEdgeFormModal';
 
 interface EdgeListEditorProps {
   edges: ReactFlowEdge[];
@@ -22,6 +23,8 @@ export const EdgeListEditor: React.FC<EdgeListEditorProps> = ({
   onUpdateEdges,
 }) => {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [showModal, setShowModal] = useState(false);
+  const [editingEdgeGroup, setEditingEdgeGroup] = useState<ReactFlowEdge[] | null>(null);
 
   // Group edges by conditionalGroupId
   const { conditionalGroups, regularEdges } = useMemo(() => {
@@ -95,6 +98,17 @@ export const EdgeListEditor: React.FC<EdgeListEditorProps> = ({
 
     const updatedEdges = edges.filter((e) => e.id !== edgeId);
     onUpdateEdges(updatedEdges);
+  };
+
+  const handleSaveConditionalEdge = (updatedEdges: ReactFlowEdge[]) => {
+    const groupId = updatedEdges[0]?.data?.conditionalGroupId;
+    const filteredEdges = edges.filter(
+      (e) => e.data?.conditionalGroupId !== groupId
+    );
+
+    onUpdateEdges([...filteredEdges, ...updatedEdges]);
+    setShowModal(false);
+    setEditingEdgeGroup(null);
   };
 
   const getNodeName = (nodeId: string): string => {
@@ -177,8 +191,8 @@ export const EdgeListEditor: React.FC<EdgeListEditorProps> = ({
                   <div style={{ display: 'flex', gap: '6px' }}>
                     <button
                       onClick={() => {
-                        // This will be implemented in Phase 15C
-                        alert('Edit functionality coming in Phase 15C');
+                        setEditingEdgeGroup(group.edges);
+                        setShowModal(true);
                       }}
                       style={{
                         padding: '4px 8px',
@@ -300,6 +314,17 @@ export const EdgeListEditor: React.FC<EdgeListEditorProps> = ({
           No edges in workflow. Create edges by connecting nodes on the canvas.
         </div>
       )}
+
+      <ConditionalEdgeFormModal
+        show={showModal}
+        edgeGroup={editingEdgeGroup || undefined}
+        allNodes={nodes}
+        onSave={handleSaveConditionalEdge}
+        onCancel={() => {
+          setShowModal(false);
+          setEditingEdgeGroup(null);
+        }}
+      />
     </div>
   );
 };

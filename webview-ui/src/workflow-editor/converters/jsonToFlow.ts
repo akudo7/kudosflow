@@ -85,7 +85,7 @@ export function jsonToFlow(workflow: WorkflowConfig): {
             id: `${groupId}-${target}`,
             source: edge.from,
             target: target,
-            type: 'smoothstep',
+            type: 'conditional',
             animated: true,
             // Only show label on first edge to avoid clutter
             label: targetIndex === 0 ? (edge.condition!.name || 'conditional') : undefined,
