@@ -120,6 +120,7 @@ export interface ReactFlowEdge extends FlowEdge {
     possibleTargets?: string[];
     conditionalGroupId?: string;  // Group identifier for conditional edges
     isConditional?: boolean;       // Flag to identify conditional edges
+    onDoubleClick?: (groupId: string) => void;  // Double-click handler for conditional edges
   };
 }
 

@@ -32,7 +32,7 @@ export function jsonToFlow(workflow: WorkflowConfig): {
       id: '__start__',
       type: 'input',
       position: { x: 100, y: 50 },
-      data: { label: 'Start' },
+      data: { label: '__start__' },
     });
   }
 
@@ -66,7 +66,7 @@ export function jsonToFlow(workflow: WorkflowConfig): {
       id: '__end__',
       type: 'output',
       position: { x: 100, y: 150 + Math.ceil(workflow.nodes.length / 3) * 200 },
-      data: { label: 'End' },
+      data: { label: '__end__' },
     });
   }
 

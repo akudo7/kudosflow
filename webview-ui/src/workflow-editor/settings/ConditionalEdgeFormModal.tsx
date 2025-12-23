@@ -182,9 +182,13 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
     );
   };
 
+  const nodeTargets = allNodes.map((n) => ({ id: n.id, name: (n.data?.label as string) || n.id }));
+
+  // Add __end__ only if it's not already in the nodes list
+  const hasEndNode = nodeTargets.some((t) => t.id === '__end__');
   const availableTargets = [
-    ...allNodes.map((n) => ({ id: n.id, name: (n.data?.label as string) || n.id })),
-    { id: '__end__', name: '__end__' },
+    ...nodeTargets,
+    ...(hasEndNode ? [] : [{ id: '__end__', name: '__end__' }]),
   ].filter((target) => target.id !== sourceId);
 
   if (!show) {

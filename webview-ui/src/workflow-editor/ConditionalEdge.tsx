@@ -8,12 +8,11 @@ import {
 
 interface ConditionalEdgeProps extends EdgeProps {
   data?: {
-    onDoubleClick?: (edgeGroup: any[]) => void;
+    onDoubleClick?: (groupId: string) => void;
     conditionalGroupId?: string;
     condition?: any;
     possibleTargets?: string[];
     isConditional?: boolean;
-    allEdges?: any[];
   };
 }
 
@@ -42,12 +41,9 @@ export const ConditionalEdge: React.FC<ConditionalEdgeProps> = ({
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    if (data?.onDoubleClick && data?.conditionalGroupId && data?.allEdges) {
-      // Find all edges in the same conditional group
-      const edgeGroup = data.allEdges.filter(
-        (edge: any) => edge.data?.conditionalGroupId === data.conditionalGroupId
-      );
-      data.onDoubleClick(edgeGroup);
+    if (data?.onDoubleClick && data?.conditionalGroupId) {
+      // Pass the groupId to the handler
+      data.onDoubleClick(data.conditionalGroupId);
     }
   };
 

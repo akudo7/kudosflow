@@ -67,6 +67,10 @@ export const WorkflowEditor: React.FC = () => {
   const [showConditionalModal, setShowConditionalModal] = useState(false);
   const [editingEdgeGroup, setEditingEdgeGroup] = useState<ReactFlowEdge[] | null>(null);
 
+  // Edge type dialog state (Phase 15D)
+  const [showEdgeTypeDialog, setShowEdgeTypeDialog] = useState(false);
+  const [pendingConnection, setPendingConnection] = useState<Connection | null>(null);
+
   // Define custom node types
   const nodeTypes = useMemo(() => ({
     workflowNode: WorkflowNode,
@@ -101,10 +105,20 @@ export const WorkflowEditor: React.FC = () => {
   );
 
   // Add double-click handler to conditional edges
-  const handleConditionalEdgeDoubleClick = useCallback((edgeGroup: ReactFlowEdge[]) => {
-    setEditingEdgeGroup(edgeGroup);
-    setShowConditionalModal(true);
-  }, []);
+  const handleConditionalEdgeDoubleClick = useCallback((groupId: string) => {
+    // Find all edges in the same conditional group from current edges state
+    setEdges((currentEdges) => {
+      const edgeGroup = currentEdges.filter(
+        (e) => e.data?.conditionalGroupId === groupId
+      );
+
+      // Set editing group and show modal
+      setEditingEdgeGroup(edgeGroup);
+      setShowConditionalModal(true);
+
+      return currentEdges; // No change to edges
+    });
+  }, [setEdges]);
 
   const loadWorkflow = useCallback((config: WorkflowConfig, path: string) => {
     setWorkflowConfig(config);
@@ -147,7 +161,6 @@ export const WorkflowEditor: React.FC = () => {
             data: {
               ...edge.data,
               onDoubleClick: handleConditionalEdgeDoubleClick,
-              allEdges: flowEdges,
             },
           };
         }
@@ -177,14 +190,28 @@ export const WorkflowEditor: React.FC = () => {
         (e) => e.data?.conditionalGroupId !== groupId
       );
 
-      // Add updated edges
-      return [...filteredEdges, ...updatedEdges];
+      // Add onDoubleClick handler to updated edges
+      const newEdges = [...filteredEdges, ...updatedEdges];
+      const edgesWithHandlers = newEdges.map(edge => {
+        if (edge.data?.isConditional && edge.data?.conditionalGroupId) {
+          return {
+            ...edge,
+            data: {
+              ...edge.data,
+              onDoubleClick: handleConditionalEdgeDoubleClick,
+            },
+          };
+        }
+        return edge;
+      });
+
+      return edgesWithHandlers;
     });
 
     setShowConditionalModal(false);
     setEditingEdgeGroup(null);
     setIsDirty(true);
-  }, [setEdges]);
+  }, [handleConditionalEdgeDoubleClick, setEdges]);
 
 
   // Initialize workflow execution when filePath changes (Phase 10C)
@@ -293,18 +320,71 @@ export const WorkflowEditor: React.FC = () => {
     return () => window.removeEventListener('message', handleMessage);
   }, [loadWorkflow, showChat]);
 
+  // Handle connection creation - show edge type dialog (Phase 15D)
   const onConnect = useCallback(
     (connection: Connection) => {
+      // Store connection and show type selection dialog
+      setPendingConnection(connection);
+      setShowEdgeTypeDialog(true);
+    },
+    []
+  );
+
+  // Create regular edge
+  const handleCreateRegularEdge = useCallback(() => {
+    if (pendingConnection) {
       setEdges((eds) => addEdge({
-        ...connection,
+        ...pendingConnection,
         markerEnd: {
           type: 'arrowclosed',
         },
       }, eds));
       setIsDirty(true);
-    },
-    [setEdges]
-  );
+    }
+    setShowEdgeTypeDialog(false);
+    setPendingConnection(null);
+  }, [pendingConnection, setEdges]);
+
+  // Create conditional edge
+  const handleCreateConditionalEdge = useCallback(() => {
+    if (pendingConnection) {
+      // Create single edge as placeholder, user will edit via modal
+      const tempGroupId = `conditional-${pendingConnection.source}-${Date.now()}`;
+      const defaultEdge: ReactFlowEdge = {
+        id: `${tempGroupId}-${pendingConnection.target}`,
+        source: pendingConnection.source || '',
+        target: pendingConnection.target || '',
+        type: 'conditional',
+        animated: true,
+        label: 'new condition',
+        markerEnd: { type: 'arrowclosed' },
+        data: {
+          conditionalGroupId: tempGroupId,
+          condition: {
+            name: 'new condition',
+            function: {
+              parameters: [],
+              output: 'string',
+              implementation: '// TODO: Implement condition logic\nreturn "' + (pendingConnection.target || '__end__') + '";',
+            },
+            possibleTargets: [pendingConnection.target || ''],
+          },
+          possibleTargets: [pendingConnection.target || ''],
+          isConditional: true,
+          onDoubleClick: handleConditionalEdgeDoubleClick,
+        },
+      };
+
+      setEdges((eds) => [...eds, defaultEdge]);
+      setIsDirty(true);
+
+      // Automatically open edit modal
+      setEditingEdgeGroup([defaultEdge]);
+      setShowConditionalModal(true);
+    }
+    setShowEdgeTypeDialog(false);
+    setPendingConnection(null);
+  }, [pendingConnection, handleConditionalEdgeDoubleClick, setEdges]);
 
   // Handle nodes change with dirty state
   const handleNodesChange = useCallback(
@@ -471,6 +551,13 @@ export const WorkflowEditor: React.FC = () => {
       x: event.clientX,
       y: event.clientY,
     });
+  }, []);
+
+  // Handle edge click (Phase 15D - future enhancement)
+  const onEdgeClick = useCallback((event: React.MouseEvent, edge: ReactFlowEdge) => {
+    // For now, just select the edge
+    // Full context menu can be added later
+    console.log('Edge clicked:', edge);
   }, []);
 
   // Get context menu items based on what was clicked
@@ -694,6 +781,7 @@ export const WorkflowEditor: React.FC = () => {
         onSelectionChange={onSelectionChange}
         onNodeContextMenu={onNodeContextMenu}
         onPaneContextMenu={onPaneContextMenu}
+        onEdgeClick={onEdgeClick}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView
@@ -750,6 +838,99 @@ export const WorkflowEditor: React.FC = () => {
           setEditingEdgeGroup(null);
         }}
       />
+      {showEdgeTypeDialog && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 999,
+          }}
+          onClick={() => {
+            setShowEdgeTypeDialog(false);
+            setPendingConnection(null);
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: 'var(--vscode-editor-background)',
+              border: '1px solid var(--vscode-panel-border)',
+              borderRadius: '6px',
+              padding: '20px',
+              minWidth: '300px',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ marginTop: 0, marginBottom: '16px', fontSize: '14px' }}>
+              Create Edge
+            </h3>
+            <p style={{ marginBottom: '16px', fontSize: '12px', color: 'var(--vscode-descriptionForeground)' }}>
+              Choose edge type:
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button
+                onClick={handleCreateRegularEdge}
+                style={{
+                  padding: '10px',
+                  fontSize: '13px',
+                  backgroundColor: 'var(--vscode-button-background)',
+                  color: 'var(--vscode-button-foreground)',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+              >
+                <strong>Regular Edge</strong>
+                <div style={{ fontSize: '11px', marginTop: '4px', opacity: 0.8 }}>
+                  Direct connection between nodes
+                </div>
+              </button>
+              <button
+                onClick={handleCreateConditionalEdge}
+                style={{
+                  padding: '10px',
+                  fontSize: '13px',
+                  backgroundColor: 'var(--vscode-button-background)',
+                  color: 'var(--vscode-button-foreground)',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+              >
+                <strong>Conditional Edge</strong>
+                <div style={{ fontSize: '11px', marginTop: '4px', opacity: 0.8 }}>
+                  Route based on condition logic
+                </div>
+              </button>
+              <button
+                onClick={() => {
+                  setShowEdgeTypeDialog(false);
+                  setPendingConnection(null);
+                }}
+                style={{
+                  padding: '8px',
+                  fontSize: '12px',
+                  backgroundColor: 'var(--vscode-button-secondaryBackground)',
+                  color: 'var(--vscode-button-secondaryForeground)',
+                  border: '1px solid var(--vscode-button-border)',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
