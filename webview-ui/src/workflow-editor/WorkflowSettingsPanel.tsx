@@ -8,6 +8,7 @@ import { AnnotationFieldsEditor } from './settings/AnnotationFieldsEditor';
 import { ModelEditor } from './settings/ModelEditor';
 import { MCPServerEditor } from './settings/MCPServerEditor';
 import { A2AClientEditor } from './settings/A2AClientEditor';
+import { EdgeListEditor } from './settings/EdgeListEditor';
 
 interface Props {
   show: boolean;
@@ -20,7 +21,7 @@ interface Props {
   onUpdateEdges: (edges: ReactFlowEdge[]) => void;
 }
 
-type TabType = 'nodes' | 'settings' | 'stateGraph' | 'annotation' | 'a2aClients' | 'models' | 'mcpServers';
+type TabType = 'nodes' | 'settings' | 'stateGraph' | 'annotation' | 'a2aClients' | 'models' | 'mcpServers' | 'edges';
 
 export const WorkflowSettingsPanel: React.FC<Props> = ({
   show,
@@ -206,6 +207,13 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
         >
           MCP
         </button>
+        <button
+          onClick={() => setActiveTab('edges')}
+          style={getTabStyle(activeTab === 'edges')}
+          title="Manage workflow edges"
+        >
+          Edges
+        </button>
       </div>
 
       <div style={contentStyle}>
@@ -287,6 +295,13 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
           <MCPServerEditor
             mcpServers={workflowConfig.mcpServers || {}}
             onMcpServersChange={handleMcpServersChange}
+          />
+        )}
+        {activeTab === 'edges' && (
+          <EdgeListEditor
+            edges={edges}
+            nodes={nodes}
+            onUpdateEdges={onUpdateEdges}
           />
         )}
       </div>
