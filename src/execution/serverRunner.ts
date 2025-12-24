@@ -80,6 +80,123 @@ export function getTaskStore(): SimpleTaskStore | null {
 }
 
 /**
+ * Agent executor for structured workflow execution
+ * Follows CLI server pattern from /Users/akirakudo/Desktop/MyWork/CLI/server/src/server.ts
+ */
+class AgentExecutor {
+  constructor(
+    private engine: WorkflowEngine,
+    private taskStore: SimpleTaskStore,
+    private config: any
+  ) {}
+
+  /**
+   * Execute workflow with task tracking
+   */
+  async execute(message: any, taskId: string): Promise<any> {
+    console.log(`[AgentExecutor] Executing task ${taskId}`);
+
+    // Extract message parts
+    const parts = message.parts || [];
+    const textPart = parts.find((p: any) => p.type === 'text' || p.kind === 'text');
+    const input = textPart?.text || (typeof message === 'string' ? message : '');
+
+    // Update task status to running
+    await this.taskStore.updateTask(taskId, {
+      status: 'running',
+      updatedAt: new Date()
+    });
+
+    try {
+      // Build input state
+      const inputState = {
+        messages: [
+          {
+            role: 'user',
+            content: input
+          }
+        ]
+      };
+
+      // Invoke workflow engine
+      const recursionLimit = this.config.recursionLimit || 100;
+      console.log(`🚀 Invoking workflow with recursionLimit: ${recursionLimit}`);
+
+      const preview = input.substring(0, 100);
+      console.log(`Processing ${this.config.name || 'WorkflowAgent'} request: ${preview}${input.length > 100 ? '...' : ''}`);
+
+      const result = await (this.engine as any).execute({
+        input: inputState,
+        thread_id: taskId
+      });
+
+      console.log(`✓ Execution completed`);
+
+      // Update task with result
+      console.log(`[AgentExecutor] Task ${taskId} completed successfully`);
+      await this.taskStore.updateTask(taskId, {
+        status: 'completed',
+        result,
+        updatedAt: new Date()
+      });
+
+      // Format result for A2A protocol
+      return this.formatResult(result, taskId);
+
+    } catch (error: any) {
+      console.error(`[AgentExecutor] Task ${taskId} failed:`, error);
+
+      // Update task with error
+      await this.taskStore.updateTask(taskId, {
+        status: 'failed',
+        error: error.message,
+        updatedAt: new Date()
+      });
+
+      throw error;
+    }
+  }
+
+  /**
+   * Cancel task execution
+   */
+  async cancelTask(taskId: string): Promise<void> {
+    console.log(`[AgentExecutor] Cancelling task ${taskId}`);
+
+    // Get current task
+    const task = await this.taskStore.getTask(taskId);
+
+    if (!task) {
+      throw new Error(`Task ${taskId} not found`);
+    }
+
+    if (task.status === 'completed' || task.status === 'failed') {
+      throw new Error(`Cannot cancel ${task.status} task`);
+    }
+
+    // Update status to cancelled
+    await this.taskStore.updateTask(taskId, {
+      status: 'cancelled',
+      updatedAt: new Date()
+    });
+
+    // TODO: Implement actual workflow cancellation if engine supports it
+    console.log(`[AgentExecutor] Task ${taskId} marked as cancelled`);
+  }
+
+  /**
+   * Format result according to A2A protocol
+   */
+  private formatResult(result: any, taskId: string): any {
+    return {
+      taskId,
+      result,
+      thread_id: taskId
+    };
+  }
+}
+
+/**
  * Run A2A server for a workflow configuration
  * This function is executed in a separate Node.js process via terminal
  */
@@ -170,6 +287,10 @@ export async function runServer(configPath: string, port: number): Promise<void>
     console.log('✅ Graph.compile: コンパイル完了');
     console.log('Workflow engine built successfully');
 
+    // Initialize executor
+    const executor = new AgentExecutor(engine, globalTaskStore!, workflowConfig);
+    console.log('✅ AgentExecutor initialized');
+
     // Create Express app
     const app = express();
     app.use(express.json());
@@ -212,6 +333,8 @@ export async function runServer(configPath: string, port: number): Promise<void>
       // Generate unique task ID
       const taskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+      console.log(`[POST /message/send] Creating task ${taskId}`);
+
       try {
         const { message, thread_id, session_id } = req.body;
 
@@ -220,85 +343,148 @@ export async function runServer(configPath: string, port: number): Promise<void>
         }
 
         // Create task in store
-        console.log(`[TaskStore] Creating task ${taskId}`);
         await globalTaskStore!.createTask(taskId, {
           status: 'running',
           input: req.body,
           createdAt: new Date()
         });
 
-        console.log(`\n🚀 Invoking workflow with recursionLimit: ${recursionLimit}`);
+        // Execute via AgentExecutor
+        const result = await executor.execute(message, taskId);
 
-        const userMessage = message.parts?.[0]?.text || message;
-        const preview = userMessage.substring(0, 100);
-        console.log(`Processing ${workflowConfig.name || 'WorkflowAgent'} request: ${preview}${userMessage.length > 100 ? '...' : ''}`);
-
-        // Execute workflow
-        const result = await (engine as any).execute({
-          input: message,
-          thread_id: thread_id || undefined,
-          session_id: session_id || undefined
-        });
-
-        console.log(`✓ Execution completed`);
-
-        // Update task with result
-        console.log(`[TaskStore] Task ${taskId} completed`);
-        await globalTaskStore!.updateTask(taskId, {
-          status: 'completed',
-          result,
-          updatedAt: new Date()
-        });
-
-        res.json({
-          taskId,
-          result,
-          thread_id: thread_id || 'new'
-        });
+        res.json(result);
       } catch (error: any) {
-        console.error(`✗ Execution error: ${error.message}`);
-
-        // Update task with error
-        console.error(`[TaskStore] Task ${taskId} failed:`, error);
-        await globalTaskStore!.updateTask(taskId, {
-          status: 'failed',
-          error: error.message,
-          updatedAt: new Date()
-        });
-
+        console.error(`[POST /message/send] Error:`, error);
         res.status(500).json({
-          taskId,
           error: error.message,
-          type: error.name
+          taskId
         });
       }
     });
 
-    // A2A Protocol: Tasks endpoint (placeholder)
-    app.get('/tasks', (req: any, res: any) => {
-      res.json({
-        tasks: [],
-        message: 'Task management not yet implemented'
-      });
+    // A2A Protocol: Query specific task by ID
+    app.get('/tasks/:taskId', async (req: any, res: any) => {
+      const { taskId } = req.params;
+
+      console.log(`[GET /tasks/${taskId}] Querying task`);
+
+      try {
+        const task = await globalTaskStore!.getTask(taskId);
+
+        if (!task) {
+          console.log(`[GET /tasks/${taskId}] Task not found`);
+          return res.status(404).json({
+            error: 'Task not found',
+            taskId
+          });
+        }
+
+        console.log(`[GET /tasks/${taskId}] Task found, status: ${task.status}`);
+
+        res.json({
+          taskId,
+          status: task.status,
+          result: task.result,
+          error: task.error,
+          createdAt: task.createdAt,
+          updatedAt: task.updatedAt
+        });
+
+      } catch (error: any) {
+        console.error(`[GET /tasks/${taskId}] Error:`, error);
+        res.status(500).json({
+          error: error.message
+        });
+      }
+    });
+
+    // A2A Protocol: List all tasks (optional, for debugging)
+    app.get('/tasks', async (req: any, res: any) => {
+      console.log(`[GET /tasks] Listing all tasks`);
+
+      try {
+        const tasks = await globalTaskStore!.getAllTasks();
+
+        res.json({
+          count: tasks.length,
+          tasks: tasks.map(task => ({
+            taskId: task.taskId,
+            status: task.status,
+            createdAt: task.createdAt,
+            updatedAt: task.updatedAt
+          }))
+        });
+
+      } catch (error: any) {
+        console.error(`[GET /tasks] Error:`, error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // A2A Protocol: Cancel task execution
+    app.post('/tasks/:taskId/cancel', async (req: any, res: any) => {
+      const { taskId } = req.params;
+
+      console.log(`[POST /tasks/${taskId}/cancel] Cancelling task`);
+
+      try {
+        const task = await globalTaskStore!.getTask(taskId);
+
+        if (!task) {
+          console.log(`[POST /tasks/${taskId}/cancel] Task not found`);
+          return res.status(404).json({
+            error: 'Task not found',
+            taskId
+          });
+        }
+
+        if (task.status === 'completed' || task.status === 'failed') {
+          console.log(`[POST /tasks/${taskId}/cancel] Cannot cancel ${task.status} task`);
+          return res.status(400).json({
+            error: `Cannot cancel ${task.status} task`,
+            status: task.status
+          });
+        }
+
+        // Cancel via executor
+        await executor.cancelTask(taskId);
+
+        console.log(`[POST /tasks/${taskId}/cancel] Task cancelled successfully`);
+
+        res.json({
+          taskId,
+          status: 'cancelled',
+          message: 'Task cancelled successfully'
+        });
+
+      } catch (error: any) {
+        console.error(`[POST /tasks/${taskId}/cancel] Error:`, error);
+        res.status(500).json({ error: error.message });
+      }
     });
 
     // Health check endpoint
     app.get('/health', (req: any, res: any) => {
       res.json({
         status: 'healthy',
+        timestamp: new Date().toISOString(),
+        mode: 'manual',
         uptime: process.uptime(),
-        workflow: workflowConfig.name || 'Unnamed Workflow'
+        port,
+        agentName: workflowConfig.name || 'Unnamed Workflow'
       });
     });
 
     // Start server
     const server = app.listen(port, () => {
-      console.log(`\n✓ A2A Server is running on port ${port}`);
+      console.log(`\n✅ A2A Server is running on port ${port}`);
       console.log(`\n📡 Endpoints:`);
       console.log(`  Agent Card: http://localhost:${port}/.well-known/agent.json`);
       console.log(`  Message Send: http://localhost:${port}/message/send`);
       console.log(`  Task Query: http://localhost:${port}/tasks/{taskId}`);
       console.log(`  Task Cancel: http://localhost:${port}/tasks/{taskId}/cancel`);
+      console.log(`  Health Check: http://localhost:${port}/health`);
+      console.log(`\n✅ Server is ready to receive A2A requests`);
       console.log(`\n⌨️  Press Ctrl+C to stop the server\n`);
     });
 
