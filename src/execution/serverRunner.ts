@@ -125,10 +125,15 @@ class AgentExecutor {
       const preview = input.substring(0, 100);
       console.log(`Processing ${this.config.name || 'WorkflowAgent'} request: ${preview}${input.length > 100 ? '...' : ''}`);
 
-      const result = await (this.engine as any).execute({
-        input: inputState,
-        thread_id: taskId
-      });
+      const result = await this.engine.invoke(
+        inputState,
+        {
+          recursionLimit,
+          configurable: {
+            thread_id: taskId
+          }
+        }
+      );
 
       console.log(`✓ Execution completed`);
 
@@ -283,6 +288,9 @@ export async function runServer(configPath: string, port: number): Promise<void>
     console.log(`Compiling graph with recursionLimit: ${recursionLimit}, useMemory: ${workflowConfig.checkpointer ? '[object Object]' : 'undefined'}`);
 
     const engine = new WorkflowEngine(workflowConfig);
+
+    // Build the workflow graph
+    await engine.build();
 
     console.log('✅ Graph.compile: コンパイル完了');
     console.log('Workflow engine built successfully');
