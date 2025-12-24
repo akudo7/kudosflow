@@ -26,6 +26,7 @@ import { ContextMenu } from './ContextMenu';
 import { WorkflowSettingsPanel } from './WorkflowSettingsPanel';
 import { ChatPanel } from './ChatPanel';
 import { ConditionalEdgeFormModal } from './settings/ConditionalEdgeFormModal';
+import { TestDialog } from './TestDialog';
 
 // VSCode API
 declare const vscode: any;
@@ -70,6 +71,9 @@ export const WorkflowEditor: React.FC = () => {
   // Edge type dialog state (Phase 15D)
   const [showEdgeTypeDialog, setShowEdgeTypeDialog] = useState(false);
   const [pendingConnection, setPendingConnection] = useState<Connection | null>(null);
+
+  // Test dialog state
+  const [showTestDialog, setShowTestDialog] = useState(false);
 
   // Define custom node types
   const nodeTypes = useMemo(() => ({
@@ -640,6 +644,11 @@ export const WorkflowEditor: React.FC = () => {
     }
   }, [showChat]);
 
+  // Test dialog handler
+  const handleToggleTest = useCallback(() => {
+    setShowTestDialog(!showTestDialog);
+  }, [showTestDialog]);
+
   const handleSendMessage = useCallback((message: string) => {
     // Add user message to UI
     const userMessage: ChatMessage = {
@@ -763,6 +772,7 @@ export const WorkflowEditor: React.FC = () => {
         onDuplicateSelected={handleDuplicateSelected}
         onToggleSettings={() => setShowSettings(!showSettings)}
         onToggleChat={handleToggleChat}
+        onToggleTest={handleToggleTest}
         isDirty={isDirty}
         hasSelection={selectedNodes.length > 0 || selectedEdges.length > 0}
         serverStatus={serverStatus}
@@ -837,6 +847,10 @@ export const WorkflowEditor: React.FC = () => {
           setShowConditionalModal(false);
           setEditingEdgeGroup(null);
         }}
+      />
+      <TestDialog
+        show={showTestDialog}
+        onClose={() => setShowTestDialog(false)}
       />
       {showEdgeTypeDialog && (
         <div

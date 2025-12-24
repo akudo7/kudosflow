@@ -8,6 +8,7 @@ interface Props {
   onDuplicateSelected: () => void;
   onToggleSettings: () => void;
   onToggleChat: () => void;
+  onToggleTest: () => void;
   isDirty: boolean;
   hasSelection: boolean;
   serverStatus: ServerStatus;
@@ -25,6 +26,7 @@ export const WorkflowToolbar: React.FC<Props> = ({
   onDuplicateSelected,
   onToggleSettings,
   onToggleChat,
+  onToggleTest,
   isDirty,
   hasSelection,
   serverStatus,
@@ -178,6 +180,13 @@ export const WorkflowToolbar: React.FC<Props> = ({
           </div>
         )}
       </div>
+      <button
+        onClick={onToggleTest}
+        style={buttonStyle(true)}
+        title="Open test dialog"
+      >
+        🧪 TEST
+      </button>
       <button
         onClick={onDuplicateSelected}
         disabled={!hasSelection}
