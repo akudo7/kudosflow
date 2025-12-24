@@ -21,7 +21,8 @@
       "Bash(yarn remove:*)",
       "Bash(yarn run compile:*)",
       "Bash(yarn package:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(yarn install)"
     ],
     "deny": [],
     "ask": []

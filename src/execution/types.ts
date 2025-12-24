@@ -155,3 +155,32 @@ export interface ClearSessionMessage {
   command: 'clearSession';
   sessionId: string;
 }
+
+/**
+ * Task context for tracking task state
+ */
+export interface TaskContext {
+  taskId: string;
+  status: 'running' | 'completed' | 'failed' | 'cancelled';
+  result?: any;
+  error?: any;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * AgentExecutor interface for structured execution
+ */
+export interface IAgentExecutor {
+  execute(message: any, taskId: string): Promise<any>;
+  cancelTask(taskId: string): Promise<void>;
+}
+
+/**
+ * Request context for A2A protocol
+ */
+export interface RequestContext {
+  taskId: string;
+  timestamp: Date;
+  input: any;
+}
