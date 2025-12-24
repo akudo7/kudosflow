@@ -437,11 +437,12 @@ A2Aサーバーとチャット形式でのワークフロー実行機能の実�
 **Phase 14完了日**: 2025-12-22
 **詳細**: [PHASE14_NEW_WORKFLOW.md](phases/PHASE14_NEW_WORKFLOW.md)
 
-#### [Phase 15: Conditional Edge Support](phases/PHASE15_CONDITIONAL_EDGES.md) ⬜
+#### [Phase 15: Conditional Edge Support](phases/PHASE15_CONDITIONAL_EDGES.md) ☑
 
 Conditional edgeのpossibleTargets配列を使用した包括的なサポートの実装
 
 **概要:**
+
 - Visual representation: possibleTargetごとに複数のエッジを描画
 - Editing UI: 条件ロジックを編集するモーダルダイアログ
 - Edge management: 設定パネルに専用のEdgesタブ追加
@@ -449,31 +450,97 @@ Conditional edgeのpossibleTargets配列を使用した包括的なサポート�
 
 **実装フェーズ:**
 
-##### Phase 15A: Visual Representation ⬜
-- jsonToFlow/flowToJsonコンバーターの修正
-- possibleTargets用の複数エッジのレンダリング
-- グループ化のためのconditionalGroupId追加
+##### Phase 15A: Visual Representation ☑
 
-##### Phase 15B: Edge Editor Tab ⬜
-- 設定パネルにEdgesタブを追加
-- EdgeListEditorコンポーネント作成
-- Conditional edgeの視覚的なグループ化
-- 編集/削除機能
+- jsonToFlow/flowToJsonコンバーターの修正 ✅
+- possibleTargets用の複数エッジのレンダリング ✅
+- グループ化のためのconditionalGroupId追加 ✅
 
-##### Phase 15C: Conditional Edge Modal ⬜
-- ConditionalEdgeFormModalの作成
-- 条件名、パラメータ、実装の編集
-- possibleTargetsのマルチセレクトインターフェース
-- バリデーション統合
+##### Phase 15B: Edge Editor Tab ☑
 
-##### Phase 15D: Integration and Testing ⬜
-- エッジ作成フローの拡張
-- コンテキストメニュー(オプション)
-- 包括的なテスト
-- ドキュメント作成
+- 設定パネルにEdgesタブを追加 ✅
+- EdgeListEditorコンポーネント作成 ✅
+- Conditional edgeの視覚的なグループ化 ✅
+- 編集/削除機能 ✅
 
-**Phase 15完了日**: TBD
+##### Phase 15C: Conditional Edge Modal ☑
+
+- ConditionalEdgeFormModalの作成 ✅
+- 条件名、パラメータ、実装の編集 ✅
+- possibleTargetsのマルチセレクトインターフェース ✅
+- バリデーション統合 ✅
+
+##### Phase 15D: Integration and Testing ☑
+
+- エッジ作成フローの拡張 ✅
+- コンテキストメニュー(オプション) ✅
+- 包括的なテスト ✅
+- ドキュメント作成 ✅
+
+**Phase 15完了日**: 2025-12-24
 **詳細**: [PHASE15_CONDITIONAL_EDGES.md](phases/PHASE15_CONDITIONAL_EDGES.md)
+
+#### [Phase 16: A2A Server CLI Alignment](phases/PHASE16_A2A_CLI_ALIGNMENT.md) ☑
+
+ReactFlowTest VSCode extensionのA2Aサーバー実装をCLIサーバーパターンに合わせる統合とリファクタリング
+
+**概要:**
+
+- @a2a-js/SDK統合でA2A Protocol v0.3.0準拠
+- AgentExecutorパターンとタスクストア実装
+- CLIサーバーと同等のロギングとエンドポイント
+- 完全なタスクライフサイクル管理
+- 包括的なA2Aドキュメント作成
+
+**実装フェーズ:**
+
+##### Phase 16A: Infrastructure Enhancement ☑
+
+- @a2a-js/sdk@0.3.5依存関係追加 ✅
+- AgentCard Protocol v0.3.0対応 ✅
+- CLIフォーマットに合わせた包括的ログ ✅
+- InMemoryTaskStore実装 ✅
+- タスク関連型定義追加 ✅
+- 完了日: 2025-12-24
+
+##### Phase 16B: Task Management ☑
+
+- AgentExecutorクラス作成 ✅
+- execute()メソッドでタスクライフサイクル追跡 ✅
+- cancelTask()メソッド実装 ✅
+- GET `/tasks/:taskId` エンドポイント ✅
+- POST `/tasks/:taskId/cancel` エンドポイント ✅
+- DefaultRequestHandler統合 ✅
+- 完了日: 2025-12-24
+
+##### Phase 16C: Documentation ☑
+
+- docs/a2a/comparison.md作成 ✅
+- docs/a2a/implementation-guide.md作成 ✅
+- docs/a2a/config-reference.md作成 ✅
+- docs/a2a/orchestration.md作成 ✅
+- docs/a2a/troubleshooting.md作成 (approval gate issue含む) ✅
+- 完了日: 2025-12-24
+
+##### Phase 16D: Testing & Validation ☑
+
+- サーバー起動テスト ✅
+- タスクライフサイクルテスト ✅
+- マルチインスタンステスト ✅
+- Approval gateテスト (ドキュメント化のみ) ✅
+- 完了日: 2025-12-24
+
+**実績:**
+
+- ✅ A2A Protocol v0.3.0完全準拠
+- ✅ CLIサーバーとの機能パリティ達成
+- ✅ タスクストアとAgentExecutorパターン実装
+- ✅ 全エンドポイント動作確認
+- ✅ マルチインスタンスサポート保持
+- ✅ 包括的なA2Aドキュメント (5ファイル)
+
+**Phase 16完了日**: 2025-12-24
+**詳細**: [PHASE16_A2A_CLI_ALIGNMENT.md](phases/PHASE16_A2A_CLI_ALIGNMENT.md)
 
 ## フェーズ実行方法
 
