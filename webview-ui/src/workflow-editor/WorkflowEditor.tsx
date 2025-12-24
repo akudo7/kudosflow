@@ -74,6 +74,10 @@ export const WorkflowEditor: React.FC = () => {
 
   // Test dialog state
   const [showTestDialog, setShowTestDialog] = useState(false);
+  const [selectedNodeForDialog, setSelectedNodeForDialog] = useState<{
+    nodeId: string;
+    nodeData: any;
+  } | null>(null);
 
   // Define custom node types
   const nodeTypes = useMemo(() => ({
@@ -107,6 +111,12 @@ export const WorkflowEditor: React.FC = () => {
     },
     [setNodes, setEdges]
   );
+
+  // Handle node double-click to open dialog
+  const handleNodeDoubleClick = useCallback((nodeId: string, nodeData: any) => {
+    setSelectedNodeForDialog({ nodeId, nodeData });
+    setShowTestDialog(true);
+  }, []);
 
   // Add double-click handler to conditional edges
   const handleConditionalEdgeDoubleClick = useCallback((groupId: string) => {
@@ -147,13 +157,14 @@ export const WorkflowEditor: React.FC = () => {
     try {
       const { nodes: flowNodes, edges: flowEdges } = jsonToFlow(config);
 
-      // Add onNodeNameChange callback and models to all nodes
+      // Add onNodeNameChange callback, models, and onNodeDoubleClick to all nodes
       const nodesWithCallback = flowNodes.map(node => ({
         ...node,
         data: {
           ...node.data,
           models: config.models || [],
           onNodeNameChange: handleNodeNameChangeFromNode,
+          onNodeDoubleClick: handleNodeDoubleClick,
         }
       }));
 
@@ -182,7 +193,7 @@ export const WorkflowEditor: React.FC = () => {
         });
       }
     }
-  }, [handleNodeNameChangeFromNode, handleConditionalEdgeDoubleClick, setNodes, setEdges]);
+  }, [handleNodeNameChangeFromNode, handleConditionalEdgeDoubleClick, handleNodeDoubleClick, setNodes, setEdges]);
 
   // Handle save conditional edge from modal
   const handleSaveConditionalEdge = useCallback((updatedEdges: ReactFlowEdge[]) => {
@@ -467,6 +478,7 @@ export const WorkflowEditor: React.FC = () => {
           nodeType: 'ToolNode',
           useA2AClients: true,
           onNodeNameChange: handleNodeNameChangeFromNode,
+          onNodeDoubleClick: handleNodeDoubleClick,
         },
       };
       setNodes((nds) => [...nds, newNode]);
@@ -482,12 +494,13 @@ export const WorkflowEditor: React.FC = () => {
           parameters: [{ name: 'state', type: 'any' }],
           output: {},
           onNodeNameChange: handleNodeNameChangeFromNode,
+          onNodeDoubleClick: handleNodeDoubleClick,
         },
       };
       setNodes((nds) => [...nds, newNode]);
     }
     setIsDirty(true);
-  }, [setNodes, handleNodeNameChangeFromNode]);
+  }, [setNodes, handleNodeNameChangeFromNode, handleNodeDoubleClick]);
 
   // Delete selected nodes/edges
   const handleDeleteSelected = useCallback(() => {
@@ -528,12 +541,13 @@ export const WorkflowEditor: React.FC = () => {
         ...node.data,
         label: `${node.data.label} (Copy)`,
         onNodeNameChange: handleNodeNameChangeFromNode,
+        onNodeDoubleClick: handleNodeDoubleClick,
       },
     }));
 
     setNodes((nds) => [...nds, ...newNodes]);
     setIsDirty(true);
-  }, [selectedNodes, nodes, setNodes, handleNodeNameChangeFromNode]);
+  }, [selectedNodes, nodes, setNodes, handleNodeNameChangeFromNode, handleNodeDoubleClick]);
 
   // Handle node context menu
   const onNodeContextMenu = useCallback(
@@ -646,8 +660,14 @@ export const WorkflowEditor: React.FC = () => {
 
   // Test dialog handler
   const handleToggleTest = useCallback(() => {
+    setSelectedNodeForDialog(null);
     setShowTestDialog(!showTestDialog);
   }, [showTestDialog]);
+
+  const handleCloseTestDialog = useCallback(() => {
+    setShowTestDialog(false);
+    setSelectedNodeForDialog(null);
+  }, []);
 
   const handleSendMessage = useCallback((message: string) => {
     // Add user message to UI
@@ -850,7 +870,9 @@ export const WorkflowEditor: React.FC = () => {
       />
       <TestDialog
         show={showTestDialog}
-        onClose={() => setShowTestDialog(false)}
+        onClose={handleCloseTestDialog}
+        nodeId={selectedNodeForDialog?.nodeId}
+        nodeData={selectedNodeForDialog?.nodeData}
       />
       {showEdgeTypeDialog && (
         <div

@@ -1,12 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { CustomNodeData } from './types/workflow.types';
 
 interface TestDialogProps {
   show: boolean;
   onClose: () => void;
+  nodeId?: string;
+  nodeData?: CustomNodeData;
 }
 
-export const TestDialog: React.FC<TestDialogProps> = ({ show, onClose }) => {
+export const TestDialog: React.FC<TestDialogProps> = ({ show, onClose, nodeId, nodeData }) => {
   const [inputValue, setInputValue] = useState('');
+
+  // Reset input when dialog is closed
+  useEffect(() => {
+    if (!show) {
+      setInputValue('');
+    }
+  }, [show]);
 
   if (!show) {
     return null;
@@ -66,7 +76,7 @@ export const TestDialog: React.FC<TestDialogProps> = ({ show, onClose }) => {
               color: 'var(--vscode-editor-foreground)',
             }}
           >
-            Test Dialog
+            {nodeId ? `Edit Node: ${nodeData?.label || nodeId}` : 'Test Dialog'}
           </h3>
           <button
             onClick={onClose}
@@ -85,52 +95,135 @@ export const TestDialog: React.FC<TestDialogProps> = ({ show, onClose }) => {
 
         {/* Content */}
         <div style={{ padding: '20px' }}>
-          <div style={{ marginBottom: '20px' }}>
-            <label
-              style={{
-                display: 'block',
-                marginBottom: '6px',
-                fontSize: '13px',
-                fontWeight: 'bold',
-                color: 'var(--vscode-editor-foreground)',
-              }}
-            >
-              Test Input
-            </label>
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Enter test value..."
-              style={{
-                width: '100%',
-                padding: '6px 8px',
-                fontSize: '13px',
-                backgroundColor: 'var(--vscode-input-background)',
-                color: 'var(--vscode-input-foreground)',
-                border: '1px solid var(--vscode-input-border)',
-                borderRadius: '2px',
-                outline: 'none',
-              }}
-            />
-          </div>
+          {nodeId && nodeData ? (
+            <>
+              {/* Node Information */}
+              <div style={{ marginBottom: '20px' }}>
+                <h4
+                  style={{
+                    margin: '0 0 12px 0',
+                    fontSize: '13px',
+                    fontWeight: 'bold',
+                    color: 'var(--vscode-editor-foreground)',
+                  }}
+                >
+                  Node Information
+                </h4>
+                <div
+                  style={{
+                    padding: '12px',
+                    backgroundColor: 'var(--vscode-textCodeBlock-background)',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                  }}
+                >
+                  <div style={{ marginBottom: '8px' }}>
+                    <strong>ID:</strong> {nodeId}
+                  </div>
+                  <div style={{ marginBottom: '8px' }}>
+                    <strong>Label:</strong> {nodeData.label}
+                  </div>
+                  {nodeData.nodeType && (
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong>Type:</strong> {nodeData.nodeType}
+                    </div>
+                  )}
+                  {nodeData.parameters && nodeData.parameters.length > 0 && (
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong>Parameters:</strong> {nodeData.parameters.length}
+                    </div>
+                  )}
+                  {nodeData.output && Object.keys(nodeData.output).length > 0 && (
+                    <div>
+                      <strong>Outputs:</strong> {Object.keys(nodeData.output).length}
+                    </div>
+                  )}
+                </div>
+              </div>
 
-          <div
-            style={{
-              padding: '12px',
-              backgroundColor: 'var(--vscode-textCodeBlock-background)',
-              borderRadius: '4px',
-              fontSize: '12px',
-              color: 'var(--vscode-descriptionForeground)',
-            }}
-          >
-            <p style={{ margin: '0 0 8px 0' }}>
-              This is a test dialog demonstrating modal functionality.
-            </p>
-            <p style={{ margin: 0 }}>
-              Click outside the dialog or the × button to close.
-            </p>
-          </div>
+              {/* Implementation Preview */}
+              {nodeData.implementation && (
+                <div style={{ marginBottom: '20px' }}>
+                  <h4
+                    style={{
+                      margin: '0 0 8px 0',
+                      fontSize: '13px',
+                      fontWeight: 'bold',
+                      color: 'var(--vscode-editor-foreground)',
+                    }}
+                  >
+                    Implementation
+                  </h4>
+                  <pre
+                    style={{
+                      padding: '12px',
+                      backgroundColor: 'var(--vscode-textCodeBlock-background)',
+                      borderRadius: '4px',
+                      fontSize: '11px',
+                      fontFamily: 'var(--vscode-editor-font-family)',
+                      color: 'var(--vscode-editor-foreground)',
+                      overflowX: 'auto',
+                      maxHeight: '300px',
+                      margin: 0,
+                      whiteSpace: 'pre-wrap',
+                      wordWrap: 'break-word',
+                    }}
+                  >
+                    {nodeData.implementation}
+                  </pre>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div style={{ marginBottom: '20px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    marginBottom: '6px',
+                    fontSize: '13px',
+                    fontWeight: 'bold',
+                    color: 'var(--vscode-editor-foreground)',
+                  }}
+                >
+                  Test Input
+                </label>
+                <input
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder="Enter test value..."
+                  style={{
+                    width: '100%',
+                    padding: '6px 8px',
+                    fontSize: '13px',
+                    backgroundColor: 'var(--vscode-input-background)',
+                    color: 'var(--vscode-input-foreground)',
+                    border: '1px solid var(--vscode-input-border)',
+                    borderRadius: '2px',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+
+              <div
+                style={{
+                  padding: '12px',
+                  backgroundColor: 'var(--vscode-textCodeBlock-background)',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  color: 'var(--vscode-descriptionForeground)',
+                }}
+              >
+                <p style={{ margin: '0 0 8px 0' }}>
+                  This is a test dialog demonstrating modal functionality.
+                </p>
+                <p style={{ margin: 0 }}>
+                  Click outside the dialog or the × button to close.
+                </p>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Footer */}
