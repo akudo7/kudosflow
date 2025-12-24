@@ -26,7 +26,7 @@ import { ContextMenu } from './ContextMenu';
 import { WorkflowSettingsPanel } from './WorkflowSettingsPanel';
 import { ChatPanel } from './ChatPanel';
 import { ConditionalEdgeFormModal } from './settings/ConditionalEdgeFormModal';
-import { TestDialog } from './TestDialog';
+import { NodeEditorDialog } from './NodeEditorDialog';
 
 // VSCode API
 declare const vscode: any;
@@ -72,9 +72,9 @@ export const WorkflowEditor: React.FC = () => {
   const [showEdgeTypeDialog, setShowEdgeTypeDialog] = useState(false);
   const [pendingConnection, setPendingConnection] = useState<Connection | null>(null);
 
-  // Test dialog state
-  const [showTestDialog, setShowTestDialog] = useState(false);
-  const [selectedNodeForDialog, setSelectedNodeForDialog] = useState<{
+  // Node editor dialog state
+  const [showNodeEditor, setShowNodeEditor] = useState(false);
+  const [selectedNodeForEditor, setSelectedNodeForEditor] = useState<{
     nodeId: string;
     nodeData: any;
   } | null>(null);
@@ -112,11 +112,49 @@ export const WorkflowEditor: React.FC = () => {
     [setNodes, setEdges]
   );
 
-  // Handle node double-click to open dialog
+  // Handle node double-click to open editor
   const handleNodeDoubleClick = useCallback((nodeId: string, nodeData: any) => {
-    setSelectedNodeForDialog({ nodeId, nodeData });
-    setShowTestDialog(true);
+    setSelectedNodeForEditor({ nodeId, nodeData });
+    setShowNodeEditor(true);
   }, []);
+
+  // Handle save from node editor
+  const handleSaveNodeChanges = useCallback((nodeId: string, updatedData: Partial<any>) => {
+    setNodes((currentNodes) => {
+      return currentNodes.map((node) => {
+        if (node.id === nodeId) {
+          // Handle node name change
+          const newId = updatedData.label && updatedData.label !== node.data.label
+            ? updatedData.label
+            : node.id;
+
+          const updatedNode = {
+            ...node,
+            id: newId,
+            data: {
+              ...node.data,
+              ...updatedData,
+            },
+          };
+
+          // Update edges if node ID changed
+          if (newId !== nodeId) {
+            setEdges((currentEdges) =>
+              currentEdges.map((edge) => ({
+                ...edge,
+                source: edge.source === nodeId ? newId : edge.source,
+                target: edge.target === nodeId ? newId : edge.target,
+              }))
+            );
+          }
+
+          return updatedNode;
+        }
+        return node;
+      });
+    });
+    setIsDirty(true);
+  }, [setNodes, setEdges]);
 
   // Add double-click handler to conditional edges
   const handleConditionalEdgeDoubleClick = useCallback((groupId: string) => {
@@ -658,15 +696,10 @@ export const WorkflowEditor: React.FC = () => {
     }
   }, [showChat]);
 
-  // Test dialog handler
-  const handleToggleTest = useCallback(() => {
-    setSelectedNodeForDialog(null);
-    setShowTestDialog(!showTestDialog);
-  }, [showTestDialog]);
-
-  const handleCloseTestDialog = useCallback(() => {
-    setShowTestDialog(false);
-    setSelectedNodeForDialog(null);
+  // Node editor dialog handler
+  const handleCloseNodeEditor = useCallback(() => {
+    setShowNodeEditor(false);
+    setSelectedNodeForEditor(null);
   }, []);
 
   const handleSendMessage = useCallback((message: string) => {
@@ -792,7 +825,6 @@ export const WorkflowEditor: React.FC = () => {
         onDuplicateSelected={handleDuplicateSelected}
         onToggleSettings={() => setShowSettings(!showSettings)}
         onToggleChat={handleToggleChat}
-        onToggleTest={handleToggleTest}
         isDirty={isDirty}
         hasSelection={selectedNodes.length > 0 || selectedEdges.length > 0}
         serverStatus={serverStatus}
@@ -868,12 +900,15 @@ export const WorkflowEditor: React.FC = () => {
           setEditingEdgeGroup(null);
         }}
       />
-      <TestDialog
-        show={showTestDialog}
-        onClose={handleCloseTestDialog}
-        nodeId={selectedNodeForDialog?.nodeId}
-        nodeData={selectedNodeForDialog?.nodeData}
-      />
+      {selectedNodeForEditor && (
+        <NodeEditorDialog
+          show={showNodeEditor}
+          onClose={handleCloseNodeEditor}
+          nodeId={selectedNodeForEditor.nodeId}
+          nodeData={selectedNodeForEditor.nodeData}
+          onSave={handleSaveNodeChanges}
+        />
+      )}
       {showEdgeTypeDialog && (
         <div
           style={{
