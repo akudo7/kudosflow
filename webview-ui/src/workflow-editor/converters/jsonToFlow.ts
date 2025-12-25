@@ -17,8 +17,8 @@ export function jsonToFlow(workflow: WorkflowConfig): {
     if (edge.from === '__end__' || edge.to === '__end__') specialNodes.add('__end__');
 
     // Check possibleTargets in conditional edges
-    if (edge.type === 'conditional' && edge.condition) {
-      const possibleTargets = edge.condition.possibleTargets || [];
+    if (edge.type === 'conditional' && edge.possibleTargets) {
+      const possibleTargets = edge.possibleTargets || [];
       possibleTargets.forEach(target => {
         if (target === '__start__') specialNodes.add('__start__');
         if (target === '__end__') specialNodes.add('__end__');
@@ -73,8 +73,8 @@ export function jsonToFlow(workflow: WorkflowConfig): {
   // Convert workflow edges to React Flow edges
   workflow.edges.forEach((edge, index) => {
     if (edge.type === 'conditional' && edge.condition) {
-      // Get possibleTargets from condition level
-      const possibleTargets = edge.condition.possibleTargets || [];
+      // Get possibleTargets from edge level
+      const possibleTargets = edge.possibleTargets || [];
 
       if (possibleTargets.length > 0) {
         // Create one edge per possibleTarget

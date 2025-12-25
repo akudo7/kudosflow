@@ -71,7 +71,7 @@ export function flowToJson(
         // Extract possibleTargets from all edges in group
         const possibleTargets = groupEdges.map((e) => e.target);
 
-        // Create single conditional edge with possibleTargets at condition level
+        // Create single conditional edge with possibleTargets at edge level
         const workflowEdge: WorkflowEdge = {
           from: edge.source,
           type: 'conditional',
@@ -83,9 +83,9 @@ export function flowToJson(
                   output: '',
                   implementation: '',
                 },
-                possibleTargets: possibleTargets,
               }
             : undefined,
+          possibleTargets: possibleTargets,
         };
 
         workflowEdges.push(workflowEdge);

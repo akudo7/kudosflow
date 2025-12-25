@@ -68,7 +68,6 @@ export interface ConditionalEdgeCondition {
     output: string;  // Target node ID
     implementation: string;
   };
-  possibleTargets?: string[];  // Possible target node IDs
 }
 
 export interface WorkflowEdge {
@@ -76,6 +75,7 @@ export interface WorkflowEdge {
   to?: string;
   type?: 'conditional' | 'normal';
   condition?: ConditionalEdgeCondition;
+  possibleTargets?: string[];  // Possible target node IDs (for conditional edges)
 }
 
 export interface AnnotationField {

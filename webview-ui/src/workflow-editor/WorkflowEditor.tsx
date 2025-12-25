@@ -420,7 +420,6 @@ export const WorkflowEditor: React.FC = () => {
               output: 'string',
               implementation: '// TODO: Implement condition logic\nreturn "' + (pendingConnection.target || '__end__') + '";',
             },
-            possibleTargets: [pendingConnection.target || ''],
           },
           possibleTargets: [pendingConnection.target || ''],
           isConditional: true,

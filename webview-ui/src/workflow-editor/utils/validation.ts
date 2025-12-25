@@ -354,11 +354,13 @@ export function validateToolNode(node: WorkflowNode, workflowHasA2AClients: bool
 /**
  * Validate ConditionalEdge configuration
  * @param condition - The conditional edge condition to validate
+ * @param possibleTargets - The possible targets for the conditional edge
  * @param nodeIds - List of valid node IDs in the workflow (including __end__)
  * @returns ValidationResult
  */
 export function validateConditionalEdge(
   condition: ConditionalEdgeCondition,
+  possibleTargets: string[] | undefined,
   nodeIds: string[]
 ): ValidationResult {
   // Check condition name exists
@@ -402,8 +404,8 @@ export function validateConditionalEdge(
   }
 
   // Validate possibleTargets if present
-  if (condition.possibleTargets) {
-    if (!Array.isArray(condition.possibleTargets)) {
+  if (possibleTargets) {
+    if (!Array.isArray(possibleTargets)) {
       return {
         valid: false,
         error: 'possibleTargets must be an array',
@@ -412,7 +414,7 @@ export function validateConditionalEdge(
 
     // Check all targets are valid node IDs
     const validNodeIds = [...nodeIds, '__end__'];
-    for (const target of condition.possibleTargets) {
+    for (const target of possibleTargets) {
       if (!validNodeIds.includes(target)) {
         return {
           valid: false,

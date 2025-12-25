@@ -95,11 +95,10 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
         output: outputType,
         implementation: implementation.trim(),
       },
-      possibleTargets: selectedTargets,
     };
 
     const allNodeIds = allNodes.map((n) => n.id);
-    const validation = validateConditionalEdge(newCondition, allNodeIds);
+    const validation = validateConditionalEdge(newCondition, selectedTargets, allNodeIds);
 
     if (!validation.valid) {
       setError(validation.error || 'Invalid configuration');
