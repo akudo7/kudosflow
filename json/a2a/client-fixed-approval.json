@@ -1,0 +1,161 @@
+{
+  "config": {
+    "recursionLimit": 100,
+    "eventEmitter": {
+      "defaultMaxListeners": 20
+    }
+  },
+  "a2aClients": {
+    "task_agent": {
+      "cardUrl": "http://localhost:3001/.well-known/agent.json",
+      "timeout": 30000
+    },
+    "research_agent": {
+      "cardUrl": "http://localhost:3002/.well-known/agent.json",
+      "timeout": 30000
+    },
+    "quality_agent": {
+      "cardUrl": "http://localhost:3003/.well-known/agent.json",
+      "timeout": 30000
+    }
+  },
+  "stateAnnotation": {
+    "name": "AgentState",
+    "type": "Annotation.Root"
+  },
+  "annotation": {
+    "messages": {
+      "type": "BaseMessage[]",
+      "reducer": "(x, y) => x.concat(y)",
+      "default": []
+    },
+    "currentPhase": {
+      "type": "string",
+      "reducer": "(x, y) => y || x",
+      "default": "task_creation"
+    },
+    "approvalPending": {
+      "type": "boolean",
+      "reducer": "(x, y) => y !== undefined ? y : x",
+      "default": false
+    },
+    "tasksApproved": {
+      "type": "boolean",
+      "reducer": "(x, y) => y !== undefined ? y : x",
+      "default": false
+    },
+    "researchCompleted": {
+      "type": "boolean",
+      "reducer": "(x, y) => y !== undefined ? y : x",
+      "default": false
+    },
+    "qualityEvaluated": {
+      "type": "boolean",
+      "reducer": "(x, y) => y !== undefined ? y : x",
+      "default": false
+    },
+    "taskListData": {
+      "type": "any",
+      "reducer": "(x, y) => y || x",
+      "default": null
+    }
+  },
+  "models": [
+    {
+      "id": "mainModel",
+      "type": "OpenAI",
+      "config": {
+        "model": "gpt-4o-mini",
+        "temperature": 0.7
+      },
+      "bindA2AClients": true,
+      "systemPrompt": "You are a BizDev Market Analysis Orchestrator Agent. Your role is to coordinate market research by delegating tasks to specialized agents."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "orchestrator",
+      "function": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof AgentState.State"
+          },
+          {
+            "name": "model",
+            "type": "ModelConfig",
+            "modelRef": "mainModel"
+          }
+        ],
+        "output": {
+          "messages": "Message[]",
+          "currentPhase": "string"
+        },
+        "implementation": "try { console.log('🎯 [orchestrator] Current phase:', state.currentPhase); const currentPhase = state.currentPhase || 'task_creation'; if (currentPhase === 'task_creation' && !state.tasksApproved) { console.log('🎯 [orchestrator] Phase 1: Calling task agent'); const userContent = state.messages.find(msg => msg.content)?.content || 'Please create research tasks.'; const response = await model.invoke([{ role: 'system', content: 'Use send_message_to_task_agent tool to create research tasks.' }, { role: 'user', content: userContent }]); return { messages: [response], currentPhase: 'task_creation' }; } else if (currentPhase === 'research_execution' && state.tasksApproved) { console.log('🎯 [orchestrator] Phase 2: Starting research execution'); const response = await model.invoke([{ role: 'system', content: 'Use send_message_to_research_agent tool.' }, { role: 'user', content: 'Execute research based on approved tasks.' }]); return { messages: [response], currentPhase: 'research_execution' }; } console.log('🎯 [orchestrator] No action needed'); return { messages: [], currentPhase }; } catch (error) { console.error('🎯 [orchestrator] Error:', error); return { messages: [{ role: 'assistant', content: `Error: ${error.message}` }], currentPhase: 'error' }; }"
+      }
+    },
+    {
+      "id": "tools",
+      "type": "ToolNode",
+      "useA2AClients": true
+    },
+    {
+      "id": "approval_handler",
+      "function": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof AgentState.State"
+          }
+        ],
+        "output": {
+          "messages": "Message[]",
+          "tasksApproved": "boolean",
+          "currentPhase": "string",
+          "taskListData": "any"
+        },
+        "implementation": "console.log('🔍 [approval_handler] Processing'); const lastToolResult = state.messages.filter(msg => (msg._getType && msg._getType() === 'tool') || msg.role === 'tool').pop(); if (lastToolResult && lastToolResult.name === 'send_message_to_task_agent') { console.log('🔍 [approval_handler] Checking task agent response'); let parsedContent; try { parsedContent = typeof lastToolResult.content === 'string' ? JSON.parse(lastToolResult.content) : lastToolResult.content; } catch (e) { return { messages: [], tasksApproved: false, currentPhase: state.currentPhase, taskListData: null }; } let taskList = []; if (parsedContent.response && parsedContent.response.content) { try { const innerContent = typeof parsedContent.response.content === 'string' ? JSON.parse(parsedContent.response.content) : parsedContent.response.content; taskList = innerContent.result?.taskList || []; } catch (e) {} } console.log('🔍 [approval_handler] Found taskList:', taskList.length); if (taskList.length > 0 && !state.tasksApproved) { const taskSummary = taskList.map((t, i) => `${i + 1}. ${t.objective} (${t.estimated_effort || 'N/A'})`).join('\\n'); const totalHours = taskList.reduce((sum, t) => sum + (parseInt(t.estimated_effort) || 0), 0); const message = `TaskCreationAgent created ${taskList.length} tasks (${totalHours} hours):\\n\\n${taskSummary}\\n\\nApprove to proceed?`; console.log('⏸️ [approval_handler] Requesting approval'); const userResponse = interrupt(message); console.log('⏸️ [approval_handler] User response:', userResponse); if (!userResponse) { return { messages: [], tasksApproved: false, currentPhase: 'awaiting_approval', taskListData: taskList }; } const response = String(userResponse).toLowerCase().trim(); if (response === 'approve' || response.includes('yes')) { console.log('✅ [approval_handler] Approved'); return { messages: [{ role: 'assistant', content: 'Tasks approved. Starting research.' }], tasksApproved: true, currentPhase: 'research_execution', taskListData: taskList }; } else { console.log('❌ [approval_handler] Rejected'); return { messages: [{ role: 'assistant', content: 'Tasks rejected.' }], tasksApproved: false, currentPhase: 'task_creation', taskListData: null }; } } } return { messages: [], tasksApproved: state.tasksApproved, currentPhase: state.currentPhase, taskListData: state.taskListData };"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "__start__",
+      "to": "orchestrator"
+    },
+    {
+      "from": "tools",
+      "to": "approval_handler"
+    },
+    {
+      "from": "approval_handler",
+      "to": "orchestrator"
+    },
+    {
+      "type": "conditional",
+      "from": "orchestrator",
+      "condition": {
+        "name": "shouldContinue",
+        "function": {
+          "parameters": [
+            {
+              "name": "state",
+              "type": "typeof AgentState.State"
+            }
+          ],
+          "output": "string",
+          "implementation": "const lastMessage = state.messages[state.messages.length - 1]; if (lastMessage && lastMessage.tool_calls && lastMessage.tool_calls.length > 0) { return 'tools'; } if (state.currentPhase === 'error' || state.currentPhase === 'completed') { return '__end__'; } if (state.currentPhase === 'awaiting_approval') { return '__end__'; } if (state.currentPhase === 'research_execution' && state.tasksApproved) { return 'orchestrator'; } return '__end__';",
+          "possibleTargets": ["tools", "orchestrator", "__end__"]
+        }
+      }
+    }
+  ],
+  "stateGraph": {
+    "annotationRef": "AgentState",
+    "config": {
+      "checkpointer": {
+        "type": "MemorySaver"
+      }
+    }
+  }
+}

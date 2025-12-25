@@ -401,7 +401,92 @@ export async function runServer(configPath: string, port: number): Promise<void>
       res.json(agentCard);
     });
 
-    // A2A Protocol: Message Send endpoint
+    // JSON-RPC endpoint (used by A2A SDK)
+    app.post('/', async (req: any, res: any) => {
+      const { id, method, params } = req.body;
+
+      console.log(`[JSON-RPC] Received request: method=${method}, id=${id}`);
+
+      // Handle JSON-RPC methods
+      if (method === 'message/send') {
+        // Generate unique task ID
+        const taskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        console.log(`[JSON-RPC message/send] Creating task ${taskId}`);
+
+        try {
+          // Extract message from params
+          const message = params?.message;
+          if (!message) {
+            return res.json({
+              jsonrpc: '2.0',
+              id,
+              error: {
+                code: -32602,
+                message: 'Invalid params: message is required'
+              }
+            });
+          }
+
+          // Execute workflow with the message
+          const result = await executor.execute(message, taskId);
+
+          // Return JSON-RPC response
+          res.json({
+            jsonrpc: '2.0',
+            id,
+            result
+          });
+        } catch (error: any) {
+          console.error(`[JSON-RPC message/send] Error:`, error);
+          res.json({
+            jsonrpc: '2.0',
+            id,
+            error: {
+              code: -32603,
+              message: error.message || 'Internal error'
+            }
+          });
+        }
+      } else if (method === 'agent/getAuthenticatedExtendedCard') {
+        // Return agent card
+        const agentCard = workflowConfig.config?.a2aEndpoint?.agentCard || {
+          name: workflowConfig.name || 'WorkflowAgent',
+          description: workflowConfig.description || 'A workflow execution agent',
+          protocolVersion: '0.3.0',
+          version: '1.0.0',
+          url: `http://localhost:${port}/`,
+          endpoints: {
+            messageSend: `http://localhost:${port}/message/send`,
+            messageStream: `http://localhost:${port}/message/stream`,
+            taskGet: `http://localhost:${port}/tasks/{taskId}`,
+            taskCancel: `http://localhost:${port}/tasks/{taskId}/cancel`
+          },
+          capabilities: {
+            streaming: false,
+            pushNotifications: false,
+            stateTransitionHistory: true
+          }
+        };
+
+        res.json({
+          jsonrpc: '2.0',
+          id,
+          result: agentCard
+        });
+      } else {
+        // Unsupported method
+        res.json({
+          jsonrpc: '2.0',
+          id,
+          error: {
+            code: -32601,
+            message: `Method not found: ${method}`
+          }
+        });
+      }
+    });
+
+    // A2A Protocol: Message Send endpoint (REST fallback)
     app.post('/message/send', async (req: any, res: any) => {
       // Generate unique task ID
       const taskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
