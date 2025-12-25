@@ -78,18 +78,11 @@ export function flowToJson(
           condition: edge.data.condition
             ? {
                 ...edge.data.condition,
-                function: edge.data.condition.function
-                  ? {
-                      ...edge.data.condition.function,
-                      // Remove possibleTargets from function to avoid duplication
-                      possibleTargets: undefined,
-                    }
-                  : {
-                      parameters: [],
-                      output: '',
-                      implementation: '',
-                    },
-                // Add possibleTargets at condition level
+                function: edge.data.condition.function || {
+                  parameters: [],
+                  output: '',
+                  implementation: '',
+                },
                 possibleTargets: possibleTargets,
               }
             : undefined,
