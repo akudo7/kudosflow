@@ -67,9 +67,9 @@ export interface ConditionalEdgeCondition {
     parameters: Array<{ name: string; type: string; modelRef?: string }>;
     output: string;  // Target node ID
     implementation: string;
-    possibleTargets?: string[];  // Possible target node IDs
+    possibleTargets?: string[];  // DEPRECATED: Use condition-level possibleTargets instead
   };
-  possibleTargets?: string[];  // Possible target node IDs (legacy or top-level)
+  possibleTargets?: string[];  // Possible target node IDs (preferred location)
 }
 
 export interface WorkflowEdge {
