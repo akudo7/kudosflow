@@ -745,6 +745,33 @@ export const WorkflowEditor: React.FC = () => {
     setUnreadCount(0);
   }, []);
 
+  // Handle reload workflow (reload JSON from file)
+  const handleReload = useCallback(() => {
+    if (!filePath) {
+      setNotification({
+        message: 'No workflow file to reload',
+        type: 'error',
+      });
+      return;
+    }
+
+    if (isDirty) {
+      const confirmed = window.confirm(
+        'You have unsaved changes. Reloading will discard them. Continue?'
+      );
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    if (typeof vscode !== 'undefined') {
+      vscode.postMessage({
+        command: 'reload',
+        filePath,
+      });
+    }
+  }, [filePath, isDirty]);
+
   // Server control handlers (Phase 10A)
   const handleStartServer = useCallback(() => {
     if (!filePath) {
@@ -820,6 +847,7 @@ export const WorkflowEditor: React.FC = () => {
     <div style={{ width: '100vw', height: '100vh' }}>
       <WorkflowToolbar
         onSave={handleSave}
+        onReload={handleReload}
         onAddNode={handleAddNode}
         onDeleteSelected={handleDeleteSelected}
         onDuplicateSelected={handleDuplicateSelected}

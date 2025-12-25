@@ -292,6 +292,10 @@ export class WorkflowEditorPanel {
           case "save":
             await this._saveWorkflow(message.data);
             break;
+          case "reload":
+            // Reload workflow from JSON file
+            await this._loadWorkflow();
+            break;
           case "ready":
             // Webview is ready, load the workflow
             await this._loadWorkflow();

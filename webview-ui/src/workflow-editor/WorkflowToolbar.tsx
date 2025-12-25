@@ -3,6 +3,7 @@ import { ServerStatus, ServerState } from './types/workflow.types';
 
 interface Props {
   onSave: () => void;
+  onReload: () => void;
   onAddNode: (nodeType: 'function' | 'tool') => void;
   onDeleteSelected: () => void;
   onDuplicateSelected: () => void;
@@ -20,6 +21,7 @@ interface Props {
 
 export const WorkflowToolbar: React.FC<Props> = ({
   onSave,
+  onReload,
   onAddNode,
   onDeleteSelected,
   onDuplicateSelected,
@@ -93,6 +95,13 @@ export const WorkflowToolbar: React.FC<Props> = ({
         alignItems: 'center',
       }}
     >
+      <button
+        onClick={onReload}
+        style={buttonStyle(true)}
+        title="Reload workflow from JSON file"
+      >
+        🔄 Reload
+      </button>
       <div style={{ position: 'relative' }} ref={addMenuRef}>
         <button
           onClick={() => setShowAddMenu(!showAddMenu)}
