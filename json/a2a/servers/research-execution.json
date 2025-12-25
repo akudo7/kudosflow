@@ -27,25 +27,37 @@
             "id": "web_search",
             "name": "Web Search",
             "description": "Comprehensive web search and data collection",
-            "tags": ["research", "data"]
+            "tags": [
+              "research",
+              "data"
+            ]
           },
           {
             "id": "data_collection",
-            "name": "Data Collection", 
+            "name": "Data Collection",
             "description": "Systematic data gathering from multiple sources",
-            "tags": ["research", "analysis"]
+            "tags": [
+              "research",
+              "analysis"
+            ]
           },
           {
             "id": "content_extraction",
             "name": "Content Extraction",
             "description": "Extraction and processing of relevant content",
-            "tags": ["processing", "analysis"]
+            "tags": [
+              "processing",
+              "analysis"
+            ]
           },
           {
             "id": "market_analysis",
             "name": "Market Analysis",
             "description": "Analysis of market trends and business insights",
-            "tags": ["analysis", "market"]
+            "tags": [
+              "analysis",
+              "market"
+            ]
           }
         ]
       },
@@ -109,7 +121,9 @@
     "web-search": {
       "transport": "stdio",
       "command": "node",
-      "args": ["/Users/akirakudo/Desktop/MyWork/MPC/web-search/build/index.js"]
+      "args": [
+        "/Users/akirakudo/Desktop/MyWork/MPC/web-search/build/index.js"
+      ]
     }
   },
   "nodes": [
@@ -127,7 +141,7 @@
           "researchQuery": "string",
           "executionStep": "string"
         },
-        "implementation": "try { const lastMessage = state.messages[state.messages.length - 1]; let messageContent = ''; if (lastMessage) { if (typeof lastMessage === 'string') { messageContent = lastMessage; } else if (lastMessage.content) { messageContent = lastMessage.content; } else if (lastMessage.parts && Array.isArray(lastMessage.parts) && lastMessage.parts.length > 0) { messageContent = lastMessage.parts[0].text || lastMessage.parts[0].content || ''; } } console.log('📥 [task_receiver] Processing:', messageContent.substring(0, 100)); if (messageContent && messageContent.length > 0) { return { messages: [`Research task received: ${messageContent.substring(0, 200)}...`], researchQuery: messageContent, executionStep: 'research' }; } return { messages: ['Ready to receive research tasks.'], researchQuery: '', executionStep: 'waiting' }; } catch (error) { console.error('📥 [task_receiver] Error:', error); return { messages: ['Error processing task request.'], researchQuery: '', executionStep: 'error' }; }"
+        "implementation": "try {\n  const lastMessage = state.messages[state.messages.length - 1];\n  let messageContent = '';\n  if (lastMessage) {\n    if (typeof lastMessage === 'string') {\n      messageContent = lastMessage;\n    } else\n    if (lastMessage.content) {\n      messageContent = lastMessage.content;\n    } else\n    if (lastMessage.parts && Array.isArray(lastMessage.parts) && lastMessage.parts.length > 0) {\n      messageContent = lastMessage.parts[0].text || lastMessage.parts[0].content || '';\n    }\n  }\n  console.log('📥 [task_receiver] Processing:', messageContent.substring(0, 100));\n  if (messageContent && messageContent.length > 0) {\n    return {\n      messages: [`Research task received: ${messageContent.substring(0, 200)}...`],\n      researchQuery: messageContent,\n      executionStep: 'research'\n    };\n  }\n  return {\n    messages: ['Ready to receive research tasks.'],\n    researchQuery: '',\n    executionStep: 'waiting'\n  };\n}\ncatch (error) {\n  console.error('📥 [task_receiver] Error:', error);\n  return {\n    messages: ['Error processing task request.'],\n    researchQuery: '',\n    executionStep: 'error'\n  };\n}"
       }
     },
     {
@@ -148,9 +162,8 @@
           "messages": "string[]",
           "executionStep": "string"
         },
-        "implementation": "try { console.log('🔬 [research_executor] Starting comprehensive research'); const query = state.researchQuery || 'general research'; console.log('🔬 [research_executor] Query:', query.substring(0, 100)); const messages = [{ role: 'user', content: `Research the following topic comprehensively: ${query}. Provide detailed information including company overview, establishment year, business operations, main markets, and recent developments. Use web search tools to gather current and accurate information.` }]; let currentMessages = [...messages]; let attempts = 0; const maxAttempts = 3; let finalResult = ''; while (attempts < maxAttempts) { attempts++; console.log(`🔬 [research_executor] Attempt ${attempts}/${maxAttempts}`); const response = await model.invoke(currentMessages); console.log('🔬 [research_executor] Response type:', typeof response); console.log('🔬 [research_executor] Has tool_calls:', !!(response && response.tool_calls && response.tool_calls.length > 0)); if (response && response.tool_calls && response.tool_calls.length > 0) { console.log('🔬 [research_executor] Processing tool calls:', response.tool_calls.length); currentMessages.push(response); for (const toolCall of response.tool_calls) { console.log('🔬 [research_executor] Tool call:', toolCall.name, toolCall.args); let toolResult = 'Tool execution completed successfully.'; try { if (toolCall.name.includes('search')) { toolResult = `Search results for \"${toolCall.args.query}\": Found relevant information about the company including business overview, market position, and operational details.`; } } catch (toolError) { console.error('🔬 [research_executor] Tool error:', toolError); toolResult = `Tool execution encountered an issue: ${toolError.message}`; } currentMessages.push({ role: 'tool', content: toolResult, tool_call_id: toolCall.id, name: toolCall.name }); } } else if (response && response.content) { finalResult = response.content; console.log('🔬 [research_executor] Final result length:', finalResult.length); break; } else { finalResult = 'Research completed but no detailed content was generated.'; break; } } if (!finalResult && currentMessages.length > 1) { const finalResponse = await model.invoke([...currentMessages, { role: 'user', content: 'Please provide a comprehensive summary of the research findings.' }]); finalResult = finalResponse.content || 'Research summary could not be generated.'; } console.log('🔬 [research_executor] Final result preview:', finalResult.substring(0, 200)); return { messages: [finalResult], executionStep: 'completed' }; } catch (error) { console.error('🔬 [research_executor] Error:', error); return { messages: [`Research execution failed: ${error.message || error}`], executionStep: 'error' }; }"
-      },
-      "useMcpServers": true
+        "implementation": "try {\n  console.log('🔬 [research_executor] Starting comprehensive research');\n  const query = state.researchQuery || 'general research';\n  console.log('🔬 [research_executor] Query:', query.substring(0, 100));\n  const messages = [\n    { role: 'user', content: `Research the following topic comprehensively: ${query}. Provide detailed information including company overview, establishment year, business operations, main markets, and recent developments. Use web search tools to gather current and accurate information.` }\n  ];\n  let currentMessages = [...messages];\n  let attempts = 0;\n  const maxAttempts = 3;\n  let finalResult = '';\n  while (attempts < maxAttempts) {\n    attempts++; console.log(`🔬 [research_executor] Attempt ${attempts}/${maxAttempts}`);\n    const response = await model.invoke(currentMessages);\n    console.log('🔬 [research_executor] Response type:', typeof response);\n    console.log('🔬 [research_executor] Has tool_calls:', !!(response && response.tool_calls && response.tool_calls.length > 0));\n    if (response && response.tool_calls && response.tool_calls.length > 0) {\n      console.log('🔬 [research_executor] Processing tool calls:', response.tool_calls.length);\n      currentMessages.push(response);\n      for (const toolCall of response.tool_calls) {\n        console.log('🔬 [research_executor] Tool call:', toolCall.name, toolCall.args);\n        let toolResult = 'Tool execution completed successfully.';\n        try {\n          if (toolCall.name.includes('search')) {\n            toolResult = `Search results for \"${toolCall.args.query}\": Found relevant information about the company including business overview, market position, and operational details.`;\n          }\n        }\n        catch (toolError) {\n          console.error('🔬 [research_executor] Tool error:', toolError);\n          toolResult = `Tool execution encountered an issue: ${toolError.message}`;\n        }\n        currentMessages.push({ role: 'tool', content: toolResult, tool_call_id: toolCall.id, name: toolCall.name });\n      }\n    } else\n    if (response && response.content) {\n      finalResult = response.content;\n      console.log('🔬 [research_executor] Final result length:', finalResult.length);\n      break;\n    } else {\n      finalResult = 'Research completed but no detailed content was generated.';\n      break;\n    }\n  }\n  if (!finalResult && currentMessages.length > 1) {\n    const finalResponse = await model.invoke([...currentMessages, { role: 'user', content: 'Please provide a comprehensive summary of the research findings.' }]);\n    finalResult = finalResponse.content || 'Research summary could not be generated.';\n  }\n  console.log('🔬 [research_executor] Final result preview:', finalResult.substring(0, 200));\n  return {\n    messages: [finalResult],\n    executionStep: 'completed'\n  };\n}\ncatch (error) {\n  console.error('🔬 [research_executor] Error:', error);\n  return {\n    messages: [`Research execution failed: ${error.message || error}`],\n    executionStep: 'error'\n  };\n}"
+      }
     },
     {
       "id": "result_formatter",
@@ -171,7 +184,7 @@
           "researchResults": "string[]",
           "executionStep": "string"
         },
-        "implementation": "try { const lastMessage = state.messages[state.messages.length - 1]; let contentToFormat = ''; if (typeof lastMessage === 'string') { contentToFormat = lastMessage; } else if (lastMessage && typeof lastMessage === 'object' && lastMessage.content) { contentToFormat = lastMessage.content; } else { contentToFormat = 'No content available for formatting'; } console.log('📋 [result_formatter] Content length:', contentToFormat.length); if (contentToFormat.length < 50) { return { messages: ['Insufficient content for formatting.'], researchResults: [], executionStep: 'completed' }; } const formatPrompt = `Format the following research results into a well-structured summary with clear sections for: 1) Company Overview, 2) Key Findings, 3) Business Operations, 4) Market Position, 5) Sources and References. Content to format: ${contentToFormat}`; const formattedResponse = await model.invoke([{ role: 'user', content: formatPrompt }]); const formattedContent = formattedResponse.content || formattedResponse.toString(); const result = { timestamp: new Date().toISOString(), query: state.researchQuery, findings: formattedContent, status: 'completed' }; return { messages: [formattedContent], researchResults: [JSON.stringify(result)], executionStep: 'completed' }; } catch (error) { console.error('📋 [result_formatter] Error:', error); return { messages: [`Formatting failed: ${error.message || error}`], researchResults: [], executionStep: 'error' }; }"
+        "implementation": "try {\n  const lastMessage = state.messages[state.messages.length - 1];\n  let contentToFormat = '';\n  if (typeof lastMessage === 'string') {\n    contentToFormat = lastMessage;\n  } else\n  if (lastMessage && typeof lastMessage === 'object' && lastMessage.content) {\n    contentToFormat = lastMessage.content;\n  } else {\n    contentToFormat = 'No content available for formatting';\n  }\n  console.log('📋 [result_formatter] Content length:', contentToFormat.length);\n  if (contentToFormat.length < 50) {\n    return {\n      messages: ['Insufficient content for formatting.'],\n      researchResults: [],\n      executionStep: 'completed'\n    };\n  }\n  const formatPrompt = `Format the following research results into a well-structured summary with clear sections for: 1) Company Overview, 2) Key Findings, 3) Business Operations, 4) Market Position, 5) Sources and References. Content to format: ${contentToFormat}`;\n  const formattedResponse = await model.invoke([{ role: 'user', content: formatPrompt }]);\n  const formattedContent = formattedResponse.content || formattedResponse.toString();\n  const result = { timestamp: new Date().toISOString(), query: state.researchQuery, findings: formattedContent, status: 'completed' };\n  return {\n    messages: [formattedContent],\n    researchResults: [JSON.stringify(result)],\n    executionStep: 'completed'\n  };\n}\ncatch (error) {\n  console.error('📋 [result_formatter] Error:', error);\n  return {\n    messages: [`Formatting failed: ${error.message || error}`],\n    researchResults: [],\n    executionStep: 'error'\n  };\n}"
       }
     }
   ],
@@ -181,8 +194,16 @@
       "to": "task_receiver"
     },
     {
-      "type": "conditional",
+      "from": "research_executor",
+      "to": "result_formatter"
+    },
+    {
+      "from": "result_formatter",
+      "to": "__end__"
+    },
+    {
       "from": "task_receiver",
+      "type": "conditional",
       "condition": {
         "name": "shouldProceed",
         "function": {
@@ -193,18 +214,17 @@
             }
           ],
           "output": "string",
-          "implementation": "try { const step = state.executionStep || 'waiting'; console.log('🔀 [shouldProceed] Current step:', step); if (step === 'research') { return 'research_executor'; } if (step === 'error') { return '__end__'; } return '__end__'; } catch (error) { console.error('🔀 [shouldProceed] Error:', error); return '__end__'; }",
-          "possibleTargets": ["research_executor", "__end__"]
-        }
+          "implementation": "try {\n  const step = state.executionStep || 'waiting';\n  console.log('🔀 [shouldProceed] Current step:', step);\n  if (step === 'research') {\n    return 'research_executor';\n  }\n  if (step === 'error') {\n    return '__end__';\n  }\n  return '__end__';\n}\ncatch (error) {\n  console.error('🔀 [shouldProceed] Error:', error);\n  return '__end__';\n}",
+          "possibleTargets": [
+            "research_executor",
+            "__end__"
+          ]
+        },
+        "possibleTargets": [
+          "research_executor",
+          "__end__"
+        ]
       }
-    },
-    {
-      "from": "research_executor",
-      "to": "result_formatter"
-    },
-    {
-      "from": "result_formatter",
-      "to": "__end__"
     }
   ],
   "stateGraph": {
