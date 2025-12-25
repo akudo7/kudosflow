@@ -16,8 +16,14 @@ interface AgentCard {
   protocolVersion: string;
   version: string;
   url: string;
-  defaultInputModes: string[];
-  defaultOutputModes: string[];
+  endpoints?: {
+    messageSend?: string;
+    messageStream?: string;
+    taskGet?: string;
+    taskCancel?: string;
+  };
+  defaultInputModes?: string[];
+  defaultOutputModes?: string[];
   capabilities: {
     streaming: boolean;
     pushNotifications: boolean;
@@ -95,11 +101,40 @@ class AgentExecutor {
    */
   async execute(message: any, taskId: string): Promise<any> {
     console.log(`[AgentExecutor] Executing task ${taskId}`);
+    console.log(`[AgentExecutor] Raw message received:`, JSON.stringify(message, null, 2));
 
-    // Extract message parts
-    const parts = message.parts || [];
-    const textPart = parts.find((p: any) => p.type === 'text' || p.kind === 'text');
-    const input = textPart?.text || (typeof message === 'string' ? message : '');
+    // Extract message content - handle multiple formats
+    let input = '';
+
+    // Try direct string
+    if (typeof message === 'string') {
+      input = message;
+    }
+    // Try message.parts (SDK format)
+    else if (message.parts && Array.isArray(message.parts)) {
+      const textPart = message.parts.find((p: any) => p.type === 'text' || p.kind === 'text');
+      input = textPart?.text || '';
+    }
+    // Try message.content (legacy format)
+    else if (message.content) {
+      input = typeof message.content === 'string' ? message.content : '';
+    }
+    // Try message.text (alternative format)
+    else if (message.text) {
+      input = typeof message.text === 'string' ? message.text : '';
+    }
+    // Fallback to JSON stringification
+    else {
+      input = JSON.stringify(message);
+    }
+
+    console.log(`[AgentExecutor] Extracted input (${input.length} chars):`, input.substring(0, 200));
+
+    if (!input || input.trim().length === 0) {
+      const error = new Error('No valid input text found in message');
+      console.error(`[AgentExecutor] ${error.message}. Message structure:`, message);
+      throw error;
+    }
 
     // Update task status to running
     await this.taskStore.updateTask(taskId, {
@@ -318,21 +353,51 @@ export async function runServer(configPath: string, port: number): Promise<void>
 
     // A2A Protocol: Agent Card endpoint
     app.get('/.well-known/agent.json', (req: any, res: any) => {
-      const agentCard: AgentCard = {
-        name: workflowConfig.name || 'WorkflowAgent',
-        description: workflowConfig.description || 'A workflow execution agent',
-        protocolVersion: '0.3.0',
-        version: '1.0.0',
-        url: `http://localhost:${port}/`,
-        defaultInputModes: ['text/plain'],
-        defaultOutputModes: ['text/plain'],
-        capabilities: {
-          streaming: false,
-          pushNotifications: false,
-          stateTransitionHistory: true
-        },
-        skills: workflowConfig.skills || []
-      };
+      // Check if config has a2aEndpoint with agentCard
+      let agentCard: AgentCard;
+
+      if (workflowConfig.config?.a2aEndpoint?.agentCard) {
+        // Use the agentCard from config.a2aEndpoint, but override port numbers
+        const configCard = workflowConfig.config.a2aEndpoint.agentCard;
+        agentCard = {
+          ...configCard,
+          // Override URL with the actual port
+          url: `http://localhost:${port}/`,
+          // Override endpoints with the actual port
+          endpoints: {
+            messageSend: `http://localhost:${port}/message/send`,
+            messageStream: `http://localhost:${port}/message/stream`,
+            taskGet: `http://localhost:${port}/tasks/{taskId}`,
+            taskCancel: `http://localhost:${port}/tasks/{taskId}/cancel`
+          }
+        };
+        console.log(`[Agent Card] Using configured agent card: ${agentCard.name} on port ${port}`);
+      } else {
+        // Fallback to default agent card
+        agentCard = {
+          name: workflowConfig.name || 'WorkflowAgent',
+          description: workflowConfig.description || 'A workflow execution agent',
+          protocolVersion: '0.3.0',
+          version: '1.0.0',
+          url: `http://localhost:${port}/`,
+          endpoints: {
+            messageSend: `http://localhost:${port}/message/send`,
+            messageStream: `http://localhost:${port}/message/stream`,
+            taskGet: `http://localhost:${port}/tasks/{taskId}`,
+            taskCancel: `http://localhost:${port}/tasks/{taskId}/cancel`
+          },
+          defaultInputModes: ['text/plain'],
+          defaultOutputModes: ['text/plain'],
+          capabilities: {
+            streaming: false,
+            pushNotifications: false,
+            stateTransitionHistory: true
+          },
+          skills: workflowConfig.skills || []
+        };
+        console.log(`[Agent Card] Using default agent card: ${agentCard.name}`);
+      }
+
       res.json(agentCard);
     });
 

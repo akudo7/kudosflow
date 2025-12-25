@@ -11,6 +11,12 @@
         "protocolVersion": "0.3.0",
         "version": "1.0.0",
         "url": "http://localhost:3002/",
+        "endpoints": {
+          "messageSend": "http://localhost:3002/message/send",
+          "messageStream": "http://localhost:3002/message/stream",
+          "taskGet": "http://localhost:3002/tasks/{taskId}",
+          "taskCancel": "http://localhost:3002/tasks/{taskId}/cancel"
+        },
         "capabilities": {
           "streaming": false,
           "pushNotifications": false,
