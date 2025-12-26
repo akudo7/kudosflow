@@ -5,6 +5,7 @@ import {
   ConditionalEdgeCondition,
 } from '../types/workflow.types';
 import { validateConditionalEdge } from '../utils/validation';
+import { extractPossibleTargets } from '../utils/extractPossibleTargets';
 
 interface ConditionalEdgeFormModalProps {
   show: boolean;
@@ -28,13 +29,11 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
   onCancel,
 }) => {
   const currentCondition = edgeGroup?.[0]?.data?.condition;
-  const currentTargets = edgeGroup?.[0]?.data?.possibleTargets || [];
   const sourceId = edgeGroup?.[0]?.source || '';
 
   const [conditionName, setConditionName] = useState('');
   const [parameters, setParameters] = useState<Parameter[]>([]);
   const [implementation, setImplementation] = useState('');
-  const [selectedTargets, setSelectedTargets] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const [editingParam, setEditingParam] = useState<number | null>(null);
@@ -49,16 +48,14 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
       setConditionName(currentCondition.name || '');
       setParameters(currentCondition.function?.parameters || []);
       setImplementation(currentCondition.function?.implementation || '');
-      setSelectedTargets(currentTargets);
       setError(null);
     }
-  }, [show, currentCondition, currentTargets]);
+  }, [show, currentCondition]);
 
   const resetForm = () => {
     setConditionName('');
     setParameters([]);
     setImplementation('');
-    setSelectedTargets([]);
     setError(null);
     setEditingParam(null);
     setParamForm({ name: '', type: '', modelRef: '' });
@@ -80,11 +77,6 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
       return;
     }
 
-    if (selectedTargets.length === 0) {
-      setError('At least one possible target must be selected');
-      return;
-    }
-
     const newCondition: ConditionalEdgeCondition = {
       name: conditionName.trim(),
       function: {
@@ -94,17 +86,24 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
     };
 
     const allNodeIds = allNodes.map((n) => n.id);
-    const validation = validateConditionalEdge(newCondition, selectedTargets, allNodeIds);
+    const validation = validateConditionalEdge(newCondition, allNodeIds);
 
     if (!validation.valid) {
       setError(validation.error || 'Invalid configuration');
       return;
     }
 
+    // Auto-extract targets from implementation
+    const autoExtractedTargets = extractPossibleTargets(implementation.trim());
+    if (!autoExtractedTargets || autoExtractedTargets.length === 0) {
+      setError('Could not extract possible targets from implementation. Ensure return statements use string literals.');
+      return;
+    }
+
     const groupId = edgeGroup?.[0]?.data?.conditionalGroupId ||
                     `conditional-${sourceId}-${Date.now()}`;
 
-    const updatedEdges: ReactFlowEdge[] = selectedTargets.map((target, index) => ({
+    const updatedEdges: ReactFlowEdge[] = autoExtractedTargets.map((target, index) => ({
       id: `${groupId}-${target}`,
       source: sourceId,
       target: target,
@@ -115,7 +114,7 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
       data: {
         conditionalGroupId: groupId,
         condition: newCondition,
-        possibleTargets: selectedTargets,
+        possibleTargets: autoExtractedTargets,
         isConditional: true,
       },
     }));
@@ -168,23 +167,6 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
     const newParameters = parameters.filter((_, i) => i !== index);
     setParameters(newParameters);
   };
-
-  const handleToggleTarget = (nodeId: string) => {
-    setSelectedTargets((prev) =>
-      prev.includes(nodeId)
-        ? prev.filter((id) => id !== nodeId)
-        : [...prev, nodeId]
-    );
-  };
-
-  const nodeTargets = allNodes.map((n) => ({ id: n.id, name: (n.data?.label as string) || n.id }));
-
-  // Add __end__ only if it's not already in the nodes list
-  const hasEndNode = nodeTargets.some((t) => t.id === '__end__');
-  const availableTargets = [
-    ...nodeTargets,
-    ...(hasEndNode ? [] : [{ id: '__end__', name: '__end__' }]),
-  ].filter((target) => target.id !== sourceId);
 
   if (!show) {
     return null;
@@ -549,67 +531,6 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
                 resize: 'vertical',
               }}
             />
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label
-              style={{
-                display: 'block',
-                marginBottom: '8px',
-                fontSize: '13px',
-                fontWeight: 'bold',
-                color: 'var(--vscode-editor-foreground)',
-              }}
-            >
-              Possible Targets* (Select at least 1)
-            </label>
-            <div
-              style={{
-                maxHeight: '200px',
-                overflow: 'auto',
-                border: '1px solid var(--vscode-panel-border)',
-                borderRadius: '4px',
-                padding: '8px',
-                backgroundColor: 'var(--vscode-editor-background)',
-              }}
-            >
-              {availableTargets.map((target) => (
-                <div
-                  key={target.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '4px 0',
-                    fontSize: '12px',
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    id={`target-${target.id}`}
-                    checked={selectedTargets.includes(target.id)}
-                    onChange={() => handleToggleTarget(target.id)}
-                    style={{ marginRight: '8px', cursor: 'pointer' }}
-                  />
-                  <label
-                    htmlFor={`target-${target.id}`}
-                    style={{ cursor: 'pointer', flex: 1 }}
-                  >
-                    {target.name}
-                  </label>
-                </div>
-              ))}
-            </div>
-            {selectedTargets.length === 0 && (
-              <div
-                style={{
-                  marginTop: '4px',
-                  fontSize: '11px',
-                  color: 'var(--vscode-inputValidation-warningForeground)',
-                }}
-              >
-                At least one target must be selected
-              </div>
-            )}
           </div>
         </div>
 

@@ -135,8 +135,7 @@
           ],
           "implementation": "const lastMessage = state.messages[state.messages.length - 1];\nif (lastMessage && lastMessage.tool_calls && lastMessage.tool_calls.length > 0) {\n  return 'tools';\n}\nif (state.currentPhase === 'error' || state.currentPhase === 'completed') {\n  return '__end__';\n}\nif (state.currentPhase === 'awaiting_approval') {\n  return '__end__';\n}\nif (state.currentPhase === 'research_execution' && state.tasksApproved) {\n  return 'orchestrator';\n}\nreturn '__end__';"
         }
-      },
-      "possibleTargets": ["tools", "orchestrator", "__end__"]
+      }
     }
   ],
   "stateGraph": {

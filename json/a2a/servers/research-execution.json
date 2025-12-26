@@ -201,8 +201,7 @@
           ],
           "implementation": "try {\n  const step = state.executionStep || 'waiting';\n  console.log('🔀 [shouldProceed] Current step:', step);\n  if (step === 'research') {\n    return 'research_executor';\n  }\n  if (step === 'error') {\n    return '__end__';\n  }\n  return '__end__';\n}\ncatch (error) {\n  console.error('🔀 [shouldProceed] Error:', error);\n  return '__end__';\n}"
         }
-      },
-      "possibleTargets": ["research_executor", "__end__"]
+      }
     }
   ],
   "stateGraph": {

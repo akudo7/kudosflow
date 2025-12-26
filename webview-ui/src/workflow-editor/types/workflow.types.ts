@@ -73,7 +73,7 @@ export interface WorkflowEdge {
   to?: string;
   type?: 'conditional' | 'normal';
   condition?: ConditionalEdgeCondition;
-  possibleTargets?: string[];  // Possible target node IDs (for conditional edges)
+  // possibleTargets is auto-extracted from condition.function.implementation
 }
 
 export interface AnnotationField {

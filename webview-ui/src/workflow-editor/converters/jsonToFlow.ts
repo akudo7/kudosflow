@@ -1,4 +1,5 @@
 import { WorkflowConfig, ReactFlowNode, ReactFlowEdge } from '../types/workflow.types';
+import { extractPossibleTargets } from '../utils/extractPossibleTargets';
 
 /**
  * Converts SceneGraphManager workflow JSON to React Flow nodes and edges
@@ -16,9 +17,9 @@ export function jsonToFlow(workflow: WorkflowConfig): {
     if (edge.from === '__start__' || edge.to === '__start__') specialNodes.add('__start__');
     if (edge.from === '__end__' || edge.to === '__end__') specialNodes.add('__end__');
 
-    // Check possibleTargets in conditional edges
-    if (edge.type === 'conditional' && edge.possibleTargets) {
-      const possibleTargets = edge.possibleTargets || [];
+    // Check possibleTargets in conditional edges (auto-extracted)
+    if (edge.type === 'conditional' && edge.condition?.function?.implementation) {
+      const possibleTargets = extractPossibleTargets(edge.condition.function.implementation) || [];
       possibleTargets.forEach(target => {
         if (target === '__start__') specialNodes.add('__start__');
         if (target === '__end__') specialNodes.add('__end__');
@@ -72,8 +73,18 @@ export function jsonToFlow(workflow: WorkflowConfig): {
   // Convert workflow edges to React Flow edges
   workflow.edges.forEach((edge, index) => {
     if (edge.type === 'conditional' && edge.condition) {
-      // Get possibleTargets from edge level
-      const possibleTargets = edge.possibleTargets || [];
+      // Auto-extract possibleTargets from implementation
+      let possibleTargets: string[] = [];
+
+      if (edge.condition?.function?.implementation) {
+        const extracted = extractPossibleTargets(edge.condition.function.implementation);
+        if (extracted) {
+          possibleTargets = extracted;
+          console.log(`[jsonToFlow] Auto-extracted possibleTargets for ${edge.from}:`, extracted);
+        } else {
+          console.warn(`[jsonToFlow] Failed to extract possibleTargets for ${edge.from}`);
+        }
+      }
 
       if (possibleTargets.length > 0) {
         // Create one edge per possibleTarget

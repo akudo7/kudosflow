@@ -1,4 +1,5 @@
 import { ReactFlowNode, A2AClientConfig, WorkflowNode, ConditionalEdgeCondition, ModelConfig, MCPServerConfig } from '../types/workflow.types';
+import { extractPossibleTargets, validateExtraction } from './extractPossibleTargets';
 
 export interface ValidationResult {
   valid: boolean;
@@ -354,13 +355,11 @@ export function validateToolNode(node: WorkflowNode, workflowHasA2AClients: bool
 /**
  * Validate ConditionalEdge configuration
  * @param condition - The conditional edge condition to validate
- * @param possibleTargets - The possible targets for the conditional edge
  * @param nodeIds - List of valid node IDs in the workflow (including __end__)
  * @returns ValidationResult
  */
 export function validateConditionalEdge(
   condition: ConditionalEdgeCondition,
-  possibleTargets: string[] | undefined,
   nodeIds: string[]
 ): ValidationResult {
   // Check condition name exists
@@ -395,24 +394,33 @@ export function validateConditionalEdge(
     };
   }
 
-  // Validate possibleTargets if present
-  if (possibleTargets) {
-    if (!Array.isArray(possibleTargets)) {
+  // Auto-extract possibleTargets from implementation
+  const extracted = extractPossibleTargets(condition.function.implementation);
+  const validation = validateExtraction(condition.function.implementation, extracted);
+
+  if (!validation.valid) {
+    return validation; // 抽出失敗時はエラーを返す
+  }
+
+  const targets = extracted!;
+  console.log('[Validation] Auto-extracted possibleTargets:', targets);
+
+  // Validate auto-extracted targets
+  if (!Array.isArray(targets)) {
+    return {
+      valid: false,
+      error: 'Auto-extracted possibleTargets must be an array',
+    };
+  }
+
+  // Check all targets are valid node IDs
+  const validNodeIds = [...nodeIds, '__end__'];
+  for (const target of targets) {
+    if (!validNodeIds.includes(target)) {
       return {
         valid: false,
-        error: 'possibleTargets must be an array',
+        error: `Invalid target: "${target}" does not exist in the workflow`,
       };
-    }
-
-    // Check all targets are valid node IDs
-    const validNodeIds = [...nodeIds, '__end__'];
-    for (const target of possibleTargets) {
-      if (!validNodeIds.includes(target)) {
-        return {
-          valid: false,
-          error: `Invalid target: "${target}" does not exist in the workflow`,
-        };
-      }
     }
   }
 
