@@ -54,7 +54,6 @@ export interface WorkflowNode {
   useA2AClients?: boolean;  // For ToolNode
   function?: {
     parameters: Array<{ name: string; type: string; modelRef?: string }>;
-    output: Record<string, string> | string;  // Can be string for conditional
     implementation: string;
   };
   ends?: string[];
@@ -65,7 +64,6 @@ export interface ConditionalEdgeCondition {
   name: string;
   function: {
     parameters: Array<{ name: string; type: string; modelRef?: string }>;
-    output: string;  // Target node ID
     implementation: string;
   };
 }
@@ -104,7 +102,6 @@ export interface CustomNodeData extends Record<string, unknown> {
   useA2AClients?: boolean;  // For ToolNode
   implementation?: string;
   parameters?: Array<{ name: string; type: string; modelRef?: string }>;
-  output?: Record<string, string> | string;  // Can be string for conditional edges
   ends?: string[];
   models?: ModelConfig[];  // Available models for modelRef dropdown
   onNodeNameChange?: (oldId: string, newId: string) => void;

@@ -52,10 +52,6 @@
             "type": "typeof TestWorkflowState.State"
           }
         ],
-        "output": {
-          "messages": "string[]",
-          "userName": "string"
-        },
         "implementation": "const userInput = interrupt('What is your name?');\n\nif (!userInput) {\n  return {\n    messages: ['Name was not entered'],\n    userName: ''\n  };\n}\n\nconst userName = String(userInput).trim();\nconst result = {\n  messages: [`Hello ${userName}!`],\n  userName: userName\n};\n\nreturn result;"
       }
     },
@@ -68,10 +64,6 @@
             "type": "typeof TestWorkflowState.State"
           }
         ],
-        "output": {
-          "messages": "string[]",
-          "userJob": "string"
-        },
         "implementation": "const userInput = interrupt('What is your occupation?');\n\nif (!userInput) {\n  return {\n    messages: ['Occupation was not entered'],\n    userJob: ''\n  };\n}\n\nconst userJob = String(userInput).trim();\nconst result = {\n  messages: [`Occupation: ${userJob} received. Generating advice...`],\n  userJob: userJob\n};\n\nreturn result;"
       }
     },
@@ -89,10 +81,6 @@
             "modelRef": "adviceModel"
           }
         ],
-        "output": {
-          "messages": "string[]",
-          "advice": "string"
-        },
         "implementation": "try {\n  console.log('🔍 Generating advice based on occupation...');\n  console.log('👤 Name:', state.userName);\n  console.log('💼 Occupation:', state.userJob);\n\n  if (!state.userJob || state.userJob === '') {\n    return {\n      messages: ['Cannot generate advice because occupation is not set'],\n      advice: ''\n    };\n  }\n\n  const prompt = `Provide practical advice within 100 characters for ${state.userName} working as a ${state.userJob} to help with career advancement and improving work quality.`;\n\n  const response = await model.invoke([{ role: 'user', content: prompt }]);\n\n  const adviceText = response.content || 'Failed to generate advice';\n  \n  console.log('📋 Generated advice:', adviceText);\n\n  return {\n    messages: [`Advice generated`],\n    advice: adviceText\n  };\n} catch (error) {\n  console.error('❌ Error:', error);\n  return {\n    messages: [`An error occurred: ${error.message}`],\n    advice: ''\n  };\n}"
       }
     },
@@ -105,9 +93,6 @@
             "type": "typeof TestWorkflowState.State"
           }
         ],
-        "output": {
-          "messages": "string[]"
-        },
         "implementation": "const adviceMessage = `[Advice for ${state.userName} (${state.userJob})]\\n\\n${state.advice}`;\n\ninterrupt(adviceMessage);\n\nconsole.log('🔍 Final result:', adviceMessage);\n\nreturn {\n  messages: [adviceMessage, 'Process completed']\n};"
       }
     }

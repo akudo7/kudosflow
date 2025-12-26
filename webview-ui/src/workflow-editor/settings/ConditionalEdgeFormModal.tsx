@@ -33,7 +33,6 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
 
   const [conditionName, setConditionName] = useState('');
   const [parameters, setParameters] = useState<Parameter[]>([]);
-  const [outputType, setOutputType] = useState('string');
   const [implementation, setImplementation] = useState('');
   const [selectedTargets, setSelectedTargets] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +48,6 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
     if (show && currentCondition) {
       setConditionName(currentCondition.name || '');
       setParameters(currentCondition.function?.parameters || []);
-      setOutputType(currentCondition.function?.output || 'string');
       setImplementation(currentCondition.function?.implementation || '');
       setSelectedTargets(currentTargets);
       setError(null);
@@ -59,7 +57,6 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
   const resetForm = () => {
     setConditionName('');
     setParameters([]);
-    setOutputType('string');
     setImplementation('');
     setSelectedTargets([]);
     setError(null);
@@ -92,7 +89,6 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
       name: conditionName.trim(),
       function: {
         parameters: parameters,
-        output: outputType,
         implementation: implementation.trim(),
       },
     };
@@ -521,45 +517,6 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
                 </div>
               </div>
             )}
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label
-              style={{
-                display: 'block',
-                marginBottom: '6px',
-                fontSize: '13px',
-                fontWeight: 'bold',
-                color: 'var(--vscode-editor-foreground)',
-              }}
-            >
-              Output Type*
-            </label>
-            <input
-              type="text"
-              value={outputType}
-              onChange={(e) => setOutputType(e.target.value)}
-              placeholder="string"
-              style={{
-                width: '100%',
-                padding: '6px 8px',
-                fontSize: '13px',
-                backgroundColor: 'var(--vscode-input-background)',
-                color: 'var(--vscode-input-foreground)',
-                border: '1px solid var(--vscode-input-border)',
-                borderRadius: '2px',
-                outline: 'none',
-              }}
-            />
-            <div
-              style={{
-                marginTop: '4px',
-                fontSize: '11px',
-                color: 'var(--vscode-descriptionForeground)',
-              }}
-            >
-              Conditional functions must return a string (target node ID)
-            </div>
           </div>
 
           <div style={{ marginBottom: '20px' }}>

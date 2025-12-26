@@ -54,7 +54,6 @@ export function jsonToFlow(workflow: WorkflowConfig): {
         useA2AClients: node.useA2AClients,
         implementation: node.function?.implementation,
         parameters: node.function?.parameters,
-        output: node.function?.output,
         ends: node.ends,
       },
     });

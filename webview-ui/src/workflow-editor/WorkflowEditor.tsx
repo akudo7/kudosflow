@@ -417,7 +417,6 @@ export const WorkflowEditor: React.FC = () => {
             name: 'new condition',
             function: {
               parameters: [],
-              output: 'string',
               implementation: '// TODO: Implement condition logic\nreturn "' + (pendingConnection.target || '__end__') + '";',
             },
           },

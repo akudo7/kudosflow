@@ -87,10 +87,6 @@
             "modelRef": "mainModel"
           }
         ],
-        "output": {
-          "messages": "Message[]",
-          "currentPhase": "string"
-        },
         "implementation": "try {\n  console.log('🎯 [orchestrator] Current phase:', state.currentPhase);\n  const currentPhase = state.currentPhase || 'task_creation';\n  if (currentPhase === 'task_creation' && !state.tasksApproved) {\n    console.log('🎯 [orchestrator] Phase 1: Calling task agent');\n    const userContent = state.messages.find(msg => msg.content)?.content || 'Please create research tasks.';\n    const response = await model.invoke([\n       { role: 'system', content: 'Use send_message_to_task_agent tool to create research tasks.'}, \n       { role: 'user', content: userContent}\n    ]);\n    return { messages: [response], currentPhase: 'task_creation' }; \n  } else \n  if (currentPhase === 'research_execution' && state.tasksApproved) {\n    console.log('🎯 [orchestrator] Phase 2: Starting research execution');\n    const response = await model.invoke([\n      { role: 'system', content: 'Use send_message_to_research_agent tool.' },\n      { role: 'user', content: 'Execute research based on approved tasks.' }\n    ]);\n    return { messages: [response], currentPhase: 'research_execution' };\n  }\n  console.log('🎯 [orchestrator] No action needed');\n  return { messages: [], currentPhase }; \n}\ncatch (error) {\n  console.error('🎯 [orchestrator] Error:', error);\n  return { \n    messages: [{ role: 'assistant', content: `Error: ${error.message}` }],\n    currentPhase: 'error'\n  };\n}"
       }
     },
@@ -108,12 +104,6 @@
             "type": "typeof AgentState.State"
           }
         ],
-        "output": {
-          "messages": "Message[]",
-          "tasksApproved": "boolean",
-          "currentPhase": "string",
-          "taskListData": "any"
-        },
         "implementation": "console.log('🔍 [approval_handler] Processing');\nconst lastToolResult = state.messages.filter(msg => (msg._getType && msg._getType() === 'tool') || msg.role === 'tool').pop();\nif (lastToolResult && lastToolResult.name === 'send_message_to_task_agent') {\n  console.log('🔍 [approval_handler] Checking task agent response');\n  let parsedContent;\n  try {\n    parsedContent = typeof lastToolResult.content === 'string' ? JSON.parse(lastToolResult.content) : lastToolResult.content;\n  } \n  catch (e) {\n    return {\n      messages: [], \n      tasksApproved: false,\n      currentPhase: state.currentPhase,\n      taskListData: null\n    }; \n  } \n  let taskList = [];\n  if (parsedContent.response && parsedContent.response.content) {\n    try {\n      const innerContent = typeof parsedContent.response.content === 'string' ? JSON.parse(parsedContent.response.content) : parsedContent.response.content;\n      taskList = innerContent.result?.taskList || [];\n    }\n    catch (e) {}\n  }\n  console.log('🔍 [approval_handler] Found taskList:', taskList.length);\n  if (taskList.length > 0 && !state.tasksApproved) {\n    const taskSummary = taskList.map((t, i) => `${i + 1}. ${t.objective} (${t.estimated_effort || 'N/A'})`).join('\\n');\n    const totalHours = taskList.reduce((sum, t) => sum + (parseInt(t.estimated_effort) || 0), 0);\n    const message = `TaskCreationAgent created ${taskList.length} tasks (${totalHours} hours):\\n\\n${taskSummary}\\n\\nApprove to proceed?`;\n    console.log('⏸️ [approval_handler] Requesting approval');\n    const userResponse = interrupt(message);\n    console.log('⏸️ [approval_handler] User response:', userResponse);\n    if (!userResponse) {\n      return {\n        messages: [],\n        tasksApproved: false,\n        currentPhase: 'awaiting_approval',\n        taskListData: taskList\n      };\n    }\n    const response = String(userResponse).toLowerCase().trim();\n    if (response === 'approve' || response.includes('yes')) {\n      console.log('✅ [approval_handler] Approved');\n      return {\n        messages: [\n          { role: 'assistant', content: 'Tasks approved. Starting research.' }\n        ],\n        tasksApproved: true,\n        currentPhase: 'research_execution',\n        taskListData: taskList\n      };\n    } else {\n      console.log('❌ [approval_handler] Rejected');\n      return {\n        messages: [\n          { role: 'assistant', content: 'Tasks rejected.'}\n        ], \n        tasksApproved: false,\n        currentPhase: 'task_creation',\n        taskListData: null\n      };\n    }\n  }\n}\nreturn {\n  messages: [],\n  tasksApproved: state.tasksApproved,\n  currentPhase: state.currentPhase,\n  taskListData: state.taskListData\n};"
       }
     }
@@ -143,7 +133,6 @@
               "type": "typeof AgentState.State"
             }
           ],
-          "output": "string",
           "implementation": "const lastMessage = state.messages[state.messages.length - 1];\nif (lastMessage && lastMessage.tool_calls && lastMessage.tool_calls.length > 0) {\n  return 'tools';\n}\nif (state.currentPhase === 'error' || state.currentPhase === 'completed') {\n  return '__end__';\n}\nif (state.currentPhase === 'awaiting_approval') {\n  return '__end__';\n}\nif (state.currentPhase === 'research_execution' && state.tasksApproved) {\n  return 'orchestrator';\n}\nreturn '__end__';"
         }
       },

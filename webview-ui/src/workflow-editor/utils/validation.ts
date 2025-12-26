@@ -387,14 +387,6 @@ export function validateConditionalEdge(
     };
   }
 
-  // Check function.output is string
-  if (typeof condition.function.output !== 'string') {
-    return {
-      valid: false,
-      error: 'Output must be a string',
-    };
-  }
-
   // Check function.implementation exists
   if (!condition.function.implementation || condition.function.implementation.trim() === '') {
     return {

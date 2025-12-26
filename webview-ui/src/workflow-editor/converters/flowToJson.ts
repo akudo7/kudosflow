@@ -35,10 +35,9 @@ export function flowToJson(
 
     // Only add function property if node is not a ToolNode
     if (node.data.nodeType !== 'ToolNode') {
-      if (node.data.implementation !== undefined || node.data.parameters || node.data.output) {
+      if (node.data.implementation !== undefined || node.data.parameters) {
         workflowNode.function = {
           parameters: node.data.parameters || [],
-          output: node.data.output || {},
           implementation: node.data.implementation || '',
         };
       }
