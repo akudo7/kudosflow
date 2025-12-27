@@ -1,0 +1,205 @@
+{
+  "config": {
+    "recursionLimit": 100,
+    "eventEmitter": {
+      "defaultMaxListeners": 20
+    }
+  },
+  "a2aClients": {
+    "task_agent": {
+      "cardUrl": "http://localhost:3001/.well-known/agent.json",
+      "timeout": 30000
+    },
+    "research_agent": {
+      "cardUrl": "http://localhost:3002/.well-known/agent.json",
+      "timeout": 30000
+    },
+    "quality_agent": {
+      "cardUrl": "http://localhost:3003/.well-known/agent.json",
+      "timeout": 30000
+    }
+  },
+  "stateAnnotation": {
+    "name": "AgentState",
+    "type": "Annotation.Root"
+  },
+  "annotation": {
+    "messages": {
+      "type": "BaseMessage[]",
+      "reducer": "(x, y) => x.concat(y)",
+      "default": []
+    },
+    "currentPhase": {
+      "type": "string",
+      "reducer": "(x, y) => y || x",
+      "default": "task_creation"
+    },
+    "taskServerResponse": {
+      "type": "any",
+      "reducer": "(x, y) => y || x",
+      "default": null
+    },
+    "researchServerResponse": {
+      "type": "any",
+      "reducer": "(x, y) => y || x",
+      "default": null
+    },
+    "evaluationServerResponse": {
+      "type": "any",
+      "reducer": "(x, y) => y || x",
+      "default": null
+    },
+    "userDecision": {
+      "type": "string",
+      "reducer": "(x, y) => y || x",
+      "default": null
+    },
+    "userFeedback": {
+      "type": "string",
+      "reducer": "(x, y) => y || x",
+      "default": null
+    }
+  },
+  "models": [
+    {
+      "id": "mainModel",
+      "type": "OpenAI",
+      "config": {
+        "model": "gpt-4o-mini",
+        "temperature": 0.3
+      },
+      "bindA2AClients": true,
+      "systemPrompt": "You are an orchestrator for a multi-agent research system with three specialized agents: TaskCreationAgent, ResearchExecutionAgent, and QualityEvaluationAgent."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "orchestrator",
+      "function": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof AgentState.State"
+          },
+          {
+            "name": "model",
+            "type": "ModelConfig",
+            "modelRef": "mainModel"
+          }
+        ],
+        "implementation": "try {\n  console.log('🎯 [orchestrator] Phase:', state.currentPhase, 'UserDecision:', state.userDecision);\n  \n  const currentPhase = state.currentPhase || 'task_creation';\n  \n  if (currentPhase === 'task_creation') {\n    console.log('📋 [orchestrator] Invoking TaskCreationAgent');\n    const userMessage = state.messages.find(msg => msg.role === 'user')?.content || '矢崎総業の会社概要、製品サービス、強み弱み、中期戦略、AIの取り組みを調査してください';\n    \n    let prompt = userMessage;\n    if (state.userFeedback) {\n      prompt = `前回のタスクリストへのフィードバック: ${state.userFeedback}\\n\\n元のリクエスト: ${userMessage}`;\n      console.log('🔄 [orchestrator] Retry with feedback');\n    }\n    \n    const response = await model.invoke([\n      { role: 'system', content: 'You MUST use ONLY the send_message_to_task_agent tool. Do not use any other tools.' },\n      { role: 'user', content: prompt }\n    ]);\n    return { messages: [response], currentPhase: 'task_creation', userFeedback: null };\n  }\n  \n  if (currentPhase === 'research_execution') {\n    console.log('🔍 [orchestrator] Invoking ResearchExecutionAgent');\n    const taskListStr = JSON.stringify(state.taskServerResponse, null, 2);\n    \n    let prompt = `以下のタスクリストに基づいて調査を実行してください:\\n${taskListStr}`;\n    if (state.userFeedback) {\n      prompt = `前回の調査へのフィードバック: ${state.userFeedback}\\n\\n${prompt}`;\n      console.log('🔄 [orchestrator] Retry research with feedback');\n    }\n    \n    const response = await model.invoke([\n      { role: 'system', content: 'You MUST use ONLY the send_message_to_research_agent tool. Do not use any other tools.' },\n      { role: 'user', content: prompt }\n    ]);\n    return { messages: [response], currentPhase: 'research_execution', userFeedback: null };\n  }\n  \n  if (currentPhase === 'quality_evaluation') {\n    console.log('✅ [orchestrator] Invoking QualityEvaluationAgent');\n    const researchStr = JSON.stringify(state.researchServerResponse, null, 2);\n    \n    let prompt = `以下の調査結果の品質を評価し、エグゼクティブサマリーを作成してください:\\n${researchStr}`;\n    if (state.userFeedback) {\n      prompt = `前回の評価へのフィードバック: ${state.userFeedback}\\n\\n${prompt}`;\n      console.log('🔄 [orchestrator] Retry evaluation with feedback');\n    }\n    \n    const response = await model.invoke([\n      { role: 'system', content: 'You MUST use ONLY the send_message_to_quality_agent tool. Do not use any other tools.' },\n      { role: 'user', content: prompt }\n    ]);\n    return { messages: [response], currentPhase: 'quality_evaluation', userFeedback: null };\n  }\n  \n  console.log('🎯 [orchestrator] No action needed, phase:', currentPhase);\n  return { messages: [], currentPhase };\n}\ncatch (error) {\n  console.error('❌ [orchestrator] Error:', error);\n  return { \n    messages: [{ role: 'assistant', content: `Error: ${error.message}` }],\n    currentPhase: 'error'\n  };\n}"
+      }
+    },
+    {
+      "id": "tools",
+      "type": "ToolNode",
+      "useA2AClients": true
+    },
+    {
+      "id": "approval_gate_task",
+      "function": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof AgentState.State"
+          }
+        ],
+        "implementation": "console.log('🚪 [approval_gate_task] Processing task approval');\n\nconst lastToolResult = state.messages\n  .filter(msg => (msg._getType && msg._getType() === 'tool') || msg.role === 'tool')\n  .filter(msg => msg.name === 'send_message_to_task_agent')\n  .pop();\n\nif (!lastToolResult) {\n  console.log('⚠️  [approval_gate_task] No task agent response found');\n  return { messages: [], userDecision: null, currentPhase: state.currentPhase };\n}\n\nconsole.log('📋 [approval_gate_task] Task agent response received');\n\nlet parsedContent;\ntry {\n  parsedContent = typeof lastToolResult.content === 'string' \n    ? JSON.parse(lastToolResult.content) \n    : lastToolResult.content;\n} catch (e) {\n  console.error('❌ [approval_gate_task] Parse error:', e);\n  return { messages: [], userDecision: null, currentPhase: state.currentPhase };\n}\n\nlet taskList = [];\nif (parsedContent.response && parsedContent.response.content) {\n  try {\n    const responseContent = typeof parsedContent.response.content === 'string'\n      ? JSON.parse(parsedContent.response.content)\n      : parsedContent.response.content;\n    \n    if (responseContent.result && responseContent.result.messages) {\n      const assistantMsg = responseContent.result.messages.find(m => m.role === 'assistant');\n      if (assistantMsg && assistantMsg.content) {\n        const innerContent = typeof assistantMsg.content === 'string'\n          ? JSON.parse(assistantMsg.content)\n          : assistantMsg.content;\n        taskList = innerContent.result?.taskList || innerContent.taskList || [];\n      }\n    }\n  } catch (e) {\n    console.error('❌ [approval_gate_task] Could not parse content:', e);\n  }\n}\n\nif (taskList.length === 0) {\n  console.log('⚠️  [approval_gate_task] Empty task list');\n  return { messages: [], userDecision: null, currentPhase: state.currentPhase };\n}\n\nconst taskSummary = taskList.map((t, i) => \n  `${i + 1}. ${t.objective} (${t.estimated_effort || 'N/A'})`\n).join('\\n');\n\nconst totalHours = taskList.reduce((sum, t) => {\n  const hours = parseInt(t.estimated_effort) || 0;\n  return sum + hours;\n}, 0);\n\nconst message = `📋 タスクリスト作成完了\\n\\n` +\n                `合計タスク数: ${taskList.length}\\n` +\n                `予想時間: ${totalHours}時間\\n\\n` +\n                `タスク:\\n${taskSummary}\\n\\n` +\n                `このタスクリストで調査を進めますか?\\n` +\n                `・「許可」と入力すると調査を開始します\\n` +\n                `・その他の入力でタスクを再生成します`;\n\nconsole.log('⏸️  [approval_gate_task] Requesting approval');\nconst userResponse = interrupt(message);\nconsole.log('✅ [approval_gate_task] User response:', userResponse);\n\nif (!userResponse) {\n  return {\n    messages: [],\n    userDecision: 'pending',\n    currentPhase: state.currentPhase,\n    taskServerResponse: parsedContent\n  };\n}\n\nconst response = String(userResponse).toLowerCase().trim();\nif (response === 'approve' || response === '許可' || response.includes('許可')) {\n  console.log('✅ [approval_gate_task] Approved - moving to research');\n  return {\n    messages: [],\n    userDecision: 'approve',\n    currentPhase: 'research_execution',\n    taskServerResponse: parsedContent,\n    userFeedback: null\n  };\n} else {\n  console.log('❌ [approval_gate_task] Rejected - retrying task creation');\n  return {\n    messages: [],\n    userDecision: 'reject',\n    currentPhase: 'task_creation',\n    taskServerResponse: parsedContent,\n    userFeedback: userResponse\n  };\n}"
+      }
+    },
+    {
+      "id": "approval_gate_research",
+      "function": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof AgentState.State"
+          }
+        ],
+        "implementation": "console.log('🚪 [approval_gate_research] Processing research approval');\n\nconst lastToolResult = state.messages\n  .filter(msg => (msg._getType && msg._getType() === 'tool') || msg.role === 'tool')\n  .filter(msg => msg.name === 'send_message_to_research_agent')\n  .pop();\n\nif (!lastToolResult) {\n  console.log('⚠️  [approval_gate_research] No research agent response found');\n  return { messages: [], userDecision: null, currentPhase: state.currentPhase };\n}\n\nconsole.log('🔍 [approval_gate_research] Research agent response received');\n\nlet parsedContent;\ntry {\n  parsedContent = typeof lastToolResult.content === 'string'\n    ? JSON.parse(lastToolResult.content)\n    : lastToolResult.content;\n} catch (e) {\n  console.error('❌ [approval_gate_research] Parse error:', e);\n  return { messages: [], userDecision: null, currentPhase: state.currentPhase };\n}\n\nlet researchResults = [];\nlet summary = '';\nif (parsedContent.response && parsedContent.response.content) {\n  try {\n    const responseContent = typeof parsedContent.response.content === 'string'\n      ? JSON.parse(parsedContent.response.content)\n      : parsedContent.response.content;\n    \n    if (responseContent.result && responseContent.result.messages) {\n      const assistantMsg = responseContent.result.messages.find(m => m.role === 'assistant');\n      if (assistantMsg && assistantMsg.content) {\n        const innerContent = typeof assistantMsg.content === 'string'\n          ? JSON.parse(assistantMsg.content)\n          : assistantMsg.content;\n        researchResults = innerContent.result?.researchResults || innerContent.researchResults || [];\n        summary = innerContent.result?.summary || innerContent.summary || '';\n      }\n    }\n  } catch (e) {\n    console.error('❌ [approval_gate_research] Could not parse content:', e);\n  }\n}\n\nif (researchResults.length === 0) {\n  console.log('⚠️  [approval_gate_research] Empty research results');\n  return { messages: [], userDecision: null, currentPhase: state.currentPhase };\n}\n\nconst resultSummary = researchResults.map((r, i) =>\n  `${i + 1}. ${r.objective}\\n   ${r.findings.substring(0, 100)}...`\n).join('\\n\\n');\n\nconst message = `🔍 調査実行完了\\n\\n` +\n                `完了タスク数: ${researchResults.length}\\n\\n` +\n                `調査結果:\\n${resultSummary}\\n\\n` +\n                `サマリー: ${summary}\\n\\n` +\n                `この調査結果で評価に進みますか?\\n` +\n                `・「許可」と入力すると品質評価を開始します\\n` +\n                `・その他の入力で調査を再実行します`;\n\nconsole.log('⏸️  [approval_gate_research] Requesting approval');\nconst userResponse = interrupt(message);\nconsole.log('✅ [approval_gate_research] User response:', userResponse);\n\nif (!userResponse) {\n  return {\n    messages: [],\n    userDecision: 'pending',\n    currentPhase: state.currentPhase,\n    researchServerResponse: parsedContent\n  };\n}\n\nconst response = String(userResponse).toLowerCase().trim();\nif (response === 'approve' || response === '許可' || response.includes('許可')) {\n  console.log('✅ [approval_gate_research] Approved - moving to evaluation');\n  return {\n    messages: [],\n    userDecision: 'approve',\n    currentPhase: 'quality_evaluation',\n    researchServerResponse: parsedContent,\n    userFeedback: null\n  };\n} else {\n  console.log('❌ [approval_gate_research] Rejected - retrying research');\n  return {\n    messages: [],\n    userDecision: 'reject',\n    currentPhase: 'research_execution',\n    researchServerResponse: parsedContent,\n    userFeedback: userResponse\n  };\n}"
+      }
+    },
+    {
+      "id": "approval_gate_evaluation",
+      "function": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof AgentState.State"
+          }
+        ],
+        "implementation": "console.log('🚪 [approval_gate_evaluation] Processing evaluation approval');\n\nconst lastToolResult = state.messages\n  .filter(msg => (msg._getType && msg._getType() === 'tool') || msg.role === 'tool')\n  .filter(msg => msg.name === 'send_message_to_quality_agent')\n  .pop();\n\nif (!lastToolResult) {\n  console.log('⚠️  [approval_gate_evaluation] No quality agent response found');\n  return { messages: [], userDecision: null, currentPhase: state.currentPhase };\n}\n\nconsole.log('✅ [approval_gate_evaluation] Quality agent response received');\n\nlet parsedContent;\ntry {\n  parsedContent = typeof lastToolResult.content === 'string'\n    ? JSON.parse(lastToolResult.content)\n    : lastToolResult.content;\n} catch (e) {\n  console.error('❌ [approval_gate_evaluation] Parse error:', e);\n  return { messages: [], userDecision: null, currentPhase: state.currentPhase };\n}\n\nlet qualityScore = 0;\nlet executiveSummary = '';\nlet recommendations = [];\nlet missingTopics = [];\n\nif (parsedContent.response && parsedContent.response.content) {\n  try {\n    const responseContent = typeof parsedContent.response.content === 'string'\n      ? JSON.parse(parsedContent.response.content)\n      : parsedContent.response.content;\n    \n    if (responseContent.result && responseContent.result.messages) {\n      const assistantMsg = responseContent.result.messages.find(m => m.role === 'assistant');\n      if (assistantMsg && assistantMsg.content) {\n        const innerContent = typeof assistantMsg.content === 'string'\n          ? JSON.parse(assistantMsg.content)\n          : assistantMsg.content;\n        const result = innerContent.result || innerContent;\n        qualityScore = result.qualityScore || 0;\n        executiveSummary = result.executiveSummary || '';\n        recommendations = result.recommendations || [];\n        missingTopics = result.missingTopics || [];\n      }\n    }\n  } catch (e) {\n    console.error('❌ [approval_gate_evaluation] Could not parse content:', e);\n  }\n}\n\nconst recList = recommendations.length > 0\n  ? recommendations.map((r, i) => `  ${i + 1}. ${r}`).join('\\n')\n  : '  なし';\n\nconst missingList = missingTopics.length > 0\n  ? missingTopics.join(', ')\n  : 'なし';\n\nconst message = `✅ 品質評価完了\\n\\n` +\n                `品質スコア: ${qualityScore}/100\\n\\n` +\n                `エグゼクティブサマリー:\\n${executiveSummary}\\n\\n` +\n                `推奨事項:\\n${recList}\\n\\n` +\n                `不足トピック: ${missingList}\\n\\n` +\n                `この評価結果で完了しますか?\\n` +\n                `・「許可」と入力するとワークフローを完了します\\n` +\n                `・その他の入力で評価を再実行します`;\n\nconsole.log('⏸️  [approval_gate_evaluation] Requesting approval');\nconst userResponse = interrupt(message);\nconsole.log('✅ [approval_gate_evaluation] User response:', userResponse);\n\nif (!userResponse) {\n  return {\n    messages: [],\n    userDecision: 'pending',\n    currentPhase: state.currentPhase,\n    evaluationServerResponse: parsedContent\n  };\n}\n\nconst response = String(userResponse).toLowerCase().trim();\nif (response === 'approve' || response === '許可' || response.includes('許可')) {\n  console.log('✅ [approval_gate_evaluation] Approved - workflow completed');\n  return {\n    messages: [{ role: 'assistant', content: '✅ ワークフローが正常に完了しました。' }],\n    userDecision: 'approve',\n    currentPhase: 'completed',\n    evaluationServerResponse: parsedContent,\n    userFeedback: null\n  };\n} else {\n  console.log('❌ [approval_gate_evaluation] Rejected - retrying evaluation');\n  return {\n    messages: [],\n    userDecision: 'reject',\n    currentPhase: 'quality_evaluation',\n    evaluationServerResponse: parsedContent,\n    userFeedback: userResponse\n  };\n}"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "__start__",
+      "to": "orchestrator"
+    },
+    {
+      "from": "orchestrator",
+      "type": "conditional",
+      "condition": {
+        "name": "routeAfterOrchestrator",
+        "function": {
+          "parameters": [
+            {
+              "name": "state",
+              "type": "typeof AgentState.State"
+            }
+          ],
+          "implementation": "const lastMessage = state.messages[state.messages.length - 1];\nif (lastMessage && lastMessage.tool_calls && lastMessage.tool_calls.length > 0) {\n  return 'tools';\n}\nif (state.currentPhase === 'error' || state.currentPhase === 'completed') {\n  return '__end__';\n}\nreturn '__end__';"
+        }
+      }
+    },
+    {
+      "from": "tools",
+      "type": "conditional",
+      "condition": {
+        "name": "routeAfterTools",
+        "function": {
+          "parameters": [
+            {
+              "name": "state",
+              "type": "typeof AgentState.State"
+            }
+          ],
+          "implementation": "const lastToolResult = state.messages\n  .filter(msg => (msg._getType && msg._getType() === 'tool') || msg.role === 'tool')\n  .pop();\n\nif (!lastToolResult) {\n  return '__end__';\n}\n\nif (lastToolResult.name === 'send_message_to_task_agent') {\n  return 'approval_gate_task';\n}\nif (lastToolResult.name === 'send_message_to_research_agent') {\n  return 'approval_gate_research';\n}\nif (lastToolResult.name === 'send_message_to_quality_agent') {\n  return 'approval_gate_evaluation';\n}\n\nreturn '__end__';"
+        }
+      }
+    },
+    {
+      "from": "approval_gate_task",
+      "to": "orchestrator"
+    },
+    {
+      "from": "approval_gate_research",
+      "to": "orchestrator"
+    },
+    {
+      "from": "approval_gate_evaluation",
+      "type": "conditional",
+      "condition": {
+        "name": "routeAfterEvaluationApproval",
+        "function": {
+          "parameters": [
+            {
+              "name": "state",
+              "type": "typeof AgentState.State"
+            }
+          ],
+          "implementation": "if (state.currentPhase === 'completed') {\n  return '__end__';\n}\nreturn 'orchestrator';"
+        }
+      }
+    }
+  ],
+  "stateGraph": {
+    "annotationRef": "AgentState",
+    "config": {
+      "checkpointer": {
+        "type": "MemorySaver"
+      }
+    }
+  }
+}

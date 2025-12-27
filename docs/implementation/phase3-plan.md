@@ -6,10 +6,47 @@
 
 ## 前提条件
 
-- Phase 2が完了し、実際のタスクリストが生成できる
+- ✅ Phase 2が完了し、実際のタスクリストが生成できる（テスト完了: 2025-12-27）
+  - タスク作成サーバが正常動作を確認
+  - OpenAI APIとの接続成功
+  - 5タスク、15時間の見積もりを生成
 - MCP web-searchサーバがインストールされている
   - パス: `/Users/akirakudo/Desktop/MyWork/MPC/web-search/build/index.js`
 - .envファイルにOPENAI_API_KEYが設定されている
+
+## Phase 2 テスト結果サマリー
+
+**実施日**: 2025-12-27
+
+### 確認された動作
+- ✅ タスク作成サーバ（Port 3001）: OpenAI gpt-4o-mini による実装が正常動作
+- ✅ 日本語入力の正しい処理
+- ✅ 構造化されたタスクリスト生成（5タスク、各3時間、合計15時間）
+- ✅ クライアントとサーバの統合動作
+
+### 生成されたタスクリスト例
+
+入力: 「矢崎総業の会社概要、製品サービス、強み弱み、中期戦略、AIの取り組みについて調査してください。」
+
+出力:
+1. 会社概要を把握する（公式サイト、企業年鑑、業界レポート）
+2. 製品サービスを調査する（公式サイト、製品カタログ、業界ニュース）
+3. 強みと弱みを分析する（SWOT分析、競合比較）
+4. 中期戦略を調査する（プレスリリース、年次報告書、業界分析）
+5. AIの取り組みを調査する（公式サイト、業界ニュース、研究論文）
+
+### Phase 3への重要な発見
+
+**クライアントからサーバへの送信形式**:
+- クライアントは**タスクリスト全体ではなく、各タスクを個別に**調査実行サーバに送信します
+- 各リクエストには、タスクの `objective` と `success_criteria` が含まれます
+- 例: 「矢崎総業の会社概要を把握するために、公式ウェブサイト、企業年鑑、業界レポートを参照してください。会社の設立年、所在地、事業内容が明確に記載されていることが成功基準です。」
+
+**Phase 3実装への影響**:
+1. 調査実行サーバは**個別のタスク説明文**を受け取ることを前提とする
+2. タスクリスト全体の解析ロジックは不要（または簡略化可能）
+3. 各リクエストごとにWeb検索を実行し、結果を返す
+4. 複数のタスクが順次実行される（5タスクの場合、5回のリクエスト）
 
 ## 実装タスク
 
@@ -69,175 +106,196 @@ cp -r json/a2a/phase2 json/a2a/phase3
 
 #### ノード実装: research_executor
 
-**目的**: タスクリストに基づいてWeb検索を実行し、調査結果を収集
+**目的**: 個別のタスク説明に基づいてWeb検索を実行し、調査結果を収集
+
+**重要**: Phase 2のテスト結果より、クライアントは各タスクを個別に送信することが判明。タスクリスト全体ではなく、**単一タスクの説明文**を受け取る前提で実装します。
 
 **実装ロジック**:
 
 ```javascript
-const lastMessage = state.messages[state.messages.length - 1];
-let taskList = [];
+console.log('\\n' + '='.repeat(80));
+console.log('🔍 [ResearchExecution] 調査実行サーバ起動');
+console.log('='.repeat(80));
 
-// タスクリストの抽出
-try {
-  let content = lastMessage.content;
-  if (typeof content === 'string') {
-    const parsed = JSON.parse(content);
-    taskList = parsed.taskList || parsed.response?.content?.taskList || [];
-  } else if (content && content.taskList) {
-    taskList = content.taskList;
-  }
-} catch (e) {
-  console.error('❌ タスクリスト解析エラー:', e);
-  // フォールバック: メッセージから直接抽出を試みる
-  if (state.taskList && Array.isArray(state.taskList)) {
-    taskList = state.taskList;
+const lastMessage = state.messages[state.messages.length - 1];
+let userContent = '';
+
+// メッセージからタスク説明を抽出
+if (lastMessage) {
+  if (lastMessage.content) {
+    userContent = lastMessage.content;
+  } else if (lastMessage.parts && Array.isArray(lastMessage.parts)) {
+    userContent = lastMessage.parts[0]?.text || lastMessage.parts[0]?.content || '';
+  } else if (typeof lastMessage === 'string') {
+    userContent = lastMessage;
   }
 }
 
-console.log('🔬 調査開始:', taskList.length, 'タスク');
+console.log('\\n📨 受信したタスク説明:');
+console.log('  Content (first 200 chars):', userContent.substring(0, 200));
+console.log('  Total length:', userContent.length, 'chars');
 
-if (taskList.length === 0) {
-  console.warn('⚠️  タスクリストが空です');
+if (!userContent || userContent.length === 0) {
+  console.error('❌ タスク説明が空です');
   return {
     messages: [
       {
         role: 'assistant',
         content: JSON.stringify({
-          error: 'タスクリストが見つかりません',
-          researchResults: []
+          result: {
+            researchResults: [],
+            summary: 'エラー: タスク説明が見つかりません'
+          }
         })
       }
     ]
   };
 }
 
-// 各タスクについて調査を実行
-const researchResults = [];
+// LLMに検索実行を依頼（MCPツールを使用）
+console.log('\\n🔎 Web検索を開始します');
 
-for (const task of taskList) {
-  console.log(`📊 タスク ${task.id}: ${task.objective}`);
+const researchPrompt = `以下のタスクについて、Web検索ツール（mcp_web-search_search）を使用して詳細に調査してください:
 
-  // 検索クエリの構築
-  const searchQuery = `${task.objective} ${task.methodology || ''}`;
+${userContent}
 
-  // LLMに検索実行を依頼（MCPツールを使用）
-  const researchPrompt = `以下のタスクについて、Web検索ツール（mcp_web-search_search）を使用して調査してください:
+指示:
+1. 日本語での検索を優先してください
+2. 複数の信頼できる情報源から情報を収集してください
+3. 具体的な数値やデータを含めてください
+4. 検索結果のURLを必ず記録してください
 
-タスクID: ${task.id}
-目的: ${task.objective}
-手法: ${task.methodology}
-成功基準: ${task.success_criteria}
-
-検索を実行し、以下の形式で結果をまとめてください:
+以下の形式で結果を返してください:
 RESEARCH_START
 {
-  "taskId": ${task.id},
-  "objective": "${task.objective}",
-  "findings": "調査結果の要約（詳細に記述）",
-  "sources": ["URL1", "URL2", ...],
+  "taskId": 1,
+  "objective": "タスクの目的",
+  "findings": "調査結果の詳細な要約（300文字以上）",
+  "sources": ["実際に参照したURL1", "URL2", "URL3"],
   "completionStatus": "completed"
 }
 RESEARCH_END`;
 
-  try {
-    const response = await model.invoke([
-      { role: 'user', content: researchPrompt }
-    ]);
+let researchResult;
 
-    const content = response.content || '';
-    const resultMatch = content.match(/RESEARCH_START\s*([\s\S]*?)\s*RESEARCH_END/);
+try {
+  const response = await model.invoke([
+    { role: 'user', content: researchPrompt }
+  ]);
 
-    if (resultMatch) {
-      const result = JSON.parse(resultMatch[1].trim());
-      researchResults.push(result);
-      console.log(`✅ タスク ${task.id} 完了`);
-    } else {
-      // フォールバック: マーカーなしの結果
-      researchResults.push({
-        taskId: task.id,
-        objective: task.objective,
-        findings: content.substring(0, 500) + '...',
-        sources: [],
-        completionStatus: 'completed'
-      });
-      console.log(`⚠️  タスク ${task.id} 完了（マーカーなし）`);
-    }
-  } catch (error) {
-    console.error(`❌ タスク ${task.id} エラー:`, error);
-    researchResults.push({
-      taskId: task.id,
-      objective: task.objective,
-      findings: `調査中にエラーが発生しました: ${error.message}`,
+  const content = response.content || '';
+  console.log('\\n🤖 LLMレスポンス受信 (first 200 chars):', content.substring(0, 200));
+
+  // RESEARCH_START/ENDマーカーで結果を抽出
+  const resultMatch = content.match(/RESEARCH_START\\s*([\\s\\S]*?)\\s*RESEARCH_END/);
+
+  if (resultMatch) {
+    researchResult = JSON.parse(resultMatch[1].trim());
+    console.log('✅ 調査結果解析成功');
+    console.log('  Findings length:', researchResult.findings?.length || 0, 'chars');
+    console.log('  Sources count:', researchResult.sources?.length || 0);
+  } else {
+    console.warn('⚠️  RESEARCH マーカーが見つかりません、フォールバック使用');
+    // フォールバック: マーカーなしの結果
+    researchResult = {
+      taskId: 1,
+      objective: userContent.substring(0, 100),
+      findings: content.substring(0, 500),
       sources: [],
-      completionStatus: 'error'
-    });
+      completionStatus: 'completed'
+    };
   }
+} catch (error) {
+  console.error('❌ 調査実行エラー:', error);
+  researchResult = {
+    taskId: 1,
+    objective: userContent.substring(0, 100),
+    findings: \`調査中にエラーが発生しました: \${error.message}\`,
+    sources: [],
+    completionStatus: 'error'
+  };
 }
 
-// 結果のまとめ
-const summary = `${researchResults.length}個のタスク調査が完了しました`;
+// 結果の構築（モックと同じフォーマット）
 const result = {
-  researchResults: researchResults,
-  summary: summary
+  result: {
+    researchResults: [researchResult],
+    summary: '調査が完了しました'
+  }
 };
 
-console.log('📋 調査完了:', summary);
+console.log('\\n📊 調査完了');
+console.log('  Status:', researchResult.completionStatus);
+console.log('='.repeat(80) + '\\n');
 
 return {
   messages: [
     {
       role: 'assistant',
-      content: JSON.stringify(result)
+      content: JSON.stringify(result, null, 2)
     }
   ]
 };
 ```
 
-#### 代替実装: 並列検索版（オプション）
+#### 実装のポイント
 
-より高速に調査を実行するために、複数のタスクを並列処理することも可能:
+**Phase 2テスト結果に基づく設計変更**:
 
-```javascript
-// Promise.allを使用した並列実行
-const researchPromises = taskList.map(async (task) => {
-  const researchPrompt = `タスク ${task.id}: ${task.objective} について調査してください...`;
+1. **入力処理の簡素化**:
+   - タスクリスト全体の解析は不要
+   - 単一タスクの説明文（文字列）を直接処理
 
-  try {
-    const response = await model.invoke([
-      { role: 'user', content: researchPrompt }
-    ]);
-    // 結果の処理
-    return processResult(response, task);
-  } catch (error) {
-    return {
-      taskId: task.id,
-      objective: task.objective,
-      findings: `エラー: ${error.message}`,
-      sources: [],
-      completionStatus: 'error'
-    };
-  }
-});
+2. **出力フォーマットの統一**:
+   - モックと同じ構造を維持（`result.researchResults` 配列）
+   - 単一タスクでも配列形式で返す（統合の互換性）
 
-const researchResults = await Promise.all(researchPromises);
-```
+3. **詳細ログ出力**:
+   - 受信メッセージ、LLMレスポンス、調査結果の詳細をログ
+   - デバッグとトラブルシューティングを容易に
+
+4. **エラーハンドリング**:
+   - Web検索失敗時のフォールバック
+   - マーカー解析失敗時の代替処理
 
 ### 3. 調査結果出力フォーマット
 
-**標準出力形式**:
+**標準出力形式**（単一タスクのレスポンス）:
 
 ```json
 {
-  "researchResults": [
+  "result": {
+    "researchResults": [
+      {
+        "taskId": 1,
+        "objective": "矢崎総業の会社概要を把握する",
+        "findings": "矢崎総業株式会社は1929年（昭和4年）に創業された大手自動車部品メーカーです。主力製品はワイヤーハーネスで、世界シェアは約30%を誇ります。2023年度の連結売上高は約1.7兆円、従業員数は全世界で約28万人です。事業領域は自動車用電線・電装部品、計器・メーター類、空調機器、ガス機器など多岐にわたります。本社は静岡県裾野市に所在し、国内外に多数の製造拠点と販売拠点を展開しています。",
+        "sources": [
+          "https://www.yazaki-group.com/",
+          "https://www.yazaki-group.com/corporate/profile/",
+          "https://www.yazaki-group.com/ir/"
+        ],
+        "completionStatus": "completed"
+      }
+    ],
+    "summary": "調査が完了しました"
+  }
+}
+```
+
+**注意**: Phase 2のテスト結果より、クライアントは各タスクを個別に実行するため、単一タスクのレスポンスのみを返します。以下の元のマルチタスク例は参考用です。
+
+**マルチタスク例（参考用 - 実際には使用されない）**:
+
+```json
+{
+  "result": {
+    "researchResults": [
     {
       "taskId": 1,
       "objective": "矢崎総業の会社概要調査",
-      "findings": "矢崎総業株式会社は1929年（昭和4年）に創業された大手自動車部品メーカーです。主力製品はワイヤーハーネスで、世界シェアは約30%を誇ります。2023年度の連結売上高は約1.7兆円、従業員数は全世界で約28万人です。事業領域は自動車用電線・電装部品、計器・メーター類、空調機器、ガス機器など多岐にわたります。",
-      "sources": [
-        "https://www.yazaki-group.com/",
-        "https://www.yazaki-group.com/corporate/profile/",
-        "https://www.yazaki-group.com/ir/"
-      ],
+      "findings": "...",
+      "sources": [...],
       "completionStatus": "completed"
     },
     {
