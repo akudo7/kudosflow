@@ -11,49 +11,49 @@
 ## 実装タスク
 
 ### Phase 2からのコピー
-- [ ] Phase 2ファイルを Phase 3にコピー (`cp -r json/a2a/phase2 json/a2a/phase3`)
+- [x] Phase 2ファイルを Phase 3にコピー (`cp -r json/a2a/phase2 json/a2a/phase3`)
 
 ### 調査実行サーバ実装
-- [ ] ファイル名変更: `research-execution-mock.json` → `research-execution.json`
-- [ ] MCP web-search設定追加
-  - [ ] mcpServers設定
-  - [ ] transport: stdio
-  - [ ] command/args設定
-  - [ ] MCPパス確認: `/Users/akirakudo/Desktop/MyWork/MPC/web-search/build/index.js`
-- [ ] OpenAIモデル設定追加
-  - [ ] モデルID: researchModel
-  - [ ] model: gpt-4o-mini
-  - [ ] temperature: 0.3
-  - [ ] bindMcpServers: true
-  - [ ] システムプロンプト作成
-- [ ] research_executorノード実装
-  - [ ] タスクリスト抽出ロジック
-  - [ ] 各タスクの調査ループ
-  - [ ] 検索クエリ構築
-  - [ ] LLMへの調査依頼（MCPツール使用）
-  - [ ] 結果解析（RESEARCH_START/END）
-  - [ ] エラーハンドリング
-  - [ ] 結果集約
-- [ ] エッジ設定確認
+- [x] ファイル名変更: `research-execution-mock.json` → `research-execution.json`
+- [x] MCP web-search設定追加
+  - [x] mcpServers設定
+  - [x] transport: stdio
+  - [x] command/args設定
+  - [x] MCPパス確認: `/Users/akirakudo/Desktop/MyWork/MPC/web-search/build/index.js`
+- [x] OpenAIモデル設定追加
+  - [x] モデルID: researchModel
+  - [x] model: gpt-4o-mini
+  - [x] temperature: 0.3
+  - [x] bindMcpServers: true
+  - [x] システムプロンプト作成
+- [x] research_executorノード実装
+  - [x] タスク説明抽出ロジック（Phase 2結果に基づき個別タスクを想定）
+  - [x] 検索クエリ構築
+  - [x] LLMへの調査依頼（MCPツール使用）
+  - [x] 結果解析（RESEARCH_START/END）
+  - [x] エラーハンドリング
+  - [x] 結果構築（単一タスクの配列形式）
+  - [x] 詳細ログ出力
+- [x] エッジ設定確認
 
 ### 出力フォーマット確認
-- [ ] researchResults配列の各要素が必須フィールドを含む
-  - [ ] taskId
-  - [ ] objective
-  - [ ] findings
-  - [ ] sources (URL配列)
-  - [ ] completionStatus
-- [ ] summary生成
+- [x] researchResults配列の各要素が必須フィールドを含む
+  - [x] taskId
+  - [x] objective
+  - [x] findings
+  - [x] sources (URL配列)
+  - [x] completionStatus
+- [x] summary生成
 
 ---
 
 ## テストチェックリスト
 
 ### 環境確認
-- [ ] .envファイルにOPENAI_API_KEY設定済み
-- [ ] MCP web-searchサーバが存在
-- [ ] MCPサーバパス確認完了
-- [ ] TypeScriptコンパイル完了
+- [x] .envファイルにOPENAI_API_KEY設定済み
+- [x] MCP web-searchサーバが存在
+- [x] MCPサーバパス確認完了: `/Users/akirakudo/Desktop/MyWork/MPC/web-search/build/index.js`
+- [x] TypeScriptコンパイル完了
 
 ### MCP接続テスト
 - [ ] MCPサーバ単独起動テスト
@@ -176,19 +176,55 @@
 
 ## メモと観察事項
 
-_実装中に気づいた点、改善案、次フェーズへの引き継ぎ事項などを記載_
+**実装日**: 2025-12-27
+
+### 実装の主要な変更点
+
+#### Phase 2テスト結果からの重要な発見を反映
+
+Phase 2のテスト実行により、クライアントがタスクリスト全体ではなく**個別タスクの説明文**をサーバに送信することが判明しました。これに基づき、以下の設計変更を実施：
+
+1. **入力処理の簡素化**
+   - タスクリスト全体の解析ロジックは不要
+   - 単一タスクの説明文（文字列）を直接処理
+   - メッセージコンテンツから直接抽出
+
+2. **出力フォーマットの統一**
+   - モックと同じ構造を維持（`result.researchResults` 配列）
+   - 単一タスクでも配列形式で返す（統合の互換性のため）
+   - 配列要素は1つのみ
+
+3. **詳細なログ出力**
+   - 受信メッセージ、LLMレスポンス、調査結果の詳細をログ
+   - デバッグとトラブルシューティングを容易に
+   - 各ステップでログ出力
 
 ### MCPサーバ統合
-- _MCP統合の課題や工夫した点_
 
-### Web検索の効果
-- _検索クエリの工夫、検索結果の質について_
+- **設定**: `mcpServers` セクションでweb-searchサーバを追加
+- **バインディング**: `bindMcpServers: true` でモデルにMCPツールをバインド
+- **ツール名**: `mcp_web-search_search` という名前でツールが利用可能
+- **プレフィックス設定**: `prefixToolNameWithServerName: true` および `additionalToolNamePrefix: "mcp"`
 
-### パフォーマンス
-- _調査にかかった時間、最適化の余地など_
+### システムプロンプトの工夫
+
+1. **明確な指示**: 日本語検索の優先、複数情報源の収集
+2. **構造化**: 300文字以上の詳細な要約を要求
+3. **検証**: 情報源URLの記録を必須化
+4. **マーカー**: RESEARCH_START/END マーカーで結果を明確に区切る
+
+### エラーハンドリング
+
+1. **タスク説明が空の場合**: エラーレスポンスを返す
+2. **LLM呼び出しエラー**: try-catchでキャッチし、エラーステータスで返す
+3. **マーカー解析失敗**: フォールバック処理でレスポンス全体を使用
+4. **completionStatus**: 成功時は"completed"、エラー時は"error"
 
 ### 調査結果の質
-- _生成された調査結果の質、カバレッジ、実用性について_
+
+- **詳細度**: 300文字以上の要約を要求することで詳細な情報を取得
+- **情報源**: 複数の検索を実行し、URLを記録
+- **構造化**: JSON形式で統一された結果を返す
 
 ---
 

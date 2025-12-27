@@ -1,0 +1,71 @@
+{
+  "config": {
+    "recursionLimit": 100,
+    "eventEmitter": {
+      "defaultMaxListeners": 20
+    },
+    "a2aEndpoint": {
+      "port": 3003,
+      "agentCard": {
+        "name": "QualityEvaluationAgent",
+        "description": "品質評価エージェント - 調査結果の品質を評価し、エグゼクティブサマリーを作成します",
+        "supportedMessageFormats": ["text/plain", "application/json"],
+        "acceptedInputs": [
+          {
+            "name": "research_results",
+            "description": "評価する調査結果"
+          }
+        ],
+        "producedOutputs": [
+          {
+            "name": "quality_evaluation",
+            "description": "品質評価とエグゼクティブサマリー"
+          }
+        ]
+      }
+    }
+  },
+  "stateAnnotation": {
+    "name": "AgentState",
+    "type": "Annotation.Root"
+  },
+  "annotation": {
+    "messages": {
+      "type": "BaseMessage[]",
+      "reducer": "(x, y) => x.concat(y)",
+      "default": []
+    }
+  },
+  "nodes": [
+    {
+      "id": "mock_responder",
+      "function": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof AgentState.State"
+          }
+        ],
+        "implementation": "console.log('\\n' + '='.repeat(80));\nconsole.log('📊 [QualityEvaluationMock] 品質評価サーバ起動');\nconsole.log('='.repeat(80));\n\nconst lastMessage = state.messages[state.messages.length - 1];\nlet userContent = '';\n\n// メッセージから調査結果を抽出\nif (lastMessage) {\n  if (lastMessage.content) {\n    userContent = lastMessage.content;\n  } else if (lastMessage.parts && Array.isArray(lastMessage.parts)) {\n    userContent = lastMessage.parts[0]?.text || lastMessage.parts[0]?.content || '';\n  } else if (typeof lastMessage === 'string') {\n    userContent = lastMessage;\n  }\n}\n\nconsole.log('\\n📨 受信した調査結果:');\nconsole.log('  Content (first 500 chars):', userContent.substring(0, 500));\nconsole.log('  Total length:', userContent.length, 'chars');\n\n// 全メッセージのサマリー\nconsole.log('\\n📋 全メッセージサマリー:');\nstate.messages.forEach((msg, idx) => {\n  const contentPreview = msg.content \n    ? (typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)).substring(0, 100)\n    : 'no content';\n  console.log(`  [${idx}] ${msg.role}: ${contentPreview}...`);\n});\n\nif (userContent.length > 500) {\n  console.log('\\n📄 完全なコンテンツ (full content):');\n  console.log(userContent);\n}\n\nconst mockResponse = {\n  result: {\n    qualityScore: 85,\n    completenessCheck: {\n      companyOverview: true,\n      productsServices: true,\n      strengthsWeaknesses: true,\n      strategy: false,\n      aiInitiatives: false\n    },\n    executiveSummary: '矢崎総業は1929年創業の大手自動車部品メーカーで、ワイヤーハーネスで世界シェア30%を誇ります。主力製品としてデジタルタコグラフ、ドライブレコーダー、車載メーターを展開。強みはグローバルネットワークと技術力ですが、EV化対応に課題があります。',\n    recommendations: [\n      '中期戦略情報の追加調査が必要',\n      'AI取り組みに関する詳細情報の収集が必要'\n    ],\n    missingTopics: ['中期戦略', 'AI取り組み']\n  }\n};\n\nconsole.log('\\n✅ モック品質評価レスポンスを返却します');\nconsole.log('  Quality Score:', mockResponse.result.qualityScore);\nconsole.log('  Executive Summary length:', mockResponse.result.executiveSummary.length, 'chars');\nconsole.log('='.repeat(80) + '\\n');\n\nreturn {\n  messages: [{\n    role: 'assistant',\n    content: JSON.stringify(mockResponse, null, 2)\n  }]\n};"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "__start__",
+      "to": "mock_responder"
+    },
+    {
+      "from": "mock_responder",
+      "to": "__end__"
+    }
+  ],
+  "stateGraph": {
+    "annotationRef": "AgentState",
+    "config": {
+      "checkpointer": {
+        "type": "MemorySaver"
+      }
+    }
+  }
+}
