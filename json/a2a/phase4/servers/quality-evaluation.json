@@ -1,0 +1,85 @@
+{
+  "config": {
+    "recursionLimit": 100,
+    "eventEmitter": {
+      "defaultMaxListeners": 20
+    },
+    "a2aEndpoint": {
+      "port": 3003,
+      "agentCard": {
+        "name": "QualityEvaluationAgent",
+        "description": "品質評価エージェント - 調査結果の品質を評価し、エグゼクティブサマリーを作成します",
+        "supportedMessageFormats": [
+          "text/plain",
+          "application/json"
+        ],
+        "acceptedInputs": [
+          {
+            "name": "research_results",
+            "description": "評価する調査結果"
+          }
+        ],
+        "producedOutputs": [
+          {
+            "name": "quality_evaluation",
+            "description": "品質評価とエグゼクティブサマリー"
+          }
+        ]
+      }
+    }
+  },
+  "models": [
+    {
+      "id": "evaluationModel",
+      "type": "OpenAI",
+      "config": {
+        "model": "gpt-4o-mini",
+        "temperature": 0.2
+      },
+      "systemPrompt": "あなたは市場調査の品質評価とレポート作成を専門とするエージェントです。\n\n責任:\n1. 調査結果の完全性と品質を評価する\n2. 元のユーザ要求と調査結果を照合する\n3. 不足している情報や改善点を特定する\n4. 包括的なエグゼクティブサマリーを作成する\n5. 品質スコアと推奨事項を提供する\n\n評価基準:\n- 完全性: 全ての要求トピックがカバーされているか\n- 正確性: 情報が具体的で検証可能か\n- 関連性: 調査結果がユーザ要求に関連しているか\n- 深さ: 表面的ではなく、十分な深さがあるか\n- 構造: 情報が論理的に整理されているか\n\nエグゼクティブサマリー作成ガイドライン:\n- 簡潔で要点を押さえた文章（500-800文字程度）\n- ユーザが求めた全てのトピックに言及\n- 重要な数値やデータポイントを含める\n- ビジネス判断に役立つ洞察を提供\n- 日本語で作成（敬体を使用）\n\n必ず日本語でレスポンスを返してください。"
+    }
+  ],
+  "stateAnnotation": {
+    "name": "AgentState",
+    "type": "Annotation.Root"
+  },
+  "annotation": {
+    "messages": {
+      "type": "BaseMessage[]",
+      "reducer": "(x, y) => x.concat(y)",
+      "default": []
+    }
+  },
+  "nodes": [
+    {
+      "id": "quality_evaluator",
+      "function": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof AgentState.State"
+          }
+        ],
+        "implementation": "console.log('\\n' + '='.repeat(80));\nconsole.log('📊 [QualityEvaluation] 品質評価開始');\nconsole.log('='.repeat(80));\n\nconst messages = state.messages;\n\n// 最後のユーザメッセージから調査結果を抽出\nconst lastMessage = messages[messages.length - 1];\nlet userContent = '';\n\nif (lastMessage) {\n  if (lastMessage.content) {\n    userContent = lastMessage.content;\n  } else if (lastMessage.parts && Array.isArray(lastMessage.parts)) {\n    userContent = lastMessage.parts[0]?.text || lastMessage.parts[0]?.content || '';\n  } else if (typeof lastMessage === 'string') {\n    userContent = lastMessage;\n  }\n}\n\nconsole.log('\\n📨 受信メッセージ分析:');\nconsole.log('  Content length:', userContent.length, 'chars');\nconsole.log('  First 300 chars:', userContent.substring(0, 300));\n\n// クライアントから送られてくる新しいデータ構造を解析\nlet originalRequest = '';\nlet researchResults = [];\n\ntry {\n  console.log('\\n🔍 JSON解析開始...');\n  \n  // プレフィックステキストを除去してJSON部分を抽出\n  const jsonMatch = userContent.match(/\\{[\\s\\S]*\\}/);\n  \n  if (jsonMatch) {\n    console.log('  ✓ JSON部分を検出');\n    \n    const evaluationData = JSON.parse(jsonMatch[0]);\n    console.log('  ✓ evaluationData解析成功');\n    console.log('    - originalRequest:', evaluationData.originalRequest?.substring(0, 50));\n    console.log('    - totalResults:', evaluationData.totalResults);\n    \n    originalRequest = evaluationData.originalRequest || '';\n    \n    // researchResultsを直接使用（クライアント側で既にフラット化済み）\n    if (evaluationData.researchResults && Array.isArray(evaluationData.researchResults)) {\n      console.log('  ✓ researchResults配列を検出:', evaluationData.researchResults.length, 'items');\n      researchResults = evaluationData.researchResults;\n      console.log('  ✅ 調査結果を直接使用:', researchResults.length, 'items');\n    }\n    }\n  } else {\n    console.log('  ⚠️  JSON形式が見つかりません - 全体をテキストとして扱います');\n    originalRequest = userContent;\n  }\n} catch (e) {\n  console.error('\\n❌ JSON解析エラー:', e.message);\n  console.error('  スタック:', e.stack);\n  console.log('  フォールバック: 全体をテキストとして扱います');\n  originalRequest = userContent;\n}\n\nconsole.log('\\n📋 解析結果サマリー:');\nconsole.log('  元のユーザ要求:', originalRequest.substring(0, 100) + '...');\nconsole.log('  調査結果数:', researchResults.length);\n\n// 調査結果が見つからない場合のエラーハンドリング\nif (researchResults.length === 0) {\n  console.warn('\\n⚠️  警告: 調査結果が見つかりません');\n  console.log('  フォールバックレスポンスを返します');\n  \n  return {\n    messages: [{\n      role: 'assistant',\n      content: JSON.stringify({\n        result: {\n          qualityScore: 0,\n          completenessCheck: {},\n          executiveSummary: 'エラー: 評価する調査結果が見つかりませんでした。調査フェーズが正常に完了していない可能性があります。',\n          recommendations: ['調査フェーズを再実行してください'],\n          missingTopics: ['全てのトピック'],\n          error: '調査結果が見つかりません',\n          debugInfo: {\n            receivedContentLength: userContent.length,\n            receivedContentPreview: userContent.substring(0, 500)\n          }\n        }\n      }, null, 2)\n    }]\n  };\n}\n\n// 調査結果を整形\nconst findingsSummary = researchResults.map((r, idx) => {\n  const taskId = r.taskId || (idx + 1);\n  const objective = r.objective || 'No objective';\n  const findings = r.findings || r.result || 'No findings';\n  const sources = r.sources || [];\n  const sourcesStr = sources.length > 0 ? `\\n出典: ${sources.join(', ')}` : '';\n  return `タスク${taskId}: ${objective}\\n結果: ${findings}${sourcesStr}`;\n}).join('\\n\\n');\n\nconsole.log('\\n📝 整形された調査結果（first 500 chars）:');\nconsole.log(findingsSummary.substring(0, 500));\n\n// LLMに評価とサマリー作成を依頼\nconst evaluationPrompt = `以下の市場調査について、品質評価とエグゼクティブサマリーを作成してください。\n\n【元のユーザ要求】\n${originalRequest}\n\n【調査結果】\n${findingsSummary}\n\n以下の形式でレスポンスを返してください:\nEVALUATION_START\n{\n  \"qualityScore\": 品質スコア（0-100）,\n  \"completenessCheck\": {\n    \"各要求トピック\": true/false（カバーされているか）\n  },\n  \"executiveSummary\": \"日本語のエグゼクティブサマリー（500-800文字）\",\n  \"recommendations\": [\"改善推奨事項1\", \"改善推奨事項2\"],\n  \"missingTopics\": [\"不足トピック1\", \"不足トピック2\"]\n}\nEVALUATION_END\n\n評価基準:\n- completenessCheck: 元のユーザ要求から各トピックを抽出し、カバー状況を判定\n- qualityScore: 完全性、具体性、関連性、深さを総合的に評価（0-100点）\n- executiveSummary: ビジネス判断に役立つ、簡潔で包括的なサマリー（500-800文字）\n- recommendations: さらなる調査や改善が必要な点\n- missingTopics: カバーされていないトピック`;\n\nconsole.log('\\n🤖 LLMに評価依頼を送信...');\nconsole.log('  Prompt length:', evaluationPrompt.length, 'chars');\n\nconst model = state.models?.evaluationModel;\nif (!model) {\n  console.error('\\n❌ エラー: evaluationModel が見つかりません');\n  return {\n    messages: [{\n      role: 'assistant',\n      content: JSON.stringify({\n        result: {\n          error: 'Model not found',\n          qualityScore: 0,\n          executiveSummary: 'エラー: 評価モデルが見つかりません'\n        }\n      })\n    }]\n  };\n}\n\nconst response = await model.invoke([{\n  role: 'user',\n  content: evaluationPrompt\n}]);\n\nconsole.log('\\n✅ LLMレスポンス受信');\n\nconst content = response.content || '';\nconsole.log('  Response length:', content.length, 'chars');\nconsole.log('  First 300 chars:', content.substring(0, 300));\n\nconst evaluationMatch = content.match(/EVALUATION_START\\s*([\\s\\S]*?)\\s*EVALUATION_END/);\n\nlet evaluation;\n\nif (evaluationMatch) {\n  try {\n    evaluation = JSON.parse(evaluationMatch[1].trim());\n    console.log('\\n✅ 評価結果解析成功');\n    console.log('  Quality Score:', evaluation.qualityScore);\n    console.log('  Executive Summary length:', evaluation.executiveSummary?.length || 0, 'chars');\n    console.log('  Recommendations:', evaluation.recommendations?.length || 0);\n    console.log('  Missing Topics:', evaluation.missingTopics?.length || 0);\n  } catch (e) {\n    console.error('\\n❌ 評価結果JSON解析エラー:', e.message);\n    console.log('  フォールバック評価を使用します');\n    \n    // フォールバック評価\n    evaluation = {\n      qualityScore: 70,\n      completenessCheck: {},\n      executiveSummary: content.substring(0, 800),\n      recommendations: ['評価結果の解析に失敗しました'],\n      missingTopics: []\n    };\n  }\n} else {\n  console.warn('\\n⚠️  EVALUATION マーカーが見つかりません');\n  console.log('  マーカーなしのフォールバック評価を使用します');\n  \n  // マーカーなしのフォールバック\n  evaluation = {\n    qualityScore: 70,\n    completenessCheck: {},\n    executiveSummary: content.substring(0, 800),\n    recommendations: [],\n    missingTopics: []\n  };\n}\n\n// 最終結果の構築\nconst result = {\n  qualityScore: evaluation.qualityScore,\n  completenessCheck: evaluation.completenessCheck,\n  executiveSummary: evaluation.executiveSummary,\n  recommendations: evaluation.recommendations || [],\n  missingTopics: evaluation.missingTopics || [],\n  researchResults: researchResults\n};\n\nconsole.log('\\n📋 評価レポート完成');\nconsole.log('  品質スコア:', result.qualityScore);\nconsole.log('  推奨事項:', result.recommendations.length);\nconsole.log('  不足トピック:', result.missingTopics.length);\nconsole.log('  エグゼクティブサマリー長:', result.executiveSummary.length, 'chars');\n\nconsole.log('\\n' + '='.repeat(80));\nconsole.log('✅ [QualityEvaluation] 品質評価完了');\nconsole.log('='.repeat(80) + '\\n');\n\nreturn {\n  messages: [{\n    role: 'assistant',\n    content: JSON.stringify({ result }, null, 2)\n  }]\n};"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "__start__",
+      "to": "quality_evaluator"
+    },
+    {
+      "from": "quality_evaluator",
+      "to": "__end__"
+    }
+  ],
+  "stateGraph": {
+    "annotationRef": "AgentState",
+    "config": {
+      "checkpointer": {
+        "type": "MemorySaver"
+      }
+    }
+  }
+}
