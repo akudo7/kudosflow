@@ -1,0 +1,71 @@
+{
+  "config": {
+    "recursionLimit": 100,
+    "eventEmitter": {
+      "defaultMaxListeners": 20
+    },
+    "a2aEndpoint": {
+      "port": 3002,
+      "agentCard": {
+        "name": "ResearchExecutionAgent",
+        "description": "調査実行エージェント - タスクリストに基づいてWeb検索を実行し、調査結果を収集します",
+        "supportedMessageFormats": ["text/plain", "application/json"],
+        "acceptedInputs": [
+          {
+            "name": "task_list",
+            "description": "実行するタスクリスト"
+          }
+        ],
+        "producedOutputs": [
+          {
+            "name": "research_results",
+            "description": "各タスクの調査結果とソース情報"
+          }
+        ]
+      }
+    }
+  },
+  "stateAnnotation": {
+    "name": "AgentState",
+    "type": "Annotation.Root"
+  },
+  "annotation": {
+    "messages": {
+      "type": "BaseMessage[]",
+      "reducer": "(x, y) => x.concat(y)",
+      "default": []
+    }
+  },
+  "nodes": [
+    {
+      "id": "mock_responder",
+      "function": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof AgentState.State"
+          }
+        ],
+        "implementation": "const mockResponse = {\n  result: {\n    researchResults: [\n      {\n        taskId: 1,\n        objective: '会社概要の調査',\n        findings: '矢崎総業は1929年創業の大手自動車部品メーカー。従業員約28万人、売上高1.7兆円。ワイヤーハーネスで世界シェア30%。',\n        sources: [\n          'https://www.yazaki-group.com/',\n          'https://example.com/company-info'\n        ],\n        completionStatus: 'completed'\n      },\n      {\n        taskId: 2,\n        objective: '製品・サービスの調査',\n        findings: 'デジタルタコグラフ: 運行管理システム、ドライブレコーダー: 事故記録・予防、車載メーター: 速度計、燃料計等の計器類',\n        sources: [\n          'https://example.com/products'\n        ],\n        completionStatus: 'completed'\n      },\n      {\n        taskId: 3,\n        objective: '強み・弱み分析',\n        findings: '強み: 世界トップシェア、グローバルネットワーク、技術力。弱み: 自動車産業依存、EV化対応の遅れ。',\n        sources: [\n          'https://example.com/analysis'\n        ],\n        completionStatus: 'completed'\n      }\n    ],\n    summary: '3つのタスク全てが完了しました'\n  }\n};\n\nconsole.log('🔍 [ResearchExecutionMock] Returning mock research results');\nconsole.log('🔍 [ResearchExecutionMock] Received message:', state.messages[state.messages.length - 1]?.content);\n\nreturn {\n  messages: [{\n    role: 'assistant',\n    content: JSON.stringify(mockResponse, null, 2)\n  }]\n};"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "__start__",
+      "to": "mock_responder"
+    },
+    {
+      "from": "mock_responder",
+      "to": "__end__"
+    }
+  ],
+  "stateGraph": {
+    "annotationRef": "AgentState",
+    "config": {
+      "checkpointer": {
+        "type": "MemorySaver"
+      }
+    }
+  }
+}

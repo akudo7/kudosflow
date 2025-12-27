@@ -11,49 +11,49 @@
 ## 実装タスク
 
 ### ディレクトリとファイル作成
-- [ ] `json/a2a/phase1/` ディレクトリ構造作成
-- [ ] `json/a2a/phase1/servers/` サブディレクトリ作成
+- [x] `json/a2a/phase1/` ディレクトリ構造作成
+- [x] `json/a2a/phase1/servers/` サブディレクトリ作成
 
 ### モックサーバ作成
-- [ ] `task-creation-mock.json` 作成
-  - [ ] Port 3001設定
-  - [ ] AgentCard設定
-  - [ ] モックレスポンスノード実装
-  - [ ] 固定タスクリストJSON定義
-- [ ] `research-execution-mock.json` 作成
-  - [ ] Port 3002設定
-  - [ ] AgentCard設定
-  - [ ] モックレスポンスノード実装
-  - [ ] 固定調査結果JSON定義
-- [ ] `quality-evaluation-mock.json` 作成
-  - [ ] Port 3003設定
-  - [ ] AgentCard設定
-  - [ ] モックレスポンスノード実装
-  - [ ] 固定評価結果JSON定義
+- [x] `task-creation-mock.json` 作成
+  - [x] Port 3001設定
+  - [x] AgentCard設定
+  - [x] モックレスポンスノード実装
+  - [x] 固定タスクリストJSON定義
+- [x] `research-execution-mock.json` 作成
+  - [x] Port 3002設定
+  - [x] AgentCard設定
+  - [x] モックレスポンスノード実装
+  - [x] 固定調査結果JSON定義
+- [x] `quality-evaluation-mock.json` 作成
+  - [x] Port 3003設定
+  - [x] AgentCard設定
+  - [x] モックレスポンスノード実装
+  - [x] 固定評価結果JSON定義
 
 ### クライアント実装
-- [ ] `client-mock.json` 作成
-- [ ] 状態アノテーション定義
-  - [ ] messages配列
-  - [ ] currentPhase
-  - [ ] taskServerResponse
-  - [ ] researchServerResponse
-  - [ ] evaluationServerResponse
-  - [ ] userDecision
-- [ ] A2Aクライアント設定（3サーバ）
-- [ ] オーケストレーターノード実装
-  - [ ] orchestrator_task
-  - [ ] orchestrator_research
-  - [ ] orchestrator_evaluation
-- [ ] Approvalゲートノード実装
-  - [ ] approval_gate_task (interrupt実装)
-  - [ ] approval_gate_research (interrupt実装)
-  - [ ] approval_gate_evaluation (interrupt実装)
-- [ ] ToolNodeの設定
-- [ ] 条件付きエッジ実装
-  - [ ] タスクフェーズのルーティング
-  - [ ] 調査フェーズのルーティング
-  - [ ] 評価フェーズのルーティング
+- [x] `client-mock.json` 作成
+- [x] 状態アノテーション定義
+  - [x] messages配列
+  - [x] currentPhase
+  - [x] taskServerResponse
+  - [x] researchServerResponse
+  - [x] evaluationServerResponse
+  - [x] userDecision
+  - [x] userFeedback（リトライ用）
+- [x] A2Aクライアント設定（3サーバ）
+- [x] オーケストレーターノード実装
+  - [x] orchestrator（単一ノードで全フェーズを処理）
+- [x] Approvalゲートノード実装
+  - [x] approval_gate_task (interrupt実装)
+  - [x] approval_gate_research (interrupt実装)
+  - [x] approval_gate_evaluation (interrupt実装)
+- [x] ToolNodeの設定
+- [x] 条件付きエッジ実装
+  - [x] orchestrator → tools判定
+  - [x] tools → approval gates判定
+  - [x] approval gates → orchestratorループバック
+  - [x] evaluation → __end__判定
 
 ---
 
@@ -103,25 +103,34 @@
 
 ## テスト結果
 
-**実施日**: ___________
+**実施日**: 2025-12-27（実装完了）
 
-### サーバ起動
-- タスクサーバ (3001): ⬜ Success / ⬜ Failed
-- 調査サーバ (3002): ⬜ Success / ⬜ Failed
-- 評価サーバ (3003): ⬜ Success / ⬜ Failed
+### 実装完了
+- ✅ 全ファイルが正しいフォーマットで作成されました
+- ✅ `function.implementation`パターンを使用
+- ✅ `from/to`エッジフォーマットを使用
+- ✅ 既存の`client.json`パターンに準拠
 
-### Interrupt動作
-- Interrupt 1 (タスク承認): ⬜ Success / ⬜ Failed
-- Interrupt 2 (調査承認): ⬜ Success / ⬜ Failed
-- Interrupt 3 (評価承認): ⬜ Success / ⬜ Failed
+### 次のステップ: テスト実行が必要
+以下のテストを実行してください:
 
-### フロー制御
-- 承認 → 次フェーズ遷移: ⬜ Success / ⬜ Failed
-- 却下 → リトライ: ⬜ Success / ⬜ Failed
-- 修正要求 → フィードバック付きリトライ: ⬜ Success / ⬜ Failed
+#### サーバ起動テスト
+- [ ] タスクサーバ (3001): Success / Failed
+- [ ] 調査サーバ (3002): Success / Failed
+- [ ] 評価サーバ (3003): Success / Failed
 
-### エンドツーエンド
-- 完全ワークフロー完了: ⬜ Success / ⬜ Failed
+#### Interrupt動作テスト
+- [ ] Interrupt 1 (タスク承認): Success / Failed
+- [ ] Interrupt 2 (調査承認): Success / Failed
+- [ ] Interrupt 3 (評価承認): Success / Failed
+
+#### フロー制御テスト
+- [ ] 承認 → 次フェーズ遷移: Success / Failed
+- [ ] 却下 → リトライ: Success / Failed
+- [ ] 修正要求 → フィードバック付きリトライ: Success / Failed
+
+#### エンドツーエンドテスト
+- [ ] 完全ワークフロー完了: Success / Failed
 
 ---
 
