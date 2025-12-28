@@ -61,7 +61,7 @@ export const InterruptPrompt: React.FC<InterruptPromptProps> = ({
           color: '#666',
         }}
       >
-        {message || 'Please provide input to continue workflow execution'}
+        {'Please provide input to continue workflow execution'}
       </div>
 
       <style>

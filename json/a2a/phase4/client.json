@@ -58,6 +58,16 @@
       "type": "string",
       "reducer": "(x, y) => y || x",
       "default": null
+    },
+    "reportData": {
+      "type": "any",
+      "reducer": "(x, y) => y || x",
+      "default": null
+    },
+    "reportText": {
+      "type": "string",
+      "reducer": "(x, y) => y || x",
+      "default": null
     }
   },
   "models": [
@@ -120,6 +130,30 @@
       }
     },
     {
+      "id": "report_generator",
+      "function": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof AgentState.State"
+          }
+        ],
+        "implementation": "console.log('📊 [report_generator] レポート生成開始');\n\n// 全ての調査結果を収集\nconst allResearchResults = state.messages\n  .filter(msg => (msg._getType && msg._getType() === 'tool') || msg.role === 'tool')\n  .filter(msg => msg.name === 'send_message_to_research_agent')\n  .map(msg => {\n    try {\n      const parsed = typeof msg.content === 'string' ? JSON.parse(msg.content) : msg.content;\n      return parsed;\n    } catch (e) {\n      console.error('❌ [report_generator] Failed to parse research result:', e);\n      return null;\n    }\n  })\n  .filter(Boolean);\n\nconsole.log(`📊 [report_generator] Collected ${allResearchResults.length} research results`);\n\n// 元のユーザ要求を取得\nconst originalRequest = state.messages.find(msg => msg.role === 'user')?.content || '';\n\n// 調査結果を抽出（ネストされたJSONを解決）\nconst extractedResults = [];\n\nfor (const item of allResearchResults) {\n  try {\n    if (item.response && item.response.content) {\n      const contentData = JSON.parse(item.response.content);\n      if (contentData.result && contentData.result.messages) {\n        const assistantMsg = contentData.result.messages.find(m => m.role === 'assistant');\n        if (assistantMsg && assistantMsg.content) {\n          const researchData = JSON.parse(assistantMsg.content);\n          if (researchData.result && researchData.result.researchResults) {\n            extractedResults.push(...researchData.result.researchResults);\n          }\n        }\n      }\n    }\n  } catch (e) {\n    console.error('❌ [report_generator] Failed to extract research result:', e);\n  }\n}\n\nconsole.log(`📊 [report_generator] Extracted ${extractedResults.length} research findings`);\n\n// 統計情報を計算\nconst totalResults = extractedResults.length;\nconst totalCharacters = extractedResults.reduce((sum, r) => sum + (r.findings?.length || 0), 0);\n\n// 統合レポートを生成\nlet reportText = '# 調査レポート\\n\\n';\nreportText += '## 概要\\n\\n';\nreportText += `**元のユーザ要求**: ${originalRequest}\\n\\n`;\nreportText += `**完了タスク数**: ${totalResults}\\n`;\nreportText += `**総文字数**: ${totalCharacters.toLocaleString()}文字\\n\\n`;\n\nreportText += '## 調査結果サマリー\\n\\n';\nextractedResults.forEach((r, i) => {\n  reportText += `${i + 1}. **${r.objective}**\\n`;\n  const summary = r.findings.substring(0, 150);\n  reportText += `   ${summary}${r.findings.length > 150 ? '...' : ''}\\n\\n`;\n});\n\nreportText += '## 詳細な調査結果\\n\\n';\nextractedResults.forEach((r, i) => {\n  reportText += `### タスク${i + 1}: ${r.objective}\\n\\n`;\n  reportText += `${r.findings}\\n\\n`;\n  if (r.sources && r.sources.length > 0) {\n    reportText += `**出典**:\\n`;\n    r.sources.forEach(src => {\n      reportText += `- ${src}\\n`;\n    });\n    reportText += '\\n';\n  }\n});\n\n// フラット化されたデータ構造を作成\nconst reportData = {\n  originalRequest,\n  researchResults: extractedResults,\n  totalResults,\n  totalCharacters\n};\n\nconsole.log('✅ [report_generator] レポート生成完了');\nconsole.log(`  - タスク数: ${totalResults}`);\nconsole.log(`  - 総文字数: ${totalCharacters}`);\nconsole.log(`  - レポート長: ${reportText.length} chars`);\n\nreturn {\n  messages: [],\n  reportData,\n  reportText,\n  currentPhase: state.currentPhase\n};"
+      }
+    },
+    {
+      "id": "approval_gate_report",
+      "function": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof AgentState.State"
+          }
+        ],
+        "implementation": "console.log('🚪 [approval_gate_report] Processing report approval');\n\nif (!state.reportText) {\n  console.log('⚠️  [approval_gate_report] No report text found');\n  return { messages: [], userDecision: null, currentPhase: state.currentPhase };\n}\n\nconsole.log('📊 [approval_gate_report] Report generated');\n\nconst message = `📊 調査レポート生成完了\\n\\n` +\n                `タスク完了数: ${state.reportData?.totalResults || 0}\\n` +\n                `総文字数: ${(state.reportData?.totalCharacters || 0).toLocaleString()}\\n\\n` +\n                `${state.reportText}\\n\\n` +\n                `このレポートで品質評価に進みますか?\\n` +\n                `・「許可」と入力すると品質評価を開始します\\n` +\n                `・その他の入力で調査を再実行します`;\n\nconsole.log('⏸️  [approval_gate_report] Requesting approval');\nconst userResponse = interrupt(message);\nconsole.log('✅ [approval_gate_report] User response:', userResponse);\n\nif (!userResponse) {\n  return {\n    messages: [],\n    userDecision: 'pending',\n    currentPhase: state.currentPhase\n  };\n}\n\nconst response = String(userResponse).toLowerCase().trim();\nif (response === 'approve' || response === '許可' || response.includes('許可')) {\n  console.log('✅ [approval_gate_report] Approved - moving to quality evaluation');\n  return {\n    messages: [],\n    userDecision: 'approve',\n    currentPhase: 'quality_evaluation',\n    userFeedback: null\n  };\n} else {\n  console.log('❌ [approval_gate_report] Rejected - retrying research');\n  return {\n    messages: [],\n    userDecision: 'reject',\n    currentPhase: 'research_execution',\n    userFeedback: userResponse\n  };\n}"
+      }
+    },
+    {
       "id": "approval_gate_evaluation",
       "function": {
         "parameters": [
@@ -175,6 +209,26 @@
     },
     {
       "from": "approval_gate_research",
+      "type": "conditional",
+      "condition": {
+        "name": "routeAfterResearchApproval",
+        "function": {
+          "parameters": [
+            {
+              "name": "state",
+              "type": "typeof AgentState.State"
+            }
+          ],
+          "implementation": "if (state.userDecision === 'approve') { return 'report_generator'; } return 'orchestrator';"
+        }
+      }
+    },
+    {
+      "from": "report_generator",
+      "to": "approval_gate_report"
+    },
+    {
+      "from": "approval_gate_report",
       "to": "orchestrator"
     },
     {

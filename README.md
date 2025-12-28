@@ -39,6 +39,39 @@ So see in detail at the <a href="https://github.com/akudo7/kudos-gpt/blob/main/R
 
 &nbsp;
 
+# Implementation Status
+
+## Phase 5 - Report Generation and Approval (🟡 In Planning)
+
+New workflow enhancement that adds report generation and user approval before quality evaluation:
+
+### Architecture
+
+```text
+Task Creation → Approval → Research Execution → Approval
+  → Report Generation → Report Approval → Quality Evaluation → Approval → Complete
+```
+
+### Key Features
+
+- **Report Generator**: Consolidates multiple research results into a unified, readable markdown report
+- **Report Approval Gate**: Users can review and approve the generated report before quality evaluation
+- **Improved Transparency**: Users see the complete report before final evaluation
+- **Enhanced Control**: Users can request re-investigation if the report needs improvement
+
+### Implementation Plan
+
+See [Phase 5 Plan](docs/implementation/phase5-plan.md) for detailed implementation steps.
+
+### Benefits
+
+- ✅ Better transparency in the research workflow
+- ✅ User control before quality evaluation
+- ✅ Fixes Phase 4 bug (syntax error in quality-evaluation server)
+- ✅ Simplified data flow with flattened structures
+
+---
+
 # Comming features soon(I hope...)
 
 - Publish sample Flowise applications
