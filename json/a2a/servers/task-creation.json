@@ -5,62 +5,37 @@
       "defaultMaxListeners": 20
     },
     "a2aEndpoint": {
+      "port": 3001,
       "agentCard": {
         "name": "TaskCreationAgent",
-        "description": "Creates and manages research tasks for market analysis. Breaks down complex research requests into actionable task lists and manages task approval workflows.",
-        "protocolVersion": "0.3.0",
-        "version": "1.0.0",
-        "url": "http://localhost:3001/",
-        "endpoints": {
-          "messageSend": "http://localhost:3001/message/send",
-          "messageStream": "http://localhost:3001/message/stream",
-          "taskGet": "http://localhost:3001/tasks/{taskId}",
-          "taskCancel": "http://localhost:3001/tasks/{taskId}/cancel"
-        },
-        "capabilities": {
-          "streaming": false,
-          "pushNotifications": false,
-          "stateTransitionHistory": true
-        },
-        "skills": [
+        "description": "タスクリスト作成エージェント - ユーザの調査依頼から構造化されたタスクリストを生成します",
+        "supportedMessageFormats": ["text/plain", "application/json"],
+        "acceptedInputs": [
           {
-            "id": "task_decomposition",
-            "name": "Task Decomposition",
-            "description": "Breaking down complex requests into actionable tasks",
-            "tags": ["planning", "analysis"]
-          },
+            "name": "research_request",
+            "description": "ユーザからの調査依頼内容"
+          }
+        ],
+        "producedOutputs": [
           {
-            "id": "task_prioritization",
-            "name": "Task Prioritization",
-            "description": "Prioritizing tasks based on dependencies and importance",
-            "tags": ["planning", "management"]
-          },
-          {
-            "id": "task_validation",
-            "name": "Task Validation",
-            "description": "Validating task feasibility and scope",
-            "tags": ["validation", "quality"]
-          },
-          {
-            "id": "human_approval_workflow",
-            "name": "Human Approval Workflow",
-            "description": "Managing human approval processes for tasks",
-            "tags": ["workflow", "approval"]
+            "name": "task_list",
+            "description": "構造化されたタスクリスト (目的、手法、成果物を含む)"
           }
         ]
-      },
-      "port": 3001,
-      "executor": {
-        "type": "AgentExecutor",
-        "config": {
-          "taskLifecycle": true,
-          "streaming": false,
-          "errorHandling": "standard",
-          "humanInTheLoop": false
-        }
       }
     }
   },
+  "models": [
+    {
+      "id": "taskModel",
+      "type": "OpenAI",
+      "config": {
+        "model": "gpt-4o-mini",
+        "temperature": 0.3
+      },
+      "systemPrompt": "あなたは市場調査のタスク作成を専門とするエージェントです。\n\n責任:\n1. ユーザの調査依頼を分析し、実行可能なタスクに分解する\n2. 各タスクに明確な目的、手法、成果物、成功基準を設定する\n3. タスクの優先順位付けと依存関係の特定\n4. タスクの実現可能性とスコープの検証\n\nタスク作成ガイドライン:\n- 各タスクには以下を含める: 明確な目的、具体的な手法、期待される成果物、成功基準、見積工数\n- データソース、調査方法、分析アプローチを考慮する\n- 可能な限りタスクを独立させる\n- 検証と品質チェックポイントを含める\n- 潜在的な課題と代替案を考慮する\n\n日本語での調査依頼に対応し、包括的で実行可能なタスクリストを作成してください。"
+    }
+  ],
   "stateAnnotation": {
     "name": "AgentState",
     "type": "Annotation.Root"
@@ -73,31 +48,10 @@
     },
     "taskList": {
       "type": "any[]",
-      "reducer": "(x, y) => y || x",
+      "reducer": "(x, y) => y",
       "default": []
-    },
-    "approvalStatus": {
-      "type": "string",
-      "reducer": "(x, y) => y || x",
-      "default": "pending"
-    },
-    "feedback": {
-      "type": "string",
-      "reducer": "(x, y) => y || x",
-      "default": ""
     }
   },
-  "models": [
-    {
-      "id": "taskModel",
-      "type": "OpenAI",
-      "config": {
-        "model": "gpt-4o-mini",
-        "temperature": 0.3
-      },
-      "systemPrompt": "You are a Task Creation Agent specialized in breaking down market research requests into actionable tasks. Your responsibilities: 1. Analyze user research requests and decompose them into specific, measurable tasks 2. Create comprehensive task lists with clear objectives, methodologies, and success criteria 3. Prioritize tasks based on dependencies and importance 4. Validate task feasibility and scope 5. Present task lists for human approval using interrupt() function 6. Refine tasks based on feedback. Task Creation Guidelines: - Each task should have: clear objective, specific methodology, expected deliverables, success criteria, estimated effort - Consider data sources, research methods, and analysis approaches - Ensure tasks are independent where possible - Include validation and quality checkpoints - Account for potential challenges and alternatives. Use ReAct pattern: Think through the request, create structured tasks, seek approval, and iterate based on feedback."
-    }
-  ],
   "nodes": [
     {
       "id": "task_creator",
@@ -113,36 +67,7 @@
             "modelRef": "taskModel"
           }
         ],
-        "implementation": "const lastMessage = state.messages[state.messages.length - 1]; let userContent = ''; if (lastMessage) { if (lastMessage.content) { userContent = lastMessage.content; } else if (lastMessage.parts && Array.isArray(lastMessage.parts) && lastMessage.parts.length > 0) { userContent = lastMessage.parts[0].text || lastMessage.parts[0].content || ''; } else if (typeof lastMessage === 'string') { userContent = lastMessage; } } console.log('Processing task creation request:', userContent); if (userContent && (userContent.includes('調査') || userContent.includes('research') || userContent.includes('task') || userContent.includes('タスク') || state.messages.length === 1)) { const taskPrompt = `Create a detailed task list for the following research request: ${userContent}. Structure each task as a JSON object with: objective, methodology, deliverables, success_criteria, estimated_effort, dependencies. Return the response in the format: TASK_LIST_START [JSON array of tasks] TASK_LIST_END`; const response = await model.invoke([{ role: 'user', content: taskPrompt }]); const content = response.content || ''; const taskListMatch = content.match(/TASK_LIST_START\\s*([\\s\\S]*?)\\s*TASK_LIST_END/); let taskList = []; if (taskListMatch) { try { taskList = JSON.parse(taskListMatch[1].trim()); } catch (e) { console.error('Failed to parse task list:', e); taskList = [{ objective: 'Parse and structure the research request', methodology: 'Manual analysis', deliverables: 'Structured task list', success_criteria: 'Clear task breakdown', estimated_effort: '1 hour', dependencies: 'None' }]; } } else { taskList = [{ objective: 'Analyze the research request', methodology: 'Content analysis', deliverables: 'Task breakdown', success_criteria: 'Actionable tasks identified', estimated_effort: '30 minutes', dependencies: 'None' }]; } console.log('Created task list:', taskList); return { messages: [{ role: 'assistant', content: `Created ${taskList.length} tasks for the research request.` }], taskList }; } const response = await model.invoke(state.messages); return { messages: [response], taskList: [] };"
-      }
-    },
-    {
-      "id": "approval_gate",
-      "function": {
-        "parameters": [
-          {
-            "name": "state",
-            "type": "typeof AgentState.State"
-          }
-        ],
-        "implementation": "console.log('=== APPROVAL_GATE NODE EXECUTION ==='); console.log('Current state:', { taskListLength: state.taskList ? state.taskList.length : 0, approvalStatus: state.approvalStatus, hasTaskList: !!state.taskList }); if (state.taskList && state.taskList.length > 0 && state.approvalStatus === 'pending') { console.log('Requesting task approval for', state.taskList.length, 'tasks'); const taskSummary = state.taskList.map((task, index) => `${index + 1}. ${task.objective} (${task.estimated_effort || 'N/A'})`).join('\\n'); const totalHours = state.taskList.reduce((total, task) => { const hours = parseInt((task.estimated_effort || '0 hours').replace(' hours', '').replace('時間', '')) || 0; return total + hours; }, 0); console.log('=== APPROVAL REQUIRED ==='); console.log('Task list created. Returning approval request to client.'); console.log(`Total tasks: ${state.taskList.length}`); console.log(`Total estimated effort: ${totalHours} hours`); return { messages: [{ role: 'assistant', content: `Task approval required:\\n\\n${taskSummary}\\n\\nTotal: ${state.taskList.length} tasks, ${totalHours} hours\\n\\nPlease respond with: approve, reject, or modify` }], approvalStatus: 'pending', feedback: 'Awaiting user response' }; } else if (state.approvalStatus === 'approved') { console.log('Tasks already approved'); const taskSummary = state.taskList.map((task, index) => `${index + 1}. ${task.objective} (${task.estimated_effort || 'N/A'})`).join('\\n'); const totalHours = state.taskList.reduce((total, task) => { const hours = parseInt((task.estimated_effort || '0 hours').replace(' hours', '').replace('時間', '')) || 0; return total + hours; }, 0); return { messages: [{ role: 'assistant', content: `Task list approved.\\n\\nTask Summary (${state.taskList.length} tasks, ${totalHours} hours):\\n${taskSummary}` }], approvalStatus: 'approved', feedback: state.feedback || 'User approved the task list' }; } else if (state.approvalStatus === 'rejected') { console.log('Tasks rejected by user'); return { messages: [{ role: 'assistant', content: `Task list rejected. ${state.feedback || 'Please provide feedback for modification.'}` }], approvalStatus: 'rejected', feedback: state.feedback || 'User rejected the task list' }; } else { console.log('No tasks to approve - either no taskList or empty taskList'); return { messages: [{ role: 'assistant', content: 'No tasks available for approval.' }], approvalStatus: 'approved', feedback: 'No tasks to process' }; }"
-      }
-    },
-    {
-      "id": "task_refiner",
-      "function": {
-        "parameters": [
-          {
-            "name": "state",
-            "type": "typeof AgentState.State"
-          },
-          {
-            "name": "model",
-            "type": "ModelConfig",
-            "modelRef": "taskModel"
-          }
-        ],
-        "implementation": "if (state.approvalStatus === 'rejected') { console.log('Refining tasks based on feedback:', state.feedback); const refinementPrompt = `The previous task list was rejected with feedback: ${state.feedback}. Please create an improved task list addressing these concerns. Original tasks: ${JSON.stringify(state.taskList, null, 2)}. Return the response in the format: TASK_LIST_START [JSON array of improved tasks] TASK_LIST_END`; const response = await model.invoke([{ role: 'user', content: refinementPrompt }]); const content = response.content || ''; const taskListMatch = content.match(/TASK_LIST_START\\s*([\\s\\S]*?)\\s*TASK_LIST_END/); let refinedTaskList = []; if (taskListMatch) { try { refinedTaskList = JSON.parse(taskListMatch[1].trim()); } catch (e) { console.error('Failed to parse refined task list:', e); refinedTaskList = state.taskList.map(task => ({ ...task, objective: task.objective + ' (refined)', methodology: task.methodology + ' with improvements' })); } } else { refinedTaskList = state.taskList.map(task => ({ ...task, objective: task.objective + ' (revised)' })); } console.log('Refined task list:', refinedTaskList); return { messages: [{ role: 'assistant', content: `Refined task list based on feedback. Created ${refinedTaskList.length} improved tasks.` }], taskList: refinedTaskList, approvalStatus: 'pending' }; } return { messages: [] };"
+        "implementation": "const lastMessage = state.messages[state.messages.length - 1];\nlet userContent = '';\n\n// メッセージからユーザ入力を抽出\nif (lastMessage) {\n  if (lastMessage.content) {\n    userContent = lastMessage.content;\n  } else if (lastMessage.parts && Array.isArray(lastMessage.parts)) {\n    userContent = lastMessage.parts[0]?.text || lastMessage.parts[0]?.content || '';\n  } else if (typeof lastMessage === 'string') {\n    userContent = lastMessage;\n  }\n}\n\nconsole.log('📝 タスク作成リクエスト:', userContent);\n\n// LLMプロンプトの作成\nconst taskPrompt = `以下の調査依頼に対して、詳細なタスクリストを作成してください:\n\n${userContent}\n\n各タスクは以下のJSON形式で作成してください:\n{\n  \"id\": タスクID (数値),\n  \"objective\": \"タスクの目的\",\n  \"methodology\": \"調査手法\",\n  \"deliverables\": \"成果物\",\n  \"success_criteria\": \"成功基準\",\n  \"estimated_effort\": \"見積工数（例: 2時間）\",\n  \"dependencies\": \"依存タスク（例: タスク1, 2）\"\n}\n\n必ず以下の形式でレスポンスを返してください:\nTASK_LIST_START\n[JSONタスク配列]\nTASK_LIST_END\n\nまた、総タスク数と総見積時間も計算してください。`;\n\n// LLM呼び出し\nconst response = await model.invoke([\n  { role: 'user', content: taskPrompt }\n]);\n\nconst content = response.content || '';\nconsole.log('🤖 LLMレスポンス受信:', content.substring(0, 200));\n\n// タスクリストの抽出\nconst taskListMatch = content.match(/TASK_LIST_START\\s*([\\s\\S]*?)\\s*TASK_LIST_END/);\nlet taskList = [];\n\nif (taskListMatch) {\n  try {\n    taskList = JSON.parse(taskListMatch[1].trim());\n    console.log('✅ タスクリスト解析成功:', taskList.length, 'タスク');\n  } catch (e) {\n    console.error('❌ タスクリスト解析エラー:', e);\n    // フォールバックタスク\n    taskList = [\n      {\n        id: 1,\n        objective: userContent,\n        methodology: '情報収集と分析',\n        deliverables: '調査レポート',\n        success_criteria: '包括的な情報収集',\n        estimated_effort: '3時間',\n        dependencies: 'なし'\n      }\n    ];\n  }\n} else {\n  console.warn('⚠️  TASK_LIST マーカーが見つかりません、フォールバック使用');\n  taskList = [\n    {\n      id: 1,\n      objective: userContent,\n      methodology: '情報収集と分析',\n      deliverables: '調査レポート',\n      success_criteria: '包括的な情報収集',\n      estimated_effort: '3時間',\n      dependencies: 'なし'\n    }\n  ];\n}\n\n// 総時間の計算\nconst totalHours = taskList.reduce((sum, task) => {\n  const hours = parseInt((task.estimated_effort || '0時間').replace(/[^\\d]/g, '')) || 0;\n  return sum + hours;\n}, 0);\n\n// レスポンスの構築\nconst result = {\n  result: {\n    taskList: taskList,\n    totalTasks: taskList.length,\n    totalEstimatedHours: totalHours\n  }\n};\n\nconsole.log('📊 タスクリスト完成:', result.result.totalTasks, 'タスク,', result.result.totalEstimatedHours, '時間');\n\nreturn {\n  messages: [\n    {\n      role: 'assistant',\n      content: JSON.stringify(result, null, 2)\n    }\n  ],\n  taskList: taskList\n};"
       }
     }
   ],
@@ -153,27 +78,7 @@
     },
     {
       "from": "task_creator",
-      "to": "approval_gate"
-    },
-    {
-      "type": "conditional",
-      "from": "approval_gate",
-      "condition": {
-        "name": "shouldEnd",
-        "function": {
-          "parameters": [
-            {
-              "name": "state",
-              "type": "typeof AgentState.State"
-            }
-          ],
-          "implementation": "if (state.approvalStatus === 'approved') { return '__end__'; } else if (state.approvalStatus === 'rejected') { return 'task_refiner'; } else { return '__end__'; }"
-        }
-      }
-    },
-    {
-      "from": "task_refiner",
-      "to": "approval_gate"
+      "to": "__end__"
     }
   ],
   "stateGraph": {

@@ -720,6 +720,9 @@ export const WorkflowEditor: React.FC = () => {
           sessionId
         });
       }
+      // Hide interrupt prompt immediately after user provides input
+      setIsWaitingForInterrupt(false);
+      setInterruptMessage('');
     } else {
       // Start new execution
       if (typeof vscode !== 'undefined') {

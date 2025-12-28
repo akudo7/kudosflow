@@ -1,109 +1,43 @@
 {
   "config": {
-    "recursionLimit": 50,
+    "recursionLimit": 100,
     "eventEmitter": {
       "defaultMaxListeners": 20
     },
     "a2aEndpoint": {
+      "port": 3002,
       "agentCard": {
         "name": "ResearchExecutionAgent",
-        "description": "Executes market research tasks using external data collection tools. Performs comprehensive data gathering, analysis, and synthesis for business development insights.",
-        "protocolVersion": "0.3.0",
-        "version": "1.0.0",
-        "url": "http://localhost:3002/",
-        "endpoints": {
-          "messageSend": "http://localhost:3002/message/send",
-          "messageStream": "http://localhost:3002/message/stream",
-          "taskGet": "http://localhost:3002/tasks/{taskId}",
-          "taskCancel": "http://localhost:3002/tasks/{taskId}/cancel"
-        },
-        "capabilities": {
-          "streaming": false,
-          "pushNotifications": false,
-          "stateTransitionHistory": true
-        },
-        "skills": [
+        "description": "調査実行エージェント - タスクリストに基づいてWeb検索を実行し、調査結果を収集します",
+        "supportedMessageFormats": ["text/plain", "application/json"],
+        "acceptedInputs": [
           {
-            "id": "web_search",
-            "name": "Web Search",
-            "description": "Comprehensive web search and data collection",
-            "tags": [
-              "research",
-              "data"
-            ]
-          },
+            "name": "task_description",
+            "description": "実行する個別タスクの説明（objective と success_criteria を含む）"
+          }
+        ],
+        "producedOutputs": [
           {
-            "id": "data_collection",
-            "name": "Data Collection",
-            "description": "Systematic data gathering from multiple sources",
-            "tags": [
-              "research",
-              "analysis"
-            ]
-          },
-          {
-            "id": "content_extraction",
-            "name": "Content Extraction",
-            "description": "Extraction and processing of relevant content",
-            "tags": [
-              "processing",
-              "analysis"
-            ]
-          },
-          {
-            "id": "market_analysis",
-            "name": "Market Analysis",
-            "description": "Analysis of market trends and business insights",
-            "tags": [
-              "analysis",
-              "market"
-            ]
+            "name": "research_results",
+            "description": "タスクの調査結果とソース情報"
           }
         ]
-      },
-      "port": 3002,
-      "executor": {
-        "type": "AgentExecutor",
-        "config": {
-          "taskLifecycle": true,
-          "streaming": false,
-          "errorHandling": "standard"
-        }
-      }
-    },
-    "mcpServers": {
-      "config": {
-        "throwOnLoadError": false,
-        "prefixToolNameWithServerName": true,
-        "additionalToolNamePrefix": "mcp"
       }
     }
   },
-  "stateAnnotation": {
-    "name": "AgentState",
-    "type": "Annotation.Root"
-  },
-  "annotation": {
-    "messages": {
-      "type": "BaseMessage[]",
-      "reducer": "(x, y) => x.concat(y)",
-      "default": []
-    },
-    "researchQuery": {
-      "type": "string",
-      "reducer": "(x, y) => y || x",
-      "default": ""
-    },
-    "researchResults": {
-      "type": "string[]",
-      "reducer": "(x, y) => x.concat(y)",
-      "default": []
-    },
-    "executionStep": {
-      "type": "string",
-      "reducer": "(x, y) => y || x",
-      "default": "start"
+  "mcpServers": {
+    "web-search": {
+      "transport": "stdio",
+      "command": "node",
+      "args": [
+        "/Users/akirakudo/Desktop/MyWork/MPC/web-search/build/index.js"
+      ]
     }
+  },
+  "mcpConfig": {
+    "throwOnLoadError": false,
+    "prefixToolNameWithServerName": true,
+    "additionalToolNamePrefix": "mcp"
   },
   "models": [
     {
@@ -114,31 +48,21 @@
         "temperature": 0.3
       },
       "bindMcpServers": true,
-      "systemPrompt": "You are a Research Execution Agent. Execute research tasks efficiently using available tools. Focus on gathering accurate, current information about companies, products, and market trends. Always provide structured, well-sourced results."
+      "systemPrompt": "あなたは市場調査を専門とするリサーチエージェントです。\n\n責任:\n1. タスク説明に基づいて包括的な調査を実行する\n2. Web検索ツール（mcp_web-search_search）を使用して関連情報を収集する\n3. 収集した情報を構造化して整理する\n4. 信頼できる情報源を特定し、引用する\n5. 調査結果を詳細にまとめる\n\n調査ガイドライン:\n- タスクの目的と成功基準を理解する\n- 複数の情報源から情報を収集する（最低3つの検索を実行）\n- 事実と意見を区別する\n- 情報の鮮度と信頼性を評価する\n- 検索クエリを最適化して関連性の高い結果を得る\n- 公式サイト、業界レポート、ニュース記事を優先的に参照する\n\nWeb検索ツール:\n- mcp_web-search_search: キーワード検索を実行\n  - 日本語・英語の両方に対応\n  - 複数の検索を組み合わせて包括的な情報を収集\n  - 検索結果のURLを必ず記録\n\n日本語での調査依頼に対応し、300文字以上の詳細な調査結果を返してください。"
     }
   ],
-  "mcpServers": {
-    "web-search": {
-      "transport": "stdio",
-      "command": "node",
-      "args": [
-        "/Users/akirakudo/Desktop/MyWork/MPC/web-search/build/index.js"
-      ]
+  "stateAnnotation": {
+    "name": "AgentState",
+    "type": "Annotation.Root"
+  },
+  "annotation": {
+    "messages": {
+      "type": "BaseMessage[]",
+      "reducer": "(x, y) => x.concat(y)",
+      "default": []
     }
   },
   "nodes": [
-    {
-      "id": "task_receiver",
-      "function": {
-        "parameters": [
-          {
-            "name": "state",
-            "type": "typeof AgentState.State"
-          }
-        ],
-        "implementation": "try {\n  const lastMessage = state.messages[state.messages.length - 1];\n  let messageContent = '';\n  if (lastMessage) {\n    if (typeof lastMessage === 'string') {\n      messageContent = lastMessage;\n    } else\n    if (lastMessage.content) {\n      messageContent = lastMessage.content;\n    } else\n    if (lastMessage.parts && Array.isArray(lastMessage.parts) && lastMessage.parts.length > 0) {\n      messageContent = lastMessage.parts[0].text || lastMessage.parts[0].content || '';\n    }\n  }\n  console.log('📥 [task_receiver] Processing:', messageContent.substring(0, 100));\n  if (messageContent && messageContent.length > 0) {\n    return {\n      messages: [`Research task received: ${messageContent.substring(0, 200)}...`],\n      researchQuery: messageContent,\n      executionStep: 'research'\n    };\n  }\n  return {\n    messages: ['Ready to receive research tasks.'],\n    researchQuery: '',\n    executionStep: 'waiting'\n  };\n}\ncatch (error) {\n  console.error('📥 [task_receiver] Error:', error);\n  return {\n    messages: ['Error processing task request.'],\n    researchQuery: '',\n    executionStep: 'error'\n  };\n}"
-      }
-    },
     {
       "id": "research_executor",
       "function": {
@@ -153,55 +77,18 @@
             "modelRef": "researchModel"
           }
         ],
-        "implementation": "try {\n  console.log('🔬 [research_executor] Starting comprehensive research');\n  const query = state.researchQuery || 'general research';\n  console.log('🔬 [research_executor] Query:', query.substring(0, 100));\n  const messages = [\n    { role: 'user', content: `Research the following topic comprehensively: ${query}. Provide detailed information including company overview, establishment year, business operations, main markets, and recent developments. Use web search tools to gather current and accurate information.` }\n  ];\n  let currentMessages = [...messages];\n  let attempts = 0;\n  const maxAttempts = 3;\n  let finalResult = '';\n  while (attempts < maxAttempts) {\n    attempts++; console.log(`🔬 [research_executor] Attempt ${attempts}/${maxAttempts}`);\n    const response = await model.invoke(currentMessages);\n    console.log('🔬 [research_executor] Response type:', typeof response);\n    console.log('🔬 [research_executor] Has tool_calls:', !!(response && response.tool_calls && response.tool_calls.length > 0));\n    if (response && response.tool_calls && response.tool_calls.length > 0) {\n      console.log('🔬 [research_executor] Processing tool calls:', response.tool_calls.length);\n      currentMessages.push(response);\n      for (const toolCall of response.tool_calls) {\n        console.log('🔬 [research_executor] Tool call:', toolCall.name, toolCall.args);\n        let toolResult = 'Tool execution completed successfully.';\n        try {\n          if (toolCall.name.includes('search')) {\n            toolResult = `Search results for \"${toolCall.args.query}\": Found relevant information about the company including business overview, market position, and operational details.`;\n          }\n        }\n        catch (toolError) {\n          console.error('🔬 [research_executor] Tool error:', toolError);\n          toolResult = `Tool execution encountered an issue: ${toolError.message}`;\n        }\n        currentMessages.push({ role: 'tool', content: toolResult, tool_call_id: toolCall.id, name: toolCall.name });\n      }\n    } else\n    if (response && response.content) {\n      finalResult = response.content;\n      console.log('🔬 [research_executor] Final result length:', finalResult.length);\n      break;\n    } else {\n      finalResult = 'Research completed but no detailed content was generated.';\n      break;\n    }\n  }\n  if (!finalResult && currentMessages.length > 1) {\n    const finalResponse = await model.invoke([...currentMessages, { role: 'user', content: 'Please provide a comprehensive summary of the research findings.' }]);\n    finalResult = finalResponse.content || 'Research summary could not be generated.';\n  }\n  console.log('🔬 [research_executor] Final result preview:', finalResult.substring(0, 200));\n  return {\n    messages: [finalResult],\n    executionStep: 'completed'\n  };\n}\ncatch (error) {\n  console.error('🔬 [research_executor] Error:', error);\n  return {\n    messages: [`Research execution failed: ${error.message || error}`],\n    executionStep: 'error'\n  };\n}"
-      }
-    },
-    {
-      "id": "result_formatter",
-      "function": {
-        "parameters": [
-          {
-            "name": "state",
-            "type": "typeof AgentState.State"
-          },
-          {
-            "name": "model",
-            "type": "ModelConfig",
-            "modelRef": "researchModel"
-          }
-        ],
-        "implementation": "try {\n  const lastMessage = state.messages[state.messages.length - 1];\n  let contentToFormat = '';\n  if (typeof lastMessage === 'string') {\n    contentToFormat = lastMessage;\n  } else\n  if (lastMessage && typeof lastMessage === 'object' && lastMessage.content) {\n    contentToFormat = lastMessage.content;\n  } else {\n    contentToFormat = 'No content available for formatting';\n  }\n  console.log('📋 [result_formatter] Content length:', contentToFormat.length);\n  if (contentToFormat.length < 50) {\n    return {\n      messages: ['Insufficient content for formatting.'],\n      researchResults: [],\n      executionStep: 'completed'\n    };\n  }\n  const formatPrompt = `Format the following research results into a well-structured summary with clear sections for: 1) Company Overview, 2) Key Findings, 3) Business Operations, 4) Market Position, 5) Sources and References. Content to format: ${contentToFormat}`;\n  const formattedResponse = await model.invoke([{ role: 'user', content: formatPrompt }]);\n  const formattedContent = formattedResponse.content || formattedResponse.toString();\n  const result = { timestamp: new Date().toISOString(), query: state.researchQuery, findings: formattedContent, status: 'completed' };\n  return {\n    messages: [formattedContent],\n    researchResults: [JSON.stringify(result)],\n    executionStep: 'completed'\n  };\n}\ncatch (error) {\n  console.error('📋 [result_formatter] Error:', error);\n  return {\n    messages: [`Formatting failed: ${error.message || error}`],\n    researchResults: [],\n    executionStep: 'error'\n  };\n}"
+        "implementation": "console.log('\\n' + '='.repeat(80));\nconsole.log('🔍 [ResearchExecution] 調査実行サーバ起動');\nconsole.log('='.repeat(80));\n\nconst lastMessage = state.messages[state.messages.length - 1];\nlet userContent = '';\n\n// メッセージからタスク説明を抽出\nif (lastMessage) {\n  if (lastMessage.content) {\n    userContent = lastMessage.content;\n  } else if (lastMessage.parts && Array.isArray(lastMessage.parts)) {\n    userContent = lastMessage.parts[0]?.text || lastMessage.parts[0]?.content || '';\n  } else if (typeof lastMessage === 'string') {\n    userContent = lastMessage;\n  }\n}\n\nconsole.log('\\n📨 受信したタスク説明:');\nconsole.log('  Content (first 300 chars):', userContent.substring(0, 300));\nconsole.log('  Total length:', userContent.length, 'chars');\n\nif (!userContent || userContent.length === 0) {\n  console.error('❌ タスク説明が空です');\n  return {\n    messages: [\n      {\n        role: 'assistant',\n        content: JSON.stringify({\n          result: {\n            researchResults: [],\n            summary: 'エラー: タスク説明が見つかりません'\n          }\n        })\n      }\n    ]\n  };\n}\n\n// LLMに検索実行を依頼（MCPツールを使用）\nconsole.log('\\n🔎 Web検索を開始します');\n\nconst researchPrompt = `以下のタスクについて、Web検索ツール（mcp_web-search_search）を使用して詳細に調査してください:\n\n${userContent}\n\n指示:\n1. 日本語での検索を優先してください（例: 「矢崎総業 会社概要」「矢崎総業 製品」など）\n2. 複数の信頼できる情報源から情報を収集してください（最低3回の検索を実行）\n3. 具体的な数値、日付、データを含めてください\n4. 検索結果のURLを必ず記録してください\n5. 調査結果は300文字以上の詳細な要約にしてください\n\n以下の形式で結果を返してください:\nRESEARCH_START\n{\n  \"taskId\": 1,\n  \"objective\": \"タスクの目的\",\n  \"findings\": \"調査結果の詳細な要約（300文字以上、具体的な数値やデータを含む）\",\n  \"sources\": [\"実際に参照したURL1\", \"URL2\", \"URL3\"],\n  \"completionStatus\": \"completed\"\n}\nRESEARCH_END`;\n\nlet researchResult;\n\ntry {\n  const response = await model.invoke([\n    { role: 'user', content: researchPrompt }\n  ]);\n\n  const content = response.content || '';\n  console.log('\\n🤖 LLMレスポンス受信 (first 500 chars):');\n  console.log('  ' + content.substring(0, 500).split('\\n').join('\\n  '));\n  if (content.length > 500) {\n    console.log('  ... (truncated, total length: ' + content.length + ' chars)');\n  }\n\n  // RESEARCH_START/ENDマーカーで結果を抽出\n  const resultMatch = content.match(/RESEARCH_START\\s*([\\s\\S]*?)\\s*RESEARCH_END/);\n\n  if (resultMatch) {\n    researchResult = JSON.parse(resultMatch[1].trim());\n    console.log('✅ 調査結果解析成功');\n    console.log('  Objective:', researchResult.objective);\n    console.log('  Findings length:', researchResult.findings?.length || 0, 'chars');\n    console.log('  Sources count:', researchResult.sources?.length || 0);\n    if (researchResult.sources && researchResult.sources.length > 0) {\n      console.log('  Sources:');\n      researchResult.sources.forEach((src, idx) => {\n        console.log('    [' + (idx + 1) + '] ' + src);\n      });\n    }\n  } else {\n    console.warn('⚠️  RESEARCH マーカーが見つかりません、フォールバック使用');\n    // フォールバック: マーカーなしの結果\n    researchResult = {\n      taskId: 1,\n      objective: userContent.substring(0, 100) + '...',\n      findings: content.substring(0, 500),\n      sources: [],\n      completionStatus: 'completed'\n    };\n  }\n} catch (error) {\n  console.error('❌ 調査実行エラー:', error.message);\n  console.error('  Stack:', error.stack);\n  researchResult = {\n    taskId: 1,\n    objective: userContent.substring(0, 100) + '...',\n    findings: `調査中にエラーが発生しました: ${error.message}`,\n    sources: [],\n    completionStatus: 'error'\n  };\n}\n\n// 結果の構築（モックと同じフォーマット）\nconst result = {\n  result: {\n    researchResults: [researchResult],\n    summary: researchResult.completionStatus === 'completed' ? '調査が完了しました' : '調査中にエラーが発生しました'\n  }\n};\n\nconsole.log('\\n📊 調査完了');\nconsole.log('  Status:', researchResult.completionStatus);\nconsole.log('  Findings length:', researchResult.findings?.length || 0, 'chars');\nconsole.log('='.repeat(80) + '\\n');\n\nreturn {\n  messages: [\n    {\n      role: 'assistant',\n      content: JSON.stringify(result, null, 2)\n    }\n  ]\n};"
       }
     }
   ],
   "edges": [
     {
       "from": "__start__",
-      "to": "task_receiver"
+      "to": "research_executor"
     },
     {
       "from": "research_executor",
-      "to": "result_formatter"
-    },
-    {
-      "from": "result_formatter",
       "to": "__end__"
-    },
-    {
-      "from": "task_receiver",
-      "type": "conditional",
-      "condition": {
-        "name": "shouldProceed",
-        "function": {
-          "parameters": [
-            {
-              "name": "state",
-              "type": "typeof AgentState.State"
-            }
-          ],
-          "implementation": "try {\n  const step = state.executionStep || 'waiting';\n  console.log('🔀 [shouldProceed] Current step:', step);\n  if (step === 'research') {\n    return 'research_executor';\n  }\n  if (step === 'error') {\n    return '__end__';\n  }\n  return '__end__';\n}\ncatch (error) {\n  console.error('🔀 [shouldProceed] Error:', error);\n  return '__end__';\n}"
-        }
-      }
     }
   ],
   "stateGraph": {

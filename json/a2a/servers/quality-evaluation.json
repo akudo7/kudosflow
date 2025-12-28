@@ -5,69 +5,40 @@
       "defaultMaxListeners": 20
     },
     "a2aEndpoint": {
+      "port": 3003,
       "agentCard": {
         "name": "QualityEvaluationAgent",
-        "description": "Evaluates research quality and ensures deliverable standards. Performs comprehensive quality assessment of research results and manages approval workflows for final deliverables.",
-        "protocolVersion": "0.3.0",
-        "version": "1.0.0",
-        "url": "http://localhost:3003/",
-        "endpoints": {
-          "messageSend": "http://localhost:3003/message/send",
-          "messageStream": "http://localhost:3003/message/stream",
-          "taskGet": "http://localhost:3003/tasks/{taskId}",
-          "taskCancel": "http://localhost:3003/tasks/{taskId}/cancel"
-        },
-        "capabilities": {
-          "streaming": false,
-          "pushNotifications": false,
-          "stateTransitionHistory": true
-        },
-        "skills": [
+        "description": "品質評価エージェント - 調査結果の品質を評価し、エグゼクティブサマリーを作成します",
+        "supportedMessageFormats": [
+          "text/plain",
+          "application/json"
+        ],
+        "acceptedInputs": [
           {
-            "id": "quality_assessment",
-            "name": "Quality Assessment",
-            "description": "Comprehensive quality evaluation of research results",
-            "tags": ["quality", "evaluation"]
-          },
+            "name": "research_results",
+            "description": "評価する調査結果"
+          }
+        ],
+        "producedOutputs": [
           {
-            "id": "research_validation",
-            "name": "Research Validation",
-            "description": "Validation of research methodology and findings",
-            "tags": ["validation", "research"]
-          },
-          {
-            "id": "completeness_check",
-            "name": "Completeness Check",
-            "description": "Verification of deliverable completeness",
-            "tags": ["verification", "completeness"]
-          },
-          {
-            "id": "accuracy_verification",
-            "name": "Accuracy Verification",
-            "description": "Verification of data accuracy and source credibility",
-            "tags": ["accuracy", "verification"]
-          },
-          {
-            "id": "human_approval_workflow",
-            "name": "Human Approval Workflow",
-            "description": "Management of human approval processes",
-            "tags": ["workflow", "approval"]
+            "name": "quality_evaluation",
+            "description": "品質評価とエグゼクティブサマリー"
           }
         ]
-      },
-      "port": 3003,
-      "executor": {
-        "type": "AgentExecutor",
-        "config": {
-          "taskLifecycle": true,
-          "streaming": false,
-          "errorHandling": "standard",
-          "humanInTheLoop": false,
-          "qualityGates": true
-        }
       }
     }
   },
+  "models": [
+    {
+      "id": "evaluationModel",
+      "type": "OpenAI",
+      "config": {
+        "model": "gpt-4o-mini",
+        "temperature": 0.2
+      },
+      "systemPrompt": "あなたは市場調査の品質評価とレポート作成を専門とするエージェントです。\n\n責任:\n1. 調査結果の完全性と品質を評価する\n2. 元のユーザ要求と調査結果を照合する\n3. 不足している情報や改善点を特定する\n4. 包括的なエグゼクティブサマリーを作成する\n5. 品質スコアと推奨事項を提供する\n\n評価基準:\n- 完全性: 全ての要求トピックがカバーされているか\n- 正確性: 情報が具体的で検証可能か\n- 関連性: 調査結果がユーザ要求に関連しているか\n- 深さ: 表面的ではなく、十分な深さがあるか\n- 構造: 情報が論理的に整理されているか\n\nエグゼクティブサマリー作成ガイドライン:\n- 簡潔で要点を押さえた文章（500-800文字程度）\n- ユーザが求めた全てのトピックに言及\n- 重要な数値やデータポイントを含める\n- ビジネス判断に役立つ洞察を提供\n- 日本語で作成（敬体を使用）\n\n必ず日本語でレスポンスを返してください。"
+    }
+  ],
   "stateAnnotation": {
     "name": "AgentState",
     "type": "Annotation.Root"
@@ -77,54 +48,11 @@
       "type": "BaseMessage[]",
       "reducer": "(x, y) => x.concat(y)",
       "default": []
-    },
-    "researchResults": {
-      "type": "any[]",
-      "reducer": "(x, y) => y || x",
-      "default": []
-    },
-    "qualityAssessment": {
-      "type": "any",
-      "reducer": "(x, y) => y || x",
-      "default": null
-    },
-    "qualityStatus": {
-      "type": "string",
-      "reducer": "(x, y) => y || x",
-      "default": "pending"
-    },
-    "approvalStatus": {
-      "type": "string",
-      "reducer": "(x, y) => y || x",
-      "default": "pending"
     }
   },
-  "models": [
-    {
-      "id": "qualityModel",
-      "type": "OpenAI",
-      "config": {
-        "model": "gpt-4o-mini",
-        "temperature": 0.2
-      },
-      "systemPrompt": "You are a Quality Evaluation Agent specialized in assessing research quality and ensuring deliverable standards. Your responsibilities: 1. Evaluate research results for completeness, accuracy, and relevance 2. Assess data quality, source credibility, and methodology soundness 3. Check alignment with original research objectives 4. Verify deliverable completeness against success criteria 5. Generate quality scores and improvement recommendations 6. Present quality assessments for human approval using interrupt() function. Quality Evaluation Criteria: - Completeness: All research objectives addressed, comprehensive coverage - Accuracy: Data verification, source credibility, fact-checking - Relevance: Alignment with business objectives and market focus - Methodology: Sound research approaches and data collection methods - Insights: Quality of analysis, actionable recommendations - Sources: Credible, recent, and diverse data sources - Structure: Clear organization and professional presentation. Quality Scoring: - Excellent (90-100): Exceeds expectations, ready for delivery - Good (80-89): Meets standards, minor improvements suggested - Fair (70-79): Adequate but requires improvements - Poor (<70): Significant issues, major revisions needed. Use ReAct pattern: Analyze research systematically, evaluate against criteria, generate scores, and seek approval for final deliverables."
-    }
-  ],
   "nodes": [
     {
-      "id": "result_receiver",
-      "function": {
-        "parameters": [
-          {
-            "name": "state",
-            "type": "typeof AgentState.State"
-          }
-        ],
-        "implementation": "const lastMessage = state.messages[state.messages.length - 1]; let messageContent = ''; if (lastMessage) { if (lastMessage.content) { messageContent = lastMessage.content; } else if (lastMessage.parts && Array.isArray(lastMessage.parts) && lastMessage.parts.length > 0) { messageContent = lastMessage.parts[0].text || lastMessage.parts[0].content || ''; } else if (typeof lastMessage === 'string') { messageContent = lastMessage; } } console.log('🔍 [result_receiver] Processing message:', messageContent); if (messageContent && (messageContent.includes('research results') || messageContent.includes('調査結果') || messageContent.includes('research') || messageContent.includes('調査') || (lastMessage && lastMessage.tool_calls && lastMessage.tool_calls.some(call => call.name === 'tasks/send')))) { try { let resultsData = []; const jsonMatch = messageContent.match(/```json\\n([\\s\\S]*?)\\n```/); if (jsonMatch) { resultsData = JSON.parse(jsonMatch[1]); } else if (messageContent.includes('{') && messageContent.includes('}')) { try { const startIndex = messageContent.indexOf('{'); const cleanJson = messageContent.substring(startIndex); resultsData = JSON.parse(cleanJson); } catch (e) { console.log('🔍 [result_receiver] JSON parse failed, creating default result'); resultsData = [{ task: { objective: 'Research analysis' }, result: { key_findings: [messageContent], data_sources: ['Direct input'], executive_summary: messageContent } }]; } } else { resultsData = [{ task: { objective: 'Research analysis from direct input' }, result: { key_findings: [messageContent], data_sources: ['Direct input'], executive_summary: messageContent } }]; } console.log('🔍 [result_receiver] Parsed results:', resultsData); return { messages: [{ role: 'assistant', content: `Received research results for quality evaluation. Beginning assessment of ${Array.isArray(resultsData) ? resultsData.length : 1} research items...` }], researchResults: Array.isArray(resultsData) ? resultsData : [resultsData] }; } catch (e) { console.error('🔍 [result_receiver] Error parsing research results:', e); return { messages: [{ role: 'assistant', content: 'Error parsing research results. Please provide valid format.' }], researchResults: [] }; } } return { messages: [{ role: 'assistant', content: 'Ready to receive and evaluate research results.' }], researchResults: [] };"
-      }
-    },
-    {
-      "id": "quality_assessor",
+      "id": "quality_evaluator",
       "function": {
         "parameters": [
           {
@@ -134,86 +62,21 @@
           {
             "name": "model",
             "type": "ModelConfig",
-            "modelRef": "qualityModel"
+            "modelRef": "evaluationModel"
           }
         ],
-        "implementation": "if (state.researchResults && state.researchResults.length > 0 && state.qualityStatus === 'pending') { console.log('🎯 [quality_assessor] Starting quality assessment for', state.researchResults.length, 'results'); const assessmentPrompt = `Evaluate the following research results for quality: ${JSON.stringify(state.researchResults, null, 2)}. Assess each result against quality criteria: completeness, accuracy, relevance, methodology, insights, sources, structure. Provide: 1. Individual scores (0-100) for each criterion 2. Overall quality score 3. Quality level (Excellent/Good/Fair/Poor) 4. Specific strengths and weaknesses 5. Improvement recommendations 6. Pass/fail decision (pass if overall score >= 70). Format response as JSON with detailed assessment.`; const response = await model.invoke([...state.messages, { role: 'user', content: assessmentPrompt }]); try { let assessment = {}; const content = response.content || ''; const jsonMatch = content.match(/```json\\n([\\s\\S]*?)\\n```/); if (jsonMatch) { assessment = JSON.parse(jsonMatch[1]); } else if (content.includes('{') && content.includes('}')) { const startIndex = content.indexOf('{'); const cleanJson = content.substring(startIndex); assessment = JSON.parse(cleanJson); } else { assessment = { overallScore: 75, qualityLevel: 'Good', strengths: ['Comprehensive analysis'], recommendations: ['Minor improvements suggested'], passFailDecision: 'pass' }; } const status = (assessment.overallScore >= 70 || assessment.passFailDecision === 'pass') ? 'pass' : 'fail'; console.log('🎯 [quality_assessor] Assessment completed:', { score: assessment.overallScore, status }); return { messages: [response], qualityAssessment: assessment, qualityStatus: status }; } catch (e) { console.error('🎯 [quality_assessor] Error parsing quality assessment:', e); return { messages: [response], qualityAssessment: { overallScore: 60, qualityLevel: 'Fair', error: 'Assessment parsing failed' }, qualityStatus: 'fail' }; } } const response = await model.invoke(state.messages); return { messages: [response] };"
-      }
-    },
-    {
-      "id": "approval_gate",
-      "function": {
-        "parameters": [
-          {
-            "name": "state",
-            "type": "typeof AgentState.State"
-          }
-        ],
-        "implementation": "if (state.qualityStatus === 'pass' && state.approvalStatus === 'pending') { console.log('🚪 [approval_gate] Quality assessment passed, returning approval request to client'); const approvalMessage = { message: 'Quality evaluation completed. Quality assessment shows PASS status. Please review final deliverables for approval:', phase: 'quality_approval', data: { qualityScore: state.qualityAssessment?.overallScore || 'N/A', qualityLevel: state.qualityAssessment?.qualityLevel || 'Unknown', strengths: state.qualityAssessment?.strengths || [], recommendations: state.qualityAssessment?.recommendations || [], researchSummary: (state.researchResults || []).map(result => ({ task: result.task?.objective || 'Unknown', findings: result.result?.key_findings || [], sources: result.result?.data_sources || [] })) }, options: ['approve', 'reject', 'request_revisions'] }; const contentText = `Quality Evaluation: PASS\\n\\nQuality Score: ${approvalMessage.data.qualityScore}\\nQuality Level: ${approvalMessage.data.qualityLevel}\\n\\nStrengths:\\n${approvalMessage.data.strengths.map(s => `- ${s}`).join('\\n')}\\n\\nRecommendations:\\n${approvalMessage.data.recommendations.map(r => `- ${r}`).join('\\n')}\\n\\nPlease respond with: approve, reject, or request_revisions`; return { messages: [{ role: 'assistant', content: contentText }], approvalStatus: 'pending' }; } else if (state.qualityStatus === 'pass' && state.approvalStatus === 'approved') { console.log('🚪 [approval_gate] Quality passed and approved by user'); return { messages: [{ role: 'assistant', content: 'Final deliverables approved. Quality evaluation passed and user approved the results.' }], approvalStatus: 'approved' }; } else if (state.qualityStatus === 'pass' && state.approvalStatus === 'rejected') { console.log('🚪 [approval_gate] Quality passed but rejected by user'); return { messages: [{ role: 'assistant', content: 'Final deliverables rejected. Quality passed but user requested revisions.' }], approvalStatus: 'rejected' }; } else if (state.qualityStatus === 'fail') { console.log('🚪 [approval_gate] Quality assessment failed'); return { messages: [{ role: 'assistant', content: 'Quality assessment failed. Research results require significant improvements before approval consideration.' }], approvalStatus: 'rejected' }; } return { messages: [] };"
-      }
-    },
-    {
-      "id": "feedback_processor",
-      "function": {
-        "parameters": [
-          {
-            "name": "state",
-            "type": "typeof AgentState.State"
-          },
-          {
-            "name": "model",
-            "type": "ModelConfig",
-            "modelRef": "qualityModel"
-          }
-        ],
-        "implementation": "if (state.approvalStatus === 'rejected' && state.qualityStatus === 'pass') { console.log('🔄 [feedback_processor] Processing rejection feedback'); const feedbackPrompt = `Based on the quality assessment and rejection feedback, provide detailed revision recommendations: ${JSON.stringify(state.qualityAssessment, null, 2)}. Generate specific improvement actions for: 1. Data collection gaps 2. Analysis depth improvements 3. Source diversification needs 4. Presentation enhancements 5. Missing deliverable components. Format as actionable revision plan.`; const response = await model.invoke([...state.messages, { role: 'user', content: feedbackPrompt }]); return { messages: [response], qualityStatus: 'revision_needed', approvalStatus: 'pending' }; } return { messages: [{ role: 'assistant', content: 'No feedback processing required.' }] };"
+        "implementation": "console.log('\\n' + '='.repeat(80));\nconsole.log('📊 [QualityEvaluation] 品質評価開始');\nconsole.log('='.repeat(80));\n\nconst messages = state.messages;\n\n// 最後のユーザメッセージから調査結果を抽出\nconst lastMessage = messages[messages.length - 1];\nlet userContent = '';\n\nif (lastMessage) {\n  if (lastMessage.content) {\n    userContent = lastMessage.content;\n  } else if (lastMessage.parts && Array.isArray(lastMessage.parts)) {\n    userContent = lastMessage.parts[0]?.text || lastMessage.parts[0]?.content || '';\n  } else if (typeof lastMessage === 'string') {\n    userContent = lastMessage;\n  }\n}\n\nconsole.log('\\n📨 受信メッセージ分析:');\nconsole.log('  Content length:', userContent.length, 'chars');\nconsole.log('  First 300 chars:', userContent.substring(0, 300));\n\n// クライアントから送られてくる新しいデータ構造を解析\nlet originalRequest = '';\nlet researchResults = [];\n\ntry {\n  console.log('\\n🔍 JSON解析開始...');\n  \n  // プレフィックステキストを除去してJSON部分を抽出\n  const jsonMatch = userContent.match(/\\{[\\s\\S]*\\}/);\n  \n  if (jsonMatch) {\n    console.log('  ✓ JSON部分を検出');\n    \n    const evaluationData = JSON.parse(jsonMatch[0]);\n    console.log('  ✓ evaluationData解析成功');\n    console.log('    - originalRequest:', evaluationData.originalRequest?.substring(0, 50));\n    console.log('    - totalResults:', evaluationData.totalResults);\n    \n    originalRequest = evaluationData.originalRequest || '';\n    \n    // researchResultsを直接使用（クライアント側で既にフラット化済み）\n    if (evaluationData.researchResults && Array.isArray(evaluationData.researchResults)) {\n      console.log('  ✓ researchResults配列を検出:', evaluationData.researchResults.length, 'items');\n      researchResults = evaluationData.researchResults;\n      console.log('  ✅ 調査結果を直接使用:', researchResults.length, 'items');\n    }\n  } else {\n    console.log('  ⚠️  JSON形式が見つかりません - 全体をテキストとして扱います');\n    originalRequest = userContent;\n  }\n} catch (e) {\n  console.error('\\n❌ JSON解析エラー:', e.message);\n  console.error('  スタック:', e.stack);\n  console.log('  フォールバック: 全体をテキストとして扱います');\n  originalRequest = userContent;\n}\n\nconsole.log('\\n📋 解析結果サマリー:');\nconsole.log('  元のユーザ要求:', originalRequest.substring(0, 100) + '...');\nconsole.log('  調査結果数:', researchResults.length);\n\n// 調査結果が見つからない場合のエラーハンドリング\nif (researchResults.length === 0) {\n  console.warn('\\n⚠️  警告: 調査結果が見つかりません');\n  console.log('  フォールバックレスポンスを返します');\n  \n  return {\n    messages: [{\n      role: 'assistant',\n      content: JSON.stringify({\n        result: {\n          qualityScore: 0,\n          completenessCheck: {},\n          executiveSummary: 'エラー: 評価する調査結果が見つかりませんでした。調査フェーズが正常に完了していない可能性があります。',\n          recommendations: ['調査フェーズを再実行してください'],\n          missingTopics: ['全てのトピック'],\n          error: '調査結果が見つかりません',\n          debugInfo: {\n            receivedContentLength: userContent.length,\n            receivedContentPreview: userContent.substring(0, 500)\n          }\n        }\n      }, null, 2)\n    }]\n  };\n}\n\n// 調査結果を整形\nconst findingsSummary = researchResults.map((r, idx) => {\n  const taskId = r.taskId || (idx + 1);\n  const objective = r.objective || 'No objective';\n  const findings = r.findings || r.result || 'No findings';\n  const sources = r.sources || [];\n  const sourcesStr = sources.length > 0 ? `\\n出典: ${sources.join(', ')}` : '';\n  return `タスク${taskId}: ${objective}\\n結果: ${findings}${sourcesStr}`;\n}).join('\\n\\n');\n\nconsole.log('\\n📝 整形された調査結果（first 500 chars）:');\nconsole.log(findingsSummary.substring(0, 500));\n\n// LLMに評価とサマリー作成を依頼\nconst evaluationPrompt = `以下の市場調査について、品質評価とエグゼクティブサマリーを作成してください。\n\n【元のユーザ要求】\n${originalRequest}\n\n【調査結果】\n${findingsSummary}\n\n以下の形式でレスポンスを返してください:\nEVALUATION_START\n{\n  \"qualityScore\": 品質スコア（0-100）,\n  \"completenessCheck\": {\n    \"各要求トピック\": true/false（カバーされているか）\n  },\n  \"executiveSummary\": \"日本語のエグゼクティブサマリー（500-800文字）\",\n  \"recommendations\": [\"改善推奨事項1\", \"改善推奨事項2\"],\n  \"missingTopics\": [\"不足トピック1\", \"不足トピック2\"]\n}\nEVALUATION_END\n\n評価基準:\n- completenessCheck: 元のユーザ要求から各トピックを抽出し、カバー状況を判定\n- qualityScore: 完全性、具体性、関連性、深さを総合的に評価（0-100点）\n- executiveSummary: ビジネス判断に役立つ、簡潔で包括的なサマリー（500-800文字）\n- recommendations: さらなる調査や改善が必要な点\n- missingTopics: カバーされていないトピック`;\n\nconsole.log('\\n🤖 LLMに評価依頼を送信...');\nconsole.log('  Prompt length:', evaluationPrompt.length, 'chars');\n\n// Model is passed as a parameter\n// Model is now passed as a parameter, so no need to check\n\nconst response = await model.invoke([{\n  role: 'user',\n  content: evaluationPrompt\n}]);\n\nconsole.log('\\n✅ LLMレスポンス受信');\n\nconst content = response.content || '';\nconsole.log('  Response length:', content.length, 'chars');\nconsole.log('  First 300 chars:', content.substring(0, 300));\n\nconst evaluationMatch = content.match(/EVALUATION_START\\s*([\\s\\S]*?)\\s*EVALUATION_END/);\n\nlet evaluation;\n\nif (evaluationMatch) {\n  try {\n    evaluation = JSON.parse(evaluationMatch[1].trim());\n    console.log('\\n✅ 評価結果解析成功');\n    console.log('  Quality Score:', evaluation.qualityScore);\n    console.log('  Executive Summary length:', evaluation.executiveSummary?.length || 0, 'chars');\n    console.log('  Recommendations:', evaluation.recommendations?.length || 0);\n    console.log('  Missing Topics:', evaluation.missingTopics?.length || 0);\n  } catch (e) {\n    console.error('\\n❌ 評価結果JSON解析エラー:', e.message);\n    console.log('  フォールバック評価を使用します');\n    \n    // フォールバック評価\n    evaluation = {\n      qualityScore: 70,\n      completenessCheck: {},\n      executiveSummary: content.substring(0, 800),\n      recommendations: ['評価結果の解析に失敗しました'],\n      missingTopics: []\n    };\n  }\n} else {\n  console.warn('\\n⚠️  EVALUATION マーカーが見つかりません');\n  console.log('  マーカーなしのフォールバック評価を使用します');\n  \n  // マーカーなしのフォールバック\n  evaluation = {\n    qualityScore: 70,\n    completenessCheck: {},\n    executiveSummary: content.substring(0, 800),\n    recommendations: [],\n    missingTopics: []\n  };\n}\n\n// 最終結果の構築\nconst result = {\n  qualityScore: evaluation.qualityScore,\n  completenessCheck: evaluation.completenessCheck,\n  executiveSummary: evaluation.executiveSummary,\n  recommendations: evaluation.recommendations || [],\n  missingTopics: evaluation.missingTopics || [],\n  researchResults: researchResults\n};\n\nconsole.log('\\n📋 評価レポート完成');\nconsole.log('  品質スコア:', result.qualityScore);\nconsole.log('  推奨事項:', result.recommendations.length);\nconsole.log('  不足トピック:', result.missingTopics.length);\nconsole.log('  エグゼクティブサマリー長:', result.executiveSummary.length, 'chars');\n\nconsole.log('\\n' + '='.repeat(80));\nconsole.log('✅ [QualityEvaluation] 品質評価完了');\nconsole.log('='.repeat(80) + '\\n');\n\nreturn {\n  messages: [{\n    role: 'assistant',\n    content: JSON.stringify({ result }, null, 2)\n  }]\n};"
       }
     }
   ],
   "edges": [
     {
       "from": "__start__",
-      "to": "result_receiver"
+      "to": "quality_evaluator"
     },
     {
-      "from": "result_receiver",
-      "to": "quality_assessor"
-    },
-    {
-      "from": "quality_assessor",
-      "to": "approval_gate"
-    },
-    {
-      "type": "conditional",
-      "from": "approval_gate",
-      "condition": {
-        "name": "shouldContinue",
-        "function": {
-          "parameters": [
-            {
-              "name": "state",
-              "type": "typeof AgentState.State"
-            }
-          ],
-          "implementation": "if (state.approvalStatus === 'approved') { console.log('🔀 [shouldContinue] Final approval granted, ending workflow'); return '__end__'; } if (state.approvalStatus === 'rejected' && state.qualityStatus === 'fail') { console.log('🔀 [shouldContinue] Quality failed and rejected, ending workflow'); return '__end__'; } if (state.approvalStatus === 'rejected' && state.qualityStatus === 'pass') { console.log('🔀 [shouldContinue] Quality passed but rejected, processing feedback'); return 'feedback_processor'; } console.log('🔀 [shouldContinue] Default to end'); return '__end__';"
-        }
-      }
-    },
-    {
-      "type": "conditional",
-      "from": "feedback_processor",
-      "condition": {
-        "name": "shouldRetry",
-        "function": {
-          "parameters": [
-            {
-              "name": "state",
-              "type": "typeof AgentState.State"
-            }
-          ],
-          "implementation": "if (state.qualityStatus === 'revision_needed') { console.log('🔀 [shouldRetry] Revisions needed, retrying quality assessment'); return 'quality_assessor'; } console.log('🔀 [shouldRetry] No retry needed, ending'); return '__end__';"
-        }
-      }
+      "from": "quality_evaluator",
+      "to": "__end__"
     }
   ],
   "stateGraph": {
