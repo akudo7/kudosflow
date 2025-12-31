@@ -66,16 +66,36 @@ npm install
 
 **File:** `src/execution/serverRunner.ts`
 
-Add at the top of file:
+**Note:** The VSCode extension uses a **custom implementation** without SDK middlewares for fine-grained control over the workflow execution. The CLI server (at `/Users/akirakudo/Desktop/MyWork/CLI/server/src/server.ts`) uses the new SDK middleware approach shown below.
+
+**For reference only (CLI Server pattern):**
 
 ```typescript
+// New SDK middleware approach (as of A2A SDK latest version)
+import type { AgentCard } from "@a2a-js/sdk";
 import {
   DefaultRequestHandler,
   InMemoryTaskStore,
-  A2AExpressApp,
-  AgentCard as A2AAgentCard
-} from '@a2a-js/sdk';
+  type AgentExecutor,
+  type RequestContext,
+  type ExecutionEventBus
+} from "@a2a-js/sdk/server";
+import {
+  jsonRpcHandler,
+  agentCardHandler,
+  restHandler,
+  UserBuilder
+} from "@a2a-js/sdk/server/express";
 ```
+
+**VSCode Extension (current implementation):**
+
+The VSCode extension's `serverRunner.ts` implements its own Express endpoints without SDK middlewares. This approach provides:
+
+- Direct control over workflow execution
+- Custom task store implementation (`SimpleTaskStore`)
+- Flexible message format handling
+- Integration with VSCode terminal lifecycle
 
 ---
 

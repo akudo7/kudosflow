@@ -77,10 +77,13 @@ User → CLI Command → server.ts (Express + @a2a-js/sdk)
 **Key Components**:
 - **server.ts** - Standalone Express server with SDK integration
 - **@a2a-js/sdk** - Official SDK for request handling and protocol utilities
+- **SDK Middlewares** - `jsonRpcHandler`, `agentCardHandler`, `restHandler` (new approach)
 - **InMemoryTaskStore** - Task state management from SDK
 - **DefaultRequestHandler** - SDK's request handler for protocol compliance
 
 **Deployment**: Standalone Node.js process, can run anywhere Node.js is supported
+
+**Note**: As of the latest SDK version, the CLI server uses the new **middleware-based approach** instead of the deprecated `A2AExpressApp`. The VSCode extension continues to use **manual endpoint implementation** for fine-grained control.
 
 ---
 
@@ -95,7 +98,7 @@ User → CLI Command → server.ts (Express + @a2a-js/sdk)
 | **Task Cancel** | ✅ `POST /tasks/:taskId/cancel` | ✅ `POST /tasks/:taskId/cancel` | Cancellation support |
 | **Task List** | ✅ `GET /tasks` | ❌ Not included | VSCode adds for debugging |
 | **Health Check** | ✅ `GET /health` | ❌ Not included | VSCode adds for monitoring |
-| **@a2a-js/sdk** | ❌ Custom implementation | ✅ Full SDK integration | VSCode uses simplified version |
+| **@a2a-js/sdk** | ❌ Custom implementation | ✅ SDK middlewares | CLI uses jsonRpcHandler, agentCardHandler, restHandler |
 | **Task Store** | ✅ SimpleTaskStore | ✅ InMemoryTaskStore | Different implementations, same interface |
 | **AgentExecutor** | ✅ Custom class | ✅ Custom class | Both follow same pattern |
 | **Verbose Logging** | ✅ CLI-compatible format | ✅ Comprehensive logs | Formats match for comparison |

@@ -549,11 +549,13 @@ HTTP/1.1 400 Bad Request
 
 **Can run in parallel with Phase 1.2**
 
+**Note:** This phase documents the **manual endpoint implementation** used by the VSCode extension. The CLI server uses SDK middlewares, but the VSCode extension implements custom endpoints for fine-grained control.
+
 ### Objectives
 
-- Use DefaultRequestHandler from @a2a-js/sdk
-- Use A2AExpressApp.setupRoutes() for automatic registration
-- Add fallback for manual endpoints
+- Implement manual Express endpoints for A2A Protocol v0.3.0
+- Support JSON-RPC 2.0 and REST interfaces
+- Integrate with custom `AgentExecutor` and `SimpleTaskStore`
 - Log route registration status
 
 ### Files to Modify
@@ -562,48 +564,82 @@ HTTP/1.1 400 Bad Request
 
 ### Implementation Steps
 
-#### Step 2.3.1: Try SDK Request Handler
+#### Step 2.3.1: Manual Endpoint Implementation (Current Approach)
 
 **File:** `src/execution/serverRunner.ts`
 
-After creating executor, before manual endpoint registration:
+The VSCode extension implements manual endpoints without SDK middlewares:
 
 ```typescript
 export async function runServer(configPath: string, port: number) {
   // ... existing code ...
 
   // Initialize executor
-  const executor = new AgentExecutor(engine, taskStore, config);
+  const executor = new AgentExecutor(engine, globalTaskStore!, workflowConfig);
   console.log('✅ AgentExecutor initialized');
 
-  // Try to use A2A SDK request handler
-  let sdkRoutesRegistered = false;
+  // Create Express app with manual endpoints
+  const app = express();
+  app.use(express.json());
 
-  try {
-    console.log('⚠️  Attempting to use A2A SDK request handler...');
+  // CORS middleware
+  app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    if (req.method === 'OPTIONS') {
+      res.sendStatus(200);
+    } else {
+      next();
+    }
+  });
 
-    const requestHandler = new DefaultRequestHandler({
-      agentCard,
-      executor,
-      taskStore
-    });
+  // Agent Card endpoint
+  app.get('/.well-known/agent.json', (req, res) => {
+    // Returns AgentCard with actual port
+    res.json(agentCard);
+  });
 
-    // Setup routes automatically
-    A2AExpressApp.setupRoutes(app, requestHandler);
+  // JSON-RPC endpoint
+  app.post('/', async (req, res) => {
+    const { id, method, params } = req.body;
 
-    sdkRoutesRegistered = true;
-    console.log('✅ A2A SDK routes registered successfully');
+    if (method === 'message/send') {
+      const taskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const result = await executor.execute(params.message, taskId);
+      res.json({ jsonrpc: '2.0', id, result });
+    }
+    // ... other methods
+  });
 
-  } catch (error) {
-    console.warn('⚠️  A2A SDK routes not available, using manual endpoints');
-    console.warn(`Error: ${error.message}`);
+  // REST fallback endpoints
+  app.post('/message/send', async (req, res) => { /* ... */ });
+  app.get('/tasks/:taskId', async (req, res) => { /* ... */ });
+  app.post('/tasks/:taskId/cancel', async (req, res) => { /* ... */ });
 
-    // Continue with manual endpoint registration
-    sdkRoutesRegistered = false;
-  }
-
-  // ... manual endpoint registration ...
+  // ... server startup
 }
+```
+
+**For reference - CLI Server uses SDK middlewares:**
+
+The CLI server at `/Users/akirakudo/Desktop/MyWork/CLI/server/src/server.ts` uses the new SDK approach:
+
+```typescript
+// CLI Server approach (SDK middlewares)
+app.use("/", jsonRpcHandler({
+  requestHandler,
+  userBuilder: UserBuilder.noAuthentication,
+}));
+
+app.use("/.well-known/agent.json", agentCardHandler({
+  agentCardProvider: requestHandler,
+}));
+
+app.use(restHandler({
+  requestHandler,
+  userBuilder: UserBuilder.noAuthentication,
+}));
 ```
 
 ---
