@@ -18,8 +18,8 @@ export function jsonToFlow(workflow: WorkflowConfig): {
     if (edge.from === '__end__' || edge.to === '__end__') specialNodes.add('__end__');
 
     // Check possibleTargets in conditional edges (auto-extracted)
-    if (edge.type === 'conditional' && edge.condition?.function?.implementation) {
-      const possibleTargets = extractPossibleTargets(edge.condition.function.implementation) || [];
+    if (edge.type === 'conditional' && edge.condition?.handler?.function) {
+      const possibleTargets = extractPossibleTargets(edge.condition.handler.function) || [];
       possibleTargets.forEach(target => {
         if (target === '__start__') specialNodes.add('__start__');
         if (target === '__end__') specialNodes.add('__end__');
@@ -53,8 +53,8 @@ export function jsonToFlow(workflow: WorkflowConfig): {
         label: node.id,
         nodeType: node.type,
         useA2AClients: node.useA2AClients,
-        implementation: node.function?.implementation,
-        parameters: node.function?.parameters,
+        function: node.handler?.function,
+        parameters: node.handler?.parameters,
         ends: node.ends,
       },
     });
@@ -73,11 +73,11 @@ export function jsonToFlow(workflow: WorkflowConfig): {
   // Convert workflow edges to React Flow edges
   workflow.edges.forEach((edge, index) => {
     if (edge.type === 'conditional' && edge.condition) {
-      // Auto-extract possibleTargets from implementation
+      // Auto-extract possibleTargets from function
       let possibleTargets: string[] = [];
 
-      if (edge.condition?.function?.implementation) {
-        const extracted = extractPossibleTargets(edge.condition.function.implementation);
+      if (edge.condition?.handler?.function) {
+        const extracted = extractPossibleTargets(edge.condition.handler.function);
         if (extracted) {
           possibleTargets = extracted;
           console.log(`[jsonToFlow] Auto-extracted possibleTargets for ${edge.from}:`, extracted);

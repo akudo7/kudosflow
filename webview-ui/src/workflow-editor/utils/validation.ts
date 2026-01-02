@@ -1,4 +1,4 @@
-import { ReactFlowNode, A2AClientConfig, WorkflowNode, ConditionalEdgeCondition, ModelConfig, MCPServerConfig } from '../types/workflow.types';
+import { ReactFlowNode, A2AServerConfig, WorkflowNode, ConditionalEdgeCondition, ModelConfig, MCPServerConfig } from '../types/workflow.types';
 import { extractPossibleTargets, validateExtraction } from './extractPossibleTargets';
 
 export interface ValidationResult {
@@ -260,13 +260,13 @@ export function validateOutputKey(
 }
 
 /**
- * Validate A2A Client configuration
- * @param client - The A2A client configuration to validate
+ * Validate A2A Server configuration
+ * @param server - The A2A server configuration to validate
  * @returns ValidationResult
  */
-export function validateA2AClient(client: A2AClientConfig): ValidationResult {
+export function validateA2AClient(server: A2AServerConfig): ValidationResult {
   // Check cardUrl exists
-  if (!client.cardUrl || client.cardUrl.trim() === '') {
+  if (!server.cardUrl || server.cardUrl.trim() === '') {
     return {
       valid: false,
       error: 'Please enter a card URL',
@@ -275,7 +275,7 @@ export function validateA2AClient(client: A2AClientConfig): ValidationResult {
 
   // Check cardUrl is valid URL format
   try {
-    const url = new URL(client.cardUrl);
+    const url = new URL(server.cardUrl);
 
     // Check protocol is http or https
     if (url.protocol !== 'http:' && url.protocol !== 'https:') {
@@ -286,7 +286,7 @@ export function validateA2AClient(client: A2AClientConfig): ValidationResult {
     }
 
     // Check URL format matches agent.json pattern
-    if (!client.cardUrl.includes('agent.json')) {
+    if (!server.cardUrl.includes('agent.json')) {
       return {
         valid: false,
         error: 'Card URL must include an agent.json endpoint',
@@ -300,7 +300,7 @@ export function validateA2AClient(client: A2AClientConfig): ValidationResult {
   }
 
   // Check timeout is positive number
-  if (typeof client.timeout !== 'number' || client.timeout <= 0) {
+  if (typeof server.timeout !== 'number' || server.timeout <= 0) {
     return {
       valid: false,
       error: 'Timeout must be a positive number',
@@ -333,11 +333,11 @@ export function validateToolNode(node: WorkflowNode, workflowHasA2AClients: bool
     };
   }
 
-  // ToolNode should not have function property
-  if (node.function) {
+  // ToolNode should not have handler property
+  if (node.handler) {
     return {
       valid: false,
-      error: 'ToolNode cannot have a function property',
+      error: 'ToolNode cannot have a handler property',
     };
   }
 
@@ -370,33 +370,33 @@ export function validateConditionalEdge(
     };
   }
 
-  // Check condition.function exists
-  if (!condition.function) {
+  // Check condition.handler exists
+  if (!condition.handler) {
     return {
       valid: false,
-      error: 'Condition function is not defined',
+      error: 'Condition handler is not defined',
     };
   }
 
-  // Check function.parameters is array
-  if (!Array.isArray(condition.function.parameters)) {
+  // Check handler.parameters is array
+  if (!Array.isArray(condition.handler.parameters)) {
     return {
       valid: false,
       error: 'Parameters must be an array',
     };
   }
 
-  // Check function.implementation exists
-  if (!condition.function.implementation || condition.function.implementation.trim() === '') {
+  // Check handler.function exists
+  if (!condition.handler.function || condition.handler.function.trim() === '') {
     return {
       valid: false,
-      error: 'Please enter implementation code',
+      error: 'Please enter function code',
     };
   }
 
-  // Auto-extract possibleTargets from implementation
-  const extracted = extractPossibleTargets(condition.function.implementation);
-  const validation = validateExtraction(condition.function.implementation, extracted);
+  // Auto-extract possibleTargets from function
+  const extracted = extractPossibleTargets(condition.handler.function);
+  const validation = validateExtraction(condition.handler.function, extracted);
 
   if (!validation.valid) {
     return validation; // 抽出失敗時はエラーを返す

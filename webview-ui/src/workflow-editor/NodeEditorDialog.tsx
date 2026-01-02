@@ -21,8 +21,8 @@ export const NodeEditorDialog: React.FC<NodeEditorDialogProps> = ({
   const [nameValue, setNameValue] = useState(nodeData.label);
   const [nameError, setNameError] = useState<string | null>(null);
 
-  // Implementation editing
-  const [code, setCode] = useState(nodeData.implementation || '');
+  // Function editing
+  const [code, setCode] = useState(nodeData.function || '');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Parameters editing
@@ -35,7 +35,7 @@ export const NodeEditorDialog: React.FC<NodeEditorDialogProps> = ({
   useEffect(() => {
     if (show) {
       setNameValue(nodeData.label);
-      setCode(nodeData.implementation || '');
+      setCode(nodeData.function || '');
       setParamsValue(nodeData.parameters || []);
       setNameError(null);
       setParamsError(null);
@@ -46,7 +46,7 @@ export const NodeEditorDialog: React.FC<NodeEditorDialogProps> = ({
     return null;
   }
 
-  // Implementation handlers
+  // Function handlers
   const handleCodeChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setCode(e.target.value);
   }, []);
@@ -125,7 +125,7 @@ export const NodeEditorDialog: React.FC<NodeEditorDialogProps> = ({
     // Build updated data
     const updatedData: Partial<CustomNodeData> = {
       label: trimmedName,
-      implementation: code,
+      function: code,
       parameters: paramsValue,
     };
 
@@ -385,10 +385,10 @@ export const NodeEditorDialog: React.FC<NodeEditorDialogProps> = ({
             )}
           </div>
 
-          {/* Implementation Section */}
+          {/* Function Section */}
           <div style={{ marginBottom: '20px' }}>
             <strong style={{ fontSize: '13px', color: 'var(--vscode-editor-foreground)', display: 'block', marginBottom: '8px' }}>
-              Implementation
+              Function
             </strong>
             <textarea
               ref={textareaRef}

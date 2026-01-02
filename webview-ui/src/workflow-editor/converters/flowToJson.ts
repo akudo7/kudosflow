@@ -33,12 +33,12 @@ export function flowToJson(
       workflowNode.useA2AClients = node.data.useA2AClients;
     }
 
-    // Only add function property if node is not a ToolNode
+    // Only add handler property if node is not a ToolNode
     if (node.data.nodeType !== 'ToolNode') {
-      if (node.data.implementation !== undefined || node.data.parameters) {
-        workflowNode.function = {
+      if (node.data.function !== undefined || node.data.parameters) {
+        workflowNode.handler = {
           parameters: node.data.parameters || [],
-          implementation: node.data.implementation || '',
+          function: node.data.function || '',
         };
       }
     }
@@ -74,10 +74,10 @@ export function flowToJson(
           condition: edge.data.condition
             ? {
                 ...edge.data.condition,
-                function: edge.data.condition.function || {
+                handler: edge.data.condition.handler || {
                   parameters: [],
                   output: '',
-                  implementation: '',
+                  function: '',
                 },
               }
             : undefined,

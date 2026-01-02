@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { A2AClientConfig } from '../types/workflow.types';
+import { A2AServerConfig } from '../types/workflow.types';
 import { A2AClientFormModal } from './A2AClientFormModal';
 
 interface Props {
-  a2aClients: Record<string, A2AClientConfig>;
-  onA2AClientsChange: (a2aClients: Record<string, A2AClientConfig>) => void;
+  a2aServers: Record<string, A2AServerConfig>;
+  onA2AServersChange: (a2aServers: Record<string, A2AServerConfig>) => void;
 }
 
 export const A2AClientEditor: React.FC<Props> = ({
-  a2aClients,
-  onA2AClientsChange,
+  a2aServers,
+  onA2AServersChange,
 }) => {
   const [showForm, setShowForm] = useState(false);
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
@@ -31,9 +31,9 @@ export const A2AClientEditor: React.FC<Props> = ({
 
   const confirmDelete = () => {
     if (deletingClientId) {
-      const newClients = { ...a2aClients };
-      delete newClients[deletingClientId];
-      onA2AClientsChange(newClients);
+      const newServers = { ...a2aServers };
+      delete newServers[deletingClientId];
+      onA2AServersChange(newServers);
       setDeletingClientId(null);
     }
   };
@@ -42,16 +42,16 @@ export const A2AClientEditor: React.FC<Props> = ({
     setDeletingClientId(null);
   };
 
-  const handleSaveClient = (clientId: string, clientConfig: A2AClientConfig) => {
-    const newClients = { ...a2aClients };
+  const handleSaveClient = (clientId: string, clientConfig: A2AServerConfig) => {
+    const newServers = { ...a2aServers };
 
     // If editing and ID changed, delete old key
     if (editingClientId && editingClientId !== clientId) {
-      delete newClients[editingClientId];
+      delete newServers[editingClientId];
     }
 
-    newClients[clientId] = clientConfig;
-    onA2AClientsChange(newClients);
+    newServers[clientId] = clientConfig;
+    onA2AServersChange(newServers);
     setShowForm(false);
     setEditingClientId(null);
   };
@@ -195,33 +195,33 @@ export const A2AClientEditor: React.FC<Props> = ({
     color: 'var(--vscode-button-foreground)',
   };
 
-  const clientIds = Object.keys(a2aClients);
-  const editingClient = editingClientId ? a2aClients[editingClientId] : undefined;
+  const serverIds = Object.keys(a2aServers);
+  const editingServer = editingClientId ? a2aServers[editingClientId] : undefined;
 
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
-        <div style={titleStyle}>A2A Clients</div>
+        <div style={titleStyle}>A2A Servers</div>
         <button onClick={handleAddClient} style={addButtonStyle}>
-          + Add A2A Client
+          + Add A2A Server
         </button>
       </div>
 
-      {clientIds.length === 0 ? (
-        <div style={emptyStyle}>No A2A clients</div>
+      {serverIds.length === 0 ? (
+        <div style={emptyStyle}>No A2A servers</div>
       ) : (
         <table style={tableStyle}>
           <thead>
             <tr>
-              <th style={{ ...thStyle, width: '35%' }}>Client ID</th>
+              <th style={{ ...thStyle, width: '35%' }}>Server ID</th>
               <th style={{ ...thStyle, width: '40%' }}>Card URL</th>
               <th style={{ ...thStyle, width: '10%' }}>Timeout</th>
               <th style={{ ...thStyle, width: '15%', textAlign: 'center' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {clientIds.map((clientId) => {
-              const client = a2aClients[clientId];
+            {serverIds.map((clientId) => {
+              const client = a2aServers[clientId];
               return (
                 <tr key={clientId}>
                   <td style={tdStyle}>
@@ -259,8 +259,8 @@ export const A2AClientEditor: React.FC<Props> = ({
       <A2AClientFormModal
         show={showForm}
         clientId={editingClientId || undefined}
-        clientConfig={editingClient}
-        existingClientIds={clientIds}
+        clientConfig={editingServer}
+        existingClientIds={serverIds}
         onSave={handleSaveClient}
         onCancel={handleCancelForm}
       />
@@ -269,7 +269,7 @@ export const A2AClientEditor: React.FC<Props> = ({
         <div style={confirmOverlayStyle} onClick={cancelDelete}>
           <div style={confirmDialogStyle} onClick={(e) => e.stopPropagation()}>
             <div style={confirmTextStyle}>
-              Delete A2A client "<strong>{deletingClientId}</strong>"?
+              Delete A2A server "<strong>{deletingClientId}</strong>"?
             </div>
             <div style={confirmButtonsStyle}>
               <button onClick={cancelDelete} style={cancelButtonStyle}>

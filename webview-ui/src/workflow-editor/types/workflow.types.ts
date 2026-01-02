@@ -1,7 +1,7 @@
 import { Node as FlowNode, Edge as FlowEdge } from '@xyflow/react';
 
-// A2A Client Configuration
-export interface A2AClientConfig {
+// A2A Server Configuration
+export interface A2AServerConfig {
   cardUrl: string;      // Agent card endpoint URL
   timeout: number;       // Request timeout in milliseconds
   [key: string]: any;   // Allow additional properties
@@ -35,7 +35,7 @@ export interface WorkflowConfigSettings {
 // SceneGraphManager types
 export interface WorkflowConfig {
   config?: WorkflowConfigSettings;
-  a2aClients?: Record<string, A2AClientConfig>;
+  a2aServers?: Record<string, A2AServerConfig>;
   mcpServers?: Record<string, MCPServerConfig>;
   stateAnnotation: {
     name: string;
@@ -52,9 +52,9 @@ export interface WorkflowNode {
   id: string;
   type?: string;  // "ToolNode" or undefined (function node)
   useA2AClients?: boolean;  // For ToolNode
-  function?: {
+  handler?: {
     parameters: Array<{ name: string; type: string; modelRef?: string }>;
-    implementation: string;
+    function: string;
   };
   ends?: string[];
 }
@@ -62,9 +62,9 @@ export interface WorkflowNode {
 // Conditional Edge Condition
 export interface ConditionalEdgeCondition {
   name: string;
-  function: {
+  handler: {
     parameters: Array<{ name: string; type: string; modelRef?: string }>;
-    implementation: string;
+    function: string;
   };
 }
 
@@ -73,7 +73,7 @@ export interface WorkflowEdge {
   to?: string;
   type?: 'conditional' | 'normal';
   condition?: ConditionalEdgeCondition;
-  // possibleTargets is auto-extracted from condition.function.implementation
+  // possibleTargets is auto-extracted from condition.handler.function
 }
 
 export interface AnnotationField {
@@ -100,7 +100,7 @@ export interface CustomNodeData extends Record<string, unknown> {
   label: string;
   nodeType?: string;  // "ToolNode" or undefined
   useA2AClients?: boolean;  // For ToolNode
-  implementation?: string;
+  function?: string;
   parameters?: Array<{ name: string; type: string; modelRef?: string }>;
   ends?: string[];
   models?: ModelConfig[];  // Available models for modelRef dropdown

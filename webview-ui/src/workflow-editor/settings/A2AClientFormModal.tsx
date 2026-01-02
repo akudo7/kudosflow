@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { A2AClientConfig } from '../types/workflow.types';
+import { A2AServerConfig } from '../types/workflow.types';
 import { isValidJSIdentifier } from '../utils/validation';
 
 interface Props {
   show: boolean;
   clientId?: string;
-  clientConfig?: A2AClientConfig;
+  clientConfig?: A2AServerConfig;
   existingClientIds: string[];
-  onSave: (clientId: string, clientConfig: A2AClientConfig) => void;
+  onSave: (clientId: string, clientConfig: A2AServerConfig) => void;
   onCancel: () => void;
 }
 
@@ -72,13 +72,13 @@ export const A2AClientFormModal: React.FC<Props> = ({
       return;
     }
 
-    // Build client config
-    const newClientConfig: A2AClientConfig = {
+    // Build server config
+    const newServerConfig: A2AServerConfig = {
       cardUrl,
       timeout,
     };
 
-    onSave(formClientId, newClientConfig);
+    onSave(formClientId, newServerConfig);
   };
 
   if (!show) {

@@ -177,12 +177,12 @@ export const WorkflowEditor: React.FC = () => {
     setFilePath(path);  // May be empty string for new workflows
     setIsDirty(false);
 
-    // Log A2A clients for Phase 9B verification
-    if (config.a2aClients) {
-      console.log('[Phase 9B] A2A Clients loaded:', config.a2aClients);
-      console.log('[Phase 9B] A2A Client count:', Object.keys(config.a2aClients).length);
+    // Log A2A servers for Phase 9B verification
+    if (config.a2aServers) {
+      console.log('[Phase 9B] A2A Servers loaded:', config.a2aServers);
+      console.log('[Phase 9B] A2A Server count:', Object.keys(config.a2aServers).length);
     } else {
-      console.log('[Phase 9B] No A2A Clients in workflow');
+      console.log('[Phase 9B] No A2A Servers in workflow');
     }
 
     // Log workflow type (Phase 14B)
@@ -415,9 +415,9 @@ export const WorkflowEditor: React.FC = () => {
           conditionalGroupId: tempGroupId,
           condition: {
             name: 'new condition',
-            function: {
+            handler: {
               parameters: [],
-              implementation: '// TODO: Implement condition logic\nreturn "' + (pendingConnection.target || '__end__') + '";',
+              function: '// TODO: Implement condition logic\nreturn "' + (pendingConnection.target || '__end__') + '";',
             },
           },
           possibleTargets: [pendingConnection.target || ''],
@@ -469,12 +469,12 @@ export const WorkflowEditor: React.FC = () => {
     try {
       const updatedConfig = flowToJson(nodes, edges, workflowConfig);
 
-      // Log A2A clients for Phase 9B verification
-      if (updatedConfig.a2aClients) {
-        console.log('[Phase 9B] A2A Clients being saved:', updatedConfig.a2aClients);
-        console.log('[Phase 9B] A2A Client count:', Object.keys(updatedConfig.a2aClients).length);
+      // Log A2A servers for Phase 9B verification
+      if (updatedConfig.a2aServers) {
+        console.log('[Phase 9B] A2A Servers being saved:', updatedConfig.a2aServers);
+        console.log('[Phase 9B] A2A Server count:', Object.keys(updatedConfig.a2aServers).length);
       } else {
-        console.log('[Phase 9B] No A2A Clients in saved workflow');
+        console.log('[Phase 9B] No A2A Servers in saved workflow');
       }
 
       if (typeof vscode !== 'undefined') {

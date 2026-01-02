@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { WorkflowConfig, ReactFlowNode, ReactFlowEdge, AnnotationField, ModelConfig, MCPServerConfig, A2AClientConfig } from './types/workflow.types';
+import { WorkflowConfig, ReactFlowNode, ReactFlowEdge, AnnotationField, ModelConfig, MCPServerConfig, A2AServerConfig } from './types/workflow.types';
 import { NodeNameEditor } from './settings/NodeNameEditor';
 import { ConfigEditor } from './settings/ConfigEditor';
 import { StateAnnotationEditor } from './settings/StateAnnotationEditor';
@@ -19,7 +19,7 @@ interface Props {
   onUpdateEdges: (edges: ReactFlowEdge[]) => void;
 }
 
-type TabType = 'nodes' | 'settings' | 'stateGraph' | 'annotation' | 'a2aClients' | 'models' | 'mcpServers';
+type TabType = 'nodes' | 'settings' | 'stateGraph' | 'annotation' | 'a2aServers' | 'models' | 'mcpServers';
 
 export const WorkflowSettingsPanel: React.FC<Props> = ({
   show,
@@ -81,8 +81,8 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
     onUpdateConfig({ mcpServers });
   };
 
-  const handleA2AClientsChange = (a2aClients: Record<string, A2AClientConfig>) => {
-    onUpdateConfig({ a2aClients });
+  const handleA2AServersChange = (a2aServers: Record<string, A2AServerConfig>) => {
+    onUpdateConfig({ a2aServers });
   };
 
   const panelStyle: React.CSSProperties = {
@@ -188,8 +188,8 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
           Annotation
         </button>
         <button
-          onClick={() => setActiveTab('a2aClients')}
-          style={getTabStyle(activeTab === 'a2aClients')}
+          onClick={() => setActiveTab('a2aServers')}
+          style={getTabStyle(activeTab === 'a2aServers')}
         >
           A2A
         </button>
@@ -261,10 +261,10 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
             onAnnotationChange={handleAnnotationChange}
           />
         )}
-        {activeTab === 'a2aClients' && (
+        {activeTab === 'a2aServers' && (
           <A2AClientEditor
-            a2aClients={workflowConfig.a2aClients || {}}
-            onA2AClientsChange={handleA2AClientsChange}
+            a2aServers={workflowConfig.a2aServers || {}}
+            onA2AServersChange={handleA2AServersChange}
           />
         )}
         {activeTab === 'models' && (
@@ -272,8 +272,8 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
             models={workflowConfig.models || []}
             onModelsChange={handleModelsChange}
             a2aClientsExist={
-              workflowConfig.a2aClients !== undefined &&
-              Object.keys(workflowConfig.a2aClients).length > 0
+              workflowConfig.a2aServers !== undefined &&
+              Object.keys(workflowConfig.a2aServers).length > 0
             }
             mcpServersExist={
               workflowConfig.mcpServers !== undefined &&

@@ -33,7 +33,7 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
 
   const [conditionName, setConditionName] = useState('');
   const [parameters, setParameters] = useState<Parameter[]>([]);
-  const [implementation, setImplementation] = useState('');
+  const [functionCode, setFunctionCode] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const [editingParam, setEditingParam] = useState<number | null>(null);
@@ -46,8 +46,8 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
   useEffect(() => {
     if (show && currentCondition) {
       setConditionName(currentCondition.name || '');
-      setParameters(currentCondition.function?.parameters || []);
-      setImplementation(currentCondition.function?.implementation || '');
+      setParameters(currentCondition.handler?.parameters || []);
+      setFunctionCode(currentCondition.handler?.function || '');
       setError(null);
     }
   }, [show, currentCondition]);
@@ -55,7 +55,7 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
   const resetForm = () => {
     setConditionName('');
     setParameters([]);
-    setImplementation('');
+    setFunctionCode('');
     setError(null);
     setEditingParam(null);
     setParamForm({ name: '', type: '', modelRef: '' });
@@ -72,16 +72,16 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
       return;
     }
 
-    if (!implementation.trim()) {
-      setError('Implementation is required');
+    if (!functionCode.trim()) {
+      setError('Function is required');
       return;
     }
 
     const newCondition: ConditionalEdgeCondition = {
       name: conditionName.trim(),
-      function: {
+      handler: {
         parameters: parameters,
-        implementation: implementation.trim(),
+        function: functionCode.trim(),
       },
     };
 
@@ -93,10 +93,10 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
       return;
     }
 
-    // Auto-extract targets from implementation
-    const autoExtractedTargets = extractPossibleTargets(implementation.trim());
+    // Auto-extract targets from function
+    const autoExtractedTargets = extractPossibleTargets(functionCode.trim());
     if (!autoExtractedTargets || autoExtractedTargets.length === 0) {
-      setError('Could not extract possible targets from implementation. Ensure return statements use string literals.');
+      setError('Could not extract possible targets from function. Ensure return statements use string literals.');
       return;
     }
 
@@ -511,11 +511,11 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
                 color: 'var(--vscode-editor-foreground)',
               }}
             >
-              Implementation*
+              Function*
             </label>
             <textarea
-              value={implementation}
-              onChange={(e) => setImplementation(e.target.value)}
+              value={functionCode}
+              onChange={(e) => setFunctionCode(e.target.value)}
               placeholder={`try {\n  // Your condition logic here\n  if (state.shouldContinue) {\n    return "tools";\n  }\n  return "__end__";\n} catch (error) {\n  return "__end__";\n}`}
               rows={10}
               style={{

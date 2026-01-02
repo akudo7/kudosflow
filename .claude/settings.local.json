@@ -22,7 +22,15 @@
       "Bash(yarn run compile:*)",
       "Bash(yarn package:*)",
       "Bash(wc:*)",
-      "Bash(yarn install)"
+      "Bash(yarn install)",
+      "Bash(npm run build:*)",
+      "Bash(npm test:*)",
+      "Bash(node scripts/migrate-json-schema.js:*)",
+      "Bash(node scripts/validate-json-schema.js:*)",
+      "Bash(for file in json/model.json json/interrupt.json json/a2a/client.json json/a2a/servers/task-creation.json json/a2a/servers/research-execution.json json/a2a/servers/quality-evaluation.json)",
+      "Bash(do echo \"Checking $file...\")",
+      "Bash(node -e:*)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []
