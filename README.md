@@ -1,83 +1,169 @@
-<h1 align="center">kudos-gpt</h1>
+<h1 align="center">Kudosflow</h1>
 
 <h4 align="center">
-  <a href="https://github.com/akudo7/kudos-gpt/blob/main/README.md#settings">Settings</a>
+  <a href="#features">Features</a>
   ·
-  <a href="https://github.com/akudo7/kudos-gpt/blob/main/README.md#features">Features</a>
+  <a href="#getting-started">Getting Started</a>
+  ·
+  <a href="#development">Development</a>
   ·
   <a href="https://github.com/akudo7/kudos-gpt/issues">Support</a>
 </h4>
 
-<p align="left">
-The kudos-gpt is a ChatGPT-like extension for the VSCode. Now you can have an AI chatbot like the ChatGPT right in the VSCode. Use it as your AI programming assistant which you can talk with to understand complex code, modify and improve your code, or generate comments for your code. The possibilities are endless until the maxTokens actually. To start, turn on it from the command menu, highlight a piece of code, click on the plus icon on the left to open a chat, and start talking with it just like in the ChatGPT. All your conversations are saved and exported in your workspace so you can look back on them automatically when you open files.
+<p align="center">
+A VSCode extension that integrates React Flow for visual workflow editing. Build node-based workflows with a drag-and-drop canvas interface, similar to Flowise, right inside VSCode.
 </p>
-&nbsp;
-
-# New features
-
-<font color="red" size=5>ver 5.0.0</font>
-- Supported Devin feature
-  - Available to import XMLs which are exported by the Bolt.new system promopt.
-    - See in detail of the original prompt at the "https://github.com/stackblitz/bolt.new/blob/main/app/lib/.server/llm/prompts.ts".
-      - Recommend to change it for fitting with your environment.
-    - boltArtifact and bolt_file_modifications are supported.
-    - Samples
-      - [System Prompt](https://github.com/akudo7/kudos-gpt/raw/HEAD/bolt_new-system-prompt.txt) 
-      - [artifact.xml](https://github.com/akudo7/kudos-gpt/raw/HEAD/artifact.xml) 
-      - [modifications.xml](https://github.com/akudo7/kudos-gpt/raw/HEAD/modifications.xml) 
-  <p align="center">
-  <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudos-gpt.v5.0.0_1.gif"/>
-  <img src="https://github.com/akudo7/kudos-gpt/raw/HEAD/kudos-gpt.v5.0.0_2.gif"/>
-  </p>
 
 &nbsp;
 
-# Settings & Features
+## Features
 
-The kudo-gpt supports many features to ask your requests to AIs with a simple and easy-to-use interface.
-So see in detail at the <a href="https://github.com/akudo7/kudos-gpt/blob/main/README.md">README.md on the Github.</a>
+- 🎨 **Visual Workflow Editor**: Drag-and-drop interface powered by React Flow
+- 🔌 **Node-Based Architecture**: Connect nodes to build complex workflows
+- 💾 **JSON Storage**: Workflows are stored as JSON files in your workspace
+- 🔄 **A2A Integration**: Support for Agent-to-Agent communication workflows
+- 🎯 **Context Menu Integration**: Right-click JSON files to open in workflow editor
+- 🚀 **Live Preview**: Real-time workflow execution and testing
 
 &nbsp;
 
-# Implementation Status
+## Getting Started
 
-## Phase 5 - Report Generation and Approval (🟡 In Planning)
+### Installation
 
-New workflow enhancement that adds report generation and user approval before quality evaluation:
+1. Install the extension from the VSCode marketplace (coming soon) or build from source
+2. Create a `.env` file in your project root with required API keys (see [.env.example](.env.example))
+
+### Usage
+
+#### Opening Workflow Editor
+
+- **From Explorer**: Right-click any `.json` file → "Open Workflow Editor"
+- **Command Palette**: `Ctrl+Shift+P` → "Kudosflow: Open Workflow Editor"
+- **Create New**: Right-click a folder → "Create New Workflow Here"
+
+#### Building Workflows
+
+1. Use the **+** button to add nodes to the canvas
+2. Drag nodes to position them
+3. Connect nodes by dragging from output anchors to input anchors
+4. Configure node parameters in the node panel
+5. Save your workflow using the save button in the toolbar
+
+&nbsp;
+
+## Development
+
+### Prerequisites
+
+- Node.js 20.x or higher
+- Yarn package manager
+- VSCode 1.96.0 or higher
+
+### Setup
+
+```bash
+# Install all dependencies (extension + webview)
+yarn install:all
+
+# Copy environment example
+cp .env.example .env
+# Edit .env with your API keys
+```
+
+### Build Commands
+
+```bash
+# Compile TypeScript for extension
+yarn compile
+
+# Watch mode for extension development
+yarn watch
+
+# Start webview development server with hot reload
+yarn start:webview
+
+# Build webview for production
+yarn build:webview
+
+# Package extension
+yarn package
+```
+
+### Testing
+
+```bash
+# Run linter
+yarn lint
+
+# Run tests
+yarn pretest
+```
+
+Press `F5` in VSCode to launch the Extension Development Host for testing.
 
 ### Architecture
 
+The extension consists of two separate build systems:
+
+1. **Extension Side** (Node.js context):
+   - Entry: [src/extension.ts](src/extension.ts)
+   - Build: TypeScript → `out/` directory
+   - Manages VSCode extension lifecycle and webview panel
+
+2. **Webview Side** (Browser context):
+   - Entry: [webview-ui/src/index.tsx](webview-ui/src/index.tsx)
+   - Build: Vite + React → `webview-ui/build/` directory
+   - Contains the React Flow canvas UI
+
+See [CLAUDE.md](CLAUDE.md) for detailed development documentation.
+
+&nbsp;
+
+## Current Implementation Status
+
+### ✅ Phase 1-4: Core Functionality (Completed)
+
+- Visual workflow editor with React Flow
+- A2A server integration
+- Multi-stage workflows with approval gates
+- Research execution and quality evaluation
+
+### 🟡 Phase 5: Report Generation (In Planning)
+
+Enhanced workflow with consolidated reporting:
+
+**Architecture:**
+
 ```text
 Task Creation → Approval → Research Execution → Approval
-  → Report Generation → Report Approval → Quality Evaluation → Approval → Complete
+  → Report Generation → Report Approval → Quality Evaluation → Complete
 ```
 
-### Key Features
+**Key Features:**
 
-- **Report Generator**: Consolidates multiple research results into a unified, readable markdown report
-- **Report Approval Gate**: Users can review and approve the generated report before quality evaluation
-- **Improved Transparency**: Users see the complete report before final evaluation
-- **Enhanced Control**: Users can request re-investigation if the report needs improvement
+- Consolidates multiple research results into unified markdown reports
+- User approval gate before quality evaluation
+- Enhanced transparency and control
 
-### Implementation Plan
+See [docs/implementation/phase5-plan.md](docs/implementation/phase5-plan.md) for details.
 
-See [Phase 5 Plan](docs/implementation/phase5-plan.md) for detailed implementation steps.
+&nbsp;
 
-### Benefits
+## Contributing
 
-- ✅ Better transparency in the research workflow
-- ✅ User control before quality evaluation
-- ✅ Fixes Phase 4 bug (syntax error in quality-evaluation server)
-- ✅ Simplified data flow with flattened structures
+Contributions are welcome! Please feel free to submit a Pull Request.
 
----
+&nbsp;
 
-# Comming features soon(I hope...)
+## License
 
-- Publish sample Flowise applications
-- Supporting to trained on permissive data with local models
+MIT License - see [LICENSE](LICENSE) for details.
 
+&nbsp;
 
-## **Hand-crafted by [Akira Kudo](https://www.linkedin.com/in/akira-kudo-4b04163/) in Tokyo, Japan**
+## Author
 
-<p align="center">Copyright and Reversed &copy; 2023-present Akira Kudo</p>
+**Hand-crafted by [Akira Kudo](https://www.linkedin.com/in/akira-kudo-4b04163/) in Tokyo, Japan**
+
+<p align="center">Copyright &copy; 2023-present Akira Kudo</p>
