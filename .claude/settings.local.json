@@ -31,7 +31,8 @@
       "Bash(do echo \"Checking $file...\")",
       "Bash(node -e:*)",
       "Bash(done)",
-      "Bash(yarn security:full:*)"
+      "Bash(yarn security:full:*)",
+      "Bash(git remote:*)"
     ],
     "deny": [],
     "ask": []
