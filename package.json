@@ -1,8 +1,9 @@
 {
-  "name": "reactflowtest",
-  "displayName": "reactflowtest",
-  "description": "reactflowtest",
-  "version": "0.0.1",
+  "name": "kudosflow",
+  "displayName": "kudosflow",
+  "description": "kudosflow",
+  "version": "2.0.0",
+  "license": "MIT",
   "author": {
     "name": "Akira Kudo",
     "url": "https://www.linkedin.com/in/akira-kudo-4b04163/"
@@ -65,7 +66,12 @@
     "prepackage": "yarn run compile && yarn run obfuscate",
     "package": "yarn run prepackage && vsce package",
     "pretest": "yarn run compile && yarn run lint",
-    "lint": "eslint src --ext ts"
+    "lint": "eslint src --ext ts",
+    "audit": "yarn audit",
+    "audit:fix": "yarn upgrade-interactive --latest",
+    "audit:report": "yarn audit --json > audit-report.json",
+    "security:check": "yarn audit && yarn outdated",
+    "security:full": "yarn audit && yarn outdated"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
@@ -75,9 +81,9 @@
     "@types/xml2js": "^0.4.14",
     "@typescript-eslint/eslint-plugin": "^8.10.0",
     "@typescript-eslint/parser": "^8.7.0",
-    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.4.1",
-    "eslint": "^9.13.0",
+    "eslint": "^9.39.2",
     "ts-loader": "^9.5.1",
     "typescript": "^5.6.3"
   },
@@ -86,5 +92,12 @@
     "@kudos/scene-graph-manager": "file:/Users/akirakudo/Desktop/MyWork/TypeScript/SceneGraphManager/kudos-scene-graph-manager-2.0.0.tgz",
     "dotenv": "^17.2.3",
     "express": "^5.2.1"
+  },
+  "resolutions": {
+    "qs": "^6.14.1",
+    "brace-expansion": "^2.0.2",
+    "@eslint/plugin-kit": "^0.3.4",
+    "js-yaml": "^4.1.1",
+    "glob": "^10.5.0"
   }
 }
