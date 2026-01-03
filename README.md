@@ -11,7 +11,15 @@
 </h4>
 
 <p align="center">
-A VSCode extension that integrates React Flow for visual workflow editing. Build node-based workflows with a drag-and-drop canvas interface, similar to Flowise, right inside VSCode.
+A VSCode extension that integrates React Flow for visual workflow editing. Build node-based workflows with a drag-and-drop canvas interface, right inside VSCode.
+</p>
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=-54GrId1jDc">
+    <img src="https://img.youtube.com/vi/-54GrId1jDc/maxresdefault.jpg" alt="Kudosflow Demo" width="600">
+  </a>
+  <br>
+  <em>Click to watch the demo video</em>
 </p>
 
 &nbsp;
@@ -120,33 +128,12 @@ See [CLAUDE.md](CLAUDE.md) for detailed development documentation.
 
 &nbsp;
 
-## Current Implementation Status
-
-### ✅ Phase 1-4: Core Functionality (Completed)
-
-- Visual workflow editor with React Flow
-- A2A server integration
-- Multi-stage workflows with approval gates
-- Research execution and quality evaluation
-
-### 🟡 Phase 5: Report Generation (In Planning)
-
-Enhanced workflow with consolidated reporting:
-
-**Architecture:**
+**Samples:**
 
 ```text
 Task Creation → Approval → Research Execution → Approval
   → Report Generation → Report Approval → Quality Evaluation → Complete
 ```
-
-**Key Features:**
-
-- Consolidates multiple research results into unified markdown reports
-- User approval gate before quality evaluation
-- Enhanced transparency and control
-
-See [docs/implementation/phase5-plan.md](docs/implementation/phase5-plan.md) for details.
 
 &nbsp;
 
