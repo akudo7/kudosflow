@@ -32,7 +32,11 @@
       "Bash(node -e:*)",
       "Bash(done)",
       "Bash(yarn security:full:*)",
-      "Bash(git remote:*)"
+      "Bash(git remote:*)",
+      "Bash(code:*)",
+      "Bash(yarn package:dev:*)",
+      "Bash(unzip:*)",
+      "Bash(yarn why:*)"
     ],
     "deny": [],
     "ask": []

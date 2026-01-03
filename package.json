@@ -3,6 +3,7 @@
   "displayName": "kudosflow",
   "description": "kudosflow",
   "version": "2.0.0",
+  "publisher": "akirakudo",
   "license": "MIT",
   "author": {
     "name": "Akira Kudo",
@@ -21,7 +22,9 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "views": {
@@ -58,14 +61,20 @@
   },
   "scripts": {
     "install:all": "yarn install && cd webview-ui && yarn install",
-    "start:webview": "cd webview-ui && yarn run start",
+    "clean": "rm -rf out .tsbuildinfo webview-ui/build",
+    "clean:vsix": "rm -f *.vsix *.vsix.backup",
+    "build": "yarn run build:extension && yarn run build:webview",
+    "build:extension": "rm -f .tsbuildinfo && tsc -p ./",
     "build:webview": "cd webview-ui && yarn run build",
-    "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
+    "watch:webview": "cd webview-ui && yarn run start",
     "obfuscate": "javascript-obfuscator out --output out --compact true --control-flow-flattening true",
-    "prepackage": "yarn run compile && yarn run obfuscate",
-    "package": "yarn run prepackage && vsce package",
-    "pretest": "yarn run compile && yarn run lint",
+    "prebuild:dev": "yarn run build",
+    "prebuild:prod": "yarn run build && yarn run obfuscate",
+    "package:dev": "yarn run prebuild:dev && vsce package",
+    "package:prod": "yarn run prebuild:prod && vsce package",
+    "package": "yarn run package:dev",
+    "pretest": "yarn run build:extension && yarn run lint",
     "lint": "eslint src --ext ts",
     "audit": "yarn audit",
     "audit:fix": "yarn upgrade-interactive --latest",
@@ -90,10 +99,12 @@
   "dependencies": {
     "@a2a-js/sdk": "^0.3.5",
     "@kudos/scene-graph-manager": "file:/Users/akirakudo/Desktop/MyWork/TypeScript/SceneGraphManager/kudos-scene-graph-manager-2.0.0.tgz",
+    "ajv-formats": "^3.0.1",
     "dotenv": "^17.2.3",
     "express": "^5.2.1"
   },
   "resolutions": {
+    "ajv": "^8.17.1",
     "qs": "^6.14.1",
     "brace-expansion": "^2.0.2",
     "@eslint/plugin-kit": "^0.3.4",

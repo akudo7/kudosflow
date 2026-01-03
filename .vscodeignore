@@ -32,9 +32,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Node modules (should already be excluded)
-node_modules/**
-**/node_modules/**
+# Node modules - exclude only dev dependencies and webview node_modules
+webview-ui/node_modules/**
 
 # Webview source (keep only built files)
 webview-ui/src/**
