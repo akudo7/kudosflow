@@ -6,6 +6,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a VSCode extension that integrates React Flow for visual workflow editing. The extension displays a webview panel with a drag-and-drop canvas interface for building node-based workflows, similar to Flowise.
 
+## Package Manager
+
+**This project uses Yarn, not npm.**
+
+- ✅ Use: `yarn install`, `yarn add`, `yarn remove`
+- ❌ Do not use: `npm install`, `npm i`, `npm uninstall`
+
+The project includes `yarn.lock` which must be used for dependency management. Never create or modify `package-lock.json`.
+
 ## Build and Development Commands
 
 ### Extension Development
