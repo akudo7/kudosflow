@@ -36,7 +36,12 @@
       "Bash(code:*)",
       "Bash(yarn package:dev:*)",
       "Bash(unzip:*)",
-      "Bash(yarn why:*)"
+      "Bash(yarn why:*)",
+      "Bash(curl:*)",
+      "Bash(jq:*)",
+      "Bash(yarn run build:extension:*)",
+      "Bash(python3:*)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []

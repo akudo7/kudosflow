@@ -4,6 +4,13 @@
     "eventEmitter": {
       "defaultMaxListeners": 20
     },
+    "mcpServers": {
+      "config": {
+        "throwOnLoadError": false,
+        "prefixToolNameWithServerName": true,
+        "additionalToolNamePrefix": "mcp"
+      }
+    },
     "a2aEndpoint": {
       "port": 3002,
       "agentCard": {
@@ -28,20 +35,12 @@
       }
     }
   },
-  "mcpServers": {
-    "web-search": {
-      "transport": "stdio",
-      "command": "node",
-      "args": [
-        "/Users/akirakudo/Desktop/MyWork/MPC/web-search/build/index.js"
-      ]
-    }
-  },
-  "mcpConfig": {
-    "throwOnLoadError": false,
-    "prefixToolNameWithServerName": true,
-    "additionalToolNamePrefix": "mcp"
-  },
+	"mcpServers": {
+		"tavily-mcp": {
+			"command": "npx",
+			"args": ["-y", "tavily-mcp@0.1.4"]
+		}
+	},
   "models": [
     {
       "id": "researchModel",
@@ -51,7 +50,7 @@
         "temperature": 0.3
       },
       "bindMcpServers": true,
-      "systemPrompt": "あなたは市場調査を専門とするリサーチエージェントです。\n\n責任:\n1. タスク説明に基づいて包括的な調査を実行する\n2. Web検索ツール（mcp_web-search_search）を使用して関連情報を収集する\n3. 収集した情報を構造化して整理する\n4. 信頼できる情報源を特定し、引用する\n5. 調査結果を詳細にまとめる\n\n調査ガイドライン:\n- タスクの目的と成功基準を理解する\n- 複数の情報源から情報を収集する（最低3つの検索を実行）\n- 事実と意見を区別する\n- 情報の鮮度と信頼性を評価する\n- 検索クエリを最適化して関連性の高い結果を得る\n- 公式サイト、業界レポート、ニュース記事を優先的に参照する\n\nWeb検索ツール:\n- mcp_web-search_search: キーワード検索を実行\n  - 日本語・英語の両方に対応\n  - 複数の検索を組み合わせて包括的な情報を収集\n  - 検索結果のURLを必ず記録\n\n日本語での調査依頼に対応し、300文字以上の詳細な調査結果を返してください。"
+      "systemPrompt": "あなたは市場調査を専門とするリサーチエージェントです。\n\n【責任】\n1. タスク説明に基づいて包括的な調査を実行する\n2. Web検索ツール（mcp__tavily-mcp__tavily-search）を使用して関連情報を収集する\n3. 収集した情報を構造化して整理する\n4. 信頼できる情報源を特定し、引用する\n5. 調査結果を詳細にまとめる\n\n【★重要: ツール使用のルール】\n- Web検索ツール（mcp__tavily-mcp__tavily-search）は**1回のみ**使用できます\n- 複数の検索が必要な場合は、1回の呼び出しで包括的なクエリを実行してください\n- ツール実行結果を受け取ったら、**必ず**それを使って最終的な調査報告を作成してください\n- ツール実行後に再度ツールを呼び出すことは**禁止**されています\n- ツール結果を受け取った後は、その情報を分析・統合して詳細な回答を生成してください\n\n【エラーハンドリング - 重要】\nツール実行がエラーになった場合の対応手順:\n\n1. エラーメッセージを確認する\n   - JSONフォーマットで「error: true」が含まれている場合はツールエラーです\n   - errorCountフィールドで現在の試行回数を確認してください\n\n2. エラー回数に応じた対応\n   - 1回目（errorCount: 1）: 異なる検索クエリで再試行してください\n     例: 「会社名 概要」→「会社名 公式サイト」\n   - 2回目（errorCount: 2）: より簡潔で一般的なクエリで再試行してください\n     例: 「会社名」のみ\n   - 3回目以上（errorCount: 3+）: ツールの使用を中止し、あなたの知識ベースで回答してください\n\n3. 禁止事項\n   - 同じ検索クエリを3回以上繰り返さないこと\n   - エラーが続く場合、ツール呼び出しを続けないこと\n   - エラーを無視して別のツールを試さないこと\n\n4. 代替手段\n   - ツールが利用できない場合は、あなたの訓練データに基づいて回答してください\n   - 情報が不足している場合は「情報を取得できませんでした」と明示してください\n   - 推測で回答する場合は「推測ですが」と明記してください\n\n【調査ガイドライン】\n- タスクの目的と成功基準を理解する\n- 検索クエリを最適化して関連性の高い結果を得る（1回の検索で最大限の情報を取得）\n- 事実と意見を区別する\n- 情報の鮮度と信頼性を評価する\n- 公式サイト、業界レポート、ニュース記事を優先的に参照する\n\n【Web検索ツール】\n- ツール名: mcp__tavily-mcp__tavily-search\n- 機能: Tavily検索APIを使用したキーワード検索\n- パラメータ:\n  - query: 検索クエリ（日本語・英語の両方に対応）\n  - search_depth: \"basic\" または \"advanced\"（省略可）\n  - max_results: 結果の最大数（デフォルト: 5）\n- 戻り値: 検索結果のURLとコンテンツ\n\n【出力形式】\n- 日本語での調査依頼に対応\n- 300文字以上の詳細な調査結果を返す\n- ソースURLを必ず含める（取得できた場合）\n- 情報の信頼性を評価する"
     }
   ],
   "stateAnnotation": {
@@ -80,7 +79,24 @@
             "modelRef": "researchModel"
           }
         ],
-        "function": "console.log('\\n' + '='.repeat(80));\nconsole.log('🔍 [ResearchExecution] 調査実行サーバ起動');\nconsole.log('='.repeat(80));\n\nconst lastMessage = state.messages[state.messages.length - 1];\nlet userContent = '';\n\n// メッセージからタスク説明を抽出\nif (lastMessage) {\n  if (lastMessage.content) {\n    userContent = lastMessage.content;\n  } else if (lastMessage.parts && Array.isArray(lastMessage.parts)) {\n    userContent = lastMessage.parts[0]?.text || lastMessage.parts[0]?.content || '';\n  } else if (typeof lastMessage === 'string') {\n    userContent = lastMessage;\n  }\n}\n\nconsole.log('\\n📨 受信したタスク説明:');\nconsole.log('  Content (first 300 chars):', userContent.substring(0, 300));\nconsole.log('  Total length:', userContent.length, 'chars');\n\nif (!userContent || userContent.length === 0) {\n  console.error('❌ タスク説明が空です');\n  return {\n    messages: [\n      {\n        role: 'assistant',\n        content: JSON.stringify({\n          result: {\n            researchResults: [],\n            summary: 'エラー: タスク説明が見つかりません'\n          }\n        })\n      }\n    ]\n  };\n}\n\n// LLMに検索実行を依頼（MCPツールを使用）\nconsole.log('\\n🔎 Web検索を開始します');\n\nconst researchPrompt = `以下のタスクについて、Web検索ツール（mcp_web-search_search）を使用して詳細に調査してください:\n\n${userContent}\n\n指示:\n1. 日本語での検索を優先してください（例: 「矢崎総業 会社概要」「矢崎総業 製品」など）\n2. 複数の信頼できる情報源から情報を収集してください（最低3回の検索を実行）\n3. 具体的な数値、日付、データを含めてください\n4. 検索結果のURLを必ず記録してください\n5. 調査結果は300文字以上の詳細な要約にしてください\n\n以下の形式で結果を返してください:\nRESEARCH_START\n{\n  \"taskId\": 1,\n  \"objective\": \"タスクの目的\",\n  \"findings\": \"調査結果の詳細な要約（300文字以上、具体的な数値やデータを含む）\",\n  \"sources\": [\"実際に参照したURL1\", \"URL2\", \"URL3\"],\n  \"completionStatus\": \"completed\"\n}\nRESEARCH_END`;\n\nlet researchResult;\n\ntry {\n  const response = await model.invoke([\n    { role: 'user', content: researchPrompt }\n  ]);\n\n  const content = response.content || '';\n  console.log('\\n🤖 LLMレスポンス受信 (first 500 chars):');\n  console.log('  ' + content.substring(0, 500).split('\\n').join('\\n  '));\n  if (content.length > 500) {\n    console.log('  ... (truncated, total length: ' + content.length + ' chars)');\n  }\n\n  // RESEARCH_START/ENDマーカーで結果を抽出\n  const resultMatch = content.match(/RESEARCH_START\\s*([\\s\\S]*?)\\s*RESEARCH_END/);\n\n  if (resultMatch) {\n    researchResult = JSON.parse(resultMatch[1].trim());\n    console.log('✅ 調査結果解析成功');\n    console.log('  Objective:', researchResult.objective);\n    console.log('  Findings length:', researchResult.findings?.length || 0, 'chars');\n    console.log('  Sources count:', researchResult.sources?.length || 0);\n    if (researchResult.sources && researchResult.sources.length > 0) {\n      console.log('  Sources:');\n      researchResult.sources.forEach((src, idx) => {\n        console.log('    [' + (idx + 1) + '] ' + src);\n      });\n    }\n  } else {\n    console.warn('⚠️  RESEARCH マーカーが見つかりません、フォールバック使用');\n    // フォールバック: マーカーなしの結果\n    researchResult = {\n      taskId: 1,\n      objective: userContent.substring(0, 100) + '...',\n      findings: content.substring(0, 500),\n      sources: [],\n      completionStatus: 'completed'\n    };\n  }\n} catch (error) {\n  console.error('❌ 調査実行エラー:', error.message);\n  console.error('  Stack:', error.stack);\n  researchResult = {\n    taskId: 1,\n    objective: userContent.substring(0, 100) + '...',\n    findings: `調査中にエラーが発生しました: ${error.message}`,\n    sources: [],\n    completionStatus: 'error'\n  };\n}\n\n// 結果の構築（モックと同じフォーマット）\nconst result = {\n  result: {\n    researchResults: [researchResult],\n    summary: researchResult.completionStatus === 'completed' ? '調査が完了しました' : '調査中にエラーが発生しました'\n  }\n};\n\nconsole.log('\\n📊 調査完了');\nconsole.log('  Status:', researchResult.completionStatus);\nconsole.log('  Findings length:', researchResult.findings?.length || 0, 'chars');\nconsole.log('='.repeat(80) + '\\n');\n\nreturn {\n  messages: [\n    {\n      role: 'assistant',\n      content: JSON.stringify(result, null, 2)\n    }\n  ]\n};"
+        "function": "console.log('\\n' + '='.repeat(80));\nconsole.log('🔍 [ResearchExecution] 調査実行サーバ起動');\nconsole.log('='.repeat(80));\n\nconst messages = state.messages || [];\nconst lastMessage = messages[messages.length - 1];\n\n// ★ツール結果が既に存在するかチェック\nconst hasToolResult = messages.some(msg => {\n  return (\n    msg.role === 'tool' ||\n    msg.constructor?.name === 'ToolMessage' ||\n    msg.type === 'tool' ||\n    (msg.lc_namespace && Array.isArray(msg.lc_namespace) && msg.lc_namespace.includes('tool'))\n  );\n});\n\nconsole.log('\\n📊 状態確認:');\nconsole.log('  Total messages:', messages.length);\nconsole.log('  Has tool result:', hasToolResult);\n\nlet userContent = '';\n\n// 最初のユーザーメッセージを探す\nfor (const msg of messages) {\n  if (msg.role === 'user' && msg.content) {\n    userContent = msg.content;\n    break;\n  }\n}\n\nconsole.log('  Original task length:', userContent.length, 'chars');\n\nif (!userContent || userContent.length === 0) {\n  console.error('❌ タスク説明が空です');\n  return {\n    messages: [\n      {\n        role: 'assistant',\n        content: JSON.stringify({\n          result: {\n            researchResults: [],\n            summary: 'エラー: タスク説明が見つかりません'\n          }\n        })\n      }\n    ]\n  };\n}\n\ntry {\n  let response;\n  \n  if (!hasToolResult) {\n    // ★初回: ツール呼び出しをリクエスト\n    console.log('\\n🔎 [初回] Web検索をリクエストします');\n    \n    const researchPrompt = `以下のタスクについて、Web検索ツール（mcp__tavily-mcp__tavily-search）を使用して詳細に調査してください:\n\n${userContent}\n\n指示:\n1. 日本語での検索を優先してください\n2. 検索は1回のみ実行してください\n3. 検索結果のURLを記録してください\n\n必ずmcp__tavily-mcp__tavilyツールを1回だけ使用して情報を取得してください。`;\n    \n    response = await model.invoke([\n      { role: 'user', content: researchPrompt }\n    ]);\n  } else {\n    // ★2回目: ツール結果を使って最終回答を生成\n    console.log('\\n📝 [2回目] ツール結果を分析して最終回答を生成します');\n    \n    // メッセージ履歴全体をLLMに渡す\n    response = await model.invoke(messages);\n  }\n\n  console.log('\\n🤖 LLMレスポンス受信');\n  console.log('  Response type:', typeof response);\n  console.log('  Has tool_calls:', !!response.tool_calls);\n  if (response.tool_calls && response.tool_calls.length > 0) {\n    console.log('  Tool calls count:', response.tool_calls.length);\n    response.tool_calls.forEach((tc, idx) => {\n      console.log(`  [${idx + 1}] ${tc.name}`);\n    });\n  } else if (response.content) {\n    console.log('  Content length:', response.content.length, 'chars');\n  }\n\n  return {\n    messages: [response]\n  };\n} catch (error) {\n  console.error('❌ 調査実行エラー:', error.message);\n  console.error('  Stack:', error.stack);\n  return {\n    messages: [\n      {\n        role: 'assistant',\n        content: `調査中にエラーが発生しました: ${error.message}`\n      }\n    ]\n  };\n}"
+      }
+    },
+    {
+      "id": "tools",
+      "type": "ToolNode",
+      "useMcpServers": true
+    },
+    {
+      "id": "result_formatter",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "type": "typeof AgentState.State"
+          }
+        ],
+        "function": "console.log('\\n📋 [result_formatter] 調査結果のフォーマット開始');\n\nconst messages = state.messages || [];\nlet toolResults = [];\nlet llmResponse = '';\n\n// デバッグ: メッセージの構造を確認\nconsole.log('  Total messages:', messages.length);\nif (messages.length > 0) {\n  console.log('  Last 3 messages:');\n  for (let i = Math.max(0, messages.length - 3); i < messages.length; i++) {\n    const msg = messages[i];\n    console.log(`    [${i}] type=${msg.constructor?.name || typeof msg}, role=${msg.role}, hasContent=${!!msg.content}`);\n  }\n}\n\n// ツール実行結果とLLMレスポンスを収集\nfor (let i = messages.length - 1; i >= 0; i--) {\n  const msg = messages[i];\n\n  // ★改善: ToolMessageの判定を拡張\n  const isToolMessage = (\n    msg.role === 'tool' ||\n    msg.constructor?.name === 'ToolMessage' ||\n    msg.type === 'tool' ||\n    (msg.lc_namespace && msg.lc_namespace.includes('tool'))\n  );\n\n  if (isToolMessage) {\n    console.log(`  ✓ Found tool message at index ${i}`);\n    toolResults.unshift(msg.content);\n  } else if (msg.constructor?.name === 'AIMessage') {\n    // ★AIMessageの場合、contentがあればLLM回答として記録\n    if (msg.content && typeof msg.content === 'string' && msg.content.length > 0) {\n      console.log(`  ✓ Found AI response at index ${i}, length:`, msg.content.length);\n      llmResponse = msg.content;\n      break;\n    }\n  } else if (msg.role === 'assistant' && msg.content && typeof msg.content === 'string') {\n    console.log(`  ✓ Found assistant response at index ${i}`);\n    llmResponse = msg.content;\n    break;\n  }\n}\n\nconsole.log('  Tool results count:', toolResults.length);\nconsole.log('  LLM response length:', llmResponse.length, 'chars');\n\n// ツール結果の内容をサマリー表示\nif (toolResults.length > 0) {\n  console.log('  Tool results preview:');\n  toolResults.slice(0, 3).forEach((result, idx) => {\n    const preview = typeof result === 'string' ? result.substring(0, 100) : JSON.stringify(result).substring(0, 100);\n    console.log(`    [${idx}] ${preview}...`);\n  });\n}\n\n// 調査結果の構築\nconst lastMessage = messages[messages.length - 1];\nlet userContent = '';\n\n// 元のタスク説明を探す\nfor (const msg of messages) {\n  if (msg.role === 'user' && msg.content) {\n    userContent = msg.content;\n    break;\n  }\n}\n\nlet findings = '';\nconst sources = [];\n\n// ツール結果からURLを抽出\nfor (const result of toolResults) {\n  try {\n    const parsed = typeof result === 'string' ? JSON.parse(result) : result;\n    if (parsed.results && Array.isArray(parsed.results)) {\n      parsed.results.forEach(r => {\n        if (r.url) sources.push(r.url);\n      });\n    }\n  } catch (e) {\n    // JSON解析失敗は無視\n  }\n}\n\n// ★改善: ツール結果とLLM回答の両方を考慮\nif (toolResults.length === 0 && llmResponse) {\n  // LLMが直接回答した場合（ツールなし）\n  findings = llmResponse;\n  console.log('  ✓ LLMの直接回答を使用');\n} else if (toolResults.length > 0) {\n  // ★LLMの最終回答がない場合は、ツール結果を直接使用\n  if (!llmResponse || llmResponse.length === 0) {\n    // ツール結果を簡潔にまとめる\n    findings = `以下の情報源から調査しました:\\n\\n${toolResults.slice(0, 3).map((r, i) => `${i+1}. ${typeof r === 'string' ? r.substring(0, 200) : JSON.stringify(r).substring(0, 200)}...`).join('\\n\\n')}`;\n    console.log('  ⚠️ LLM回答なし、ツール結果を直接使用');\n  } else {\n    findings = llmResponse;\n    console.log('  ✓ LLMの最終回答を使用');\n  }\n} else {\n  findings = '調査結果なし';\n  console.log('  ⚠️ ツール結果もLLM回答もなし');\n}\n\nconst researchResult = {\n  taskId: 1,\n  objective: userContent.substring(0, 100) + (userContent.length > 100 ? '...' : ''),\n  findings: findings || '調査結果なし',\n  sources: sources.slice(0, 10), // 最大10件\n  completionStatus: findings ? 'completed' : 'error'\n};\n\nconst result = {\n  result: {\n    researchResults: [researchResult],\n    summary: researchResult.completionStatus === 'completed' ? '調査が完了しました' : '調査中にエラーが発生しました'\n  }\n};\n\nconsole.log('\\n📊 調査完了');\nconsole.log('  Status:', researchResult.completionStatus);\nconsole.log('  Findings length:', researchResult.findings.length, 'chars');\nconsole.log('  Sources count:', researchResult.sources.length);\nconsole.log('='.repeat(80) + '\\n');\n\nreturn {\n  messages: [\n    {\n      role: 'assistant',\n      content: JSON.stringify(result, null, 2)\n    }\n  ]\n};"
       }
     }
   ],
@@ -90,7 +106,29 @@
       "to": "research_executor"
     },
     {
+      "type": "conditional",
       "from": "research_executor",
+      "condition": {
+        "name": "needsTools",
+        "handler": {
+          "parameters": [
+            {
+              "name": "state",
+              "type": "typeof AgentState.State"
+            }
+          ],
+          "output": "string",
+          "function": "try {\n  const lastMessage = state.messages[state.messages.length - 1];\n  \n  console.log('\\n🔀 [needsTools] 条件判定');\n  console.log('  Total messages:', state.messages.length);\n  \n  // ★ツール実行結果（ToolMessage）の数をカウント\n  const toolResultCount = state.messages.filter(msg => {\n    return (\n      msg.role === 'tool' ||\n      msg.constructor?.name === 'ToolMessage' ||\n      msg.type === 'tool' ||\n      (msg.lc_namespace && Array.isArray(msg.lc_namespace) && msg.lc_namespace.includes('tool'))\n    );\n  }).length;\n  \n  console.log('  Tool result count:', toolResultCount);\n  \n  // ★既にツール実行結果がある場合は終了\n  if (toolResultCount >= 1) {\n    console.log('  ✓ ツール実行結果あり (', toolResultCount, '件)、result_formatterへ');\n    return 'result_formatter';\n  }\n  \n  // ★最初のツール呼び出し（tool_callsがあるが、まだ実行されていない）\n  if (\n    lastMessage &&\n    typeof lastMessage === 'object' &&\n    lastMessage.tool_calls &&\n    Array.isArray(lastMessage.tool_calls) &&\n    lastMessage.tool_calls.length > 0\n  ) {\n    console.log('  ✓ ツール呼び出しを検出 (初回)、toolsノードへ');\n    return 'tools';\n  }\n  \n  console.log('  ✓ ツール不要、result_formatterへ');\n  return 'result_formatter';\n} catch (error) {\n  console.error('🔀 [needsTools] エラー:', error);\n  return 'result_formatter';\n}",
+          "possibleTargets": ["tools", "result_formatter"]
+        }
+      }
+    },
+    {
+      "from": "tools",
+      "to": "research_executor"
+    },
+    {
+      "from": "result_formatter",
       "to": "__end__"
     }
   ],
