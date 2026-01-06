@@ -87,8 +87,16 @@ export class WorkflowExecutor {
       this.sendMessage({ command: 'executionStarted' });
 
       // Execute workflow
+      // Convert user input to a message format
       const result = await session.engine.invoke(
-        { input },
+        {
+          messages: [
+            {
+              role: 'user',
+              content: input
+            }
+          ]
+        },
         {
           configurable: {
             thread_id: session.threadId
