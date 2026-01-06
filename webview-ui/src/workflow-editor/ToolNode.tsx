@@ -204,7 +204,7 @@ export const ToolNode = memo(({ data, id }: NodeProps) => {
           </div>
         )}
 
-        {/* A2A Clients Status */}
+        {/* A2A Servers Status */}
         {nodeData.useA2AClients !== undefined && (
           <div
             style={{
@@ -222,7 +222,7 @@ export const ToolNode = memo(({ data, id }: NodeProps) => {
             }}
           >
             <span>{nodeData.useA2AClients ? '✓' : '✕'}</span>
-            <span>A2A Clients: {nodeData.useA2AClients ? 'Enabled' : 'Disabled'}</span>
+            <span>A2A Binding: {nodeData.useA2AClients ? 'Enabled' : 'Disabled'}</span>
           </div>
         )}
 

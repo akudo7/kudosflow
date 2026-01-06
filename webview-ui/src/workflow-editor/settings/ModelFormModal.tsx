@@ -307,11 +307,11 @@ export const ModelFormModal: React.FC<Props> = ({
                 onChange={(e) => setBindA2AClients(e.target.checked)}
                 style={checkboxStyle}
               />
-              <span>Bind A2A Clients</span>
+              <span>Bind A2A Servers</span>
             </label>
             <div style={hintStyle}>
-              Bind A2A clients to this model
-              {!a2aClientsExist && ' (No A2A clients configured)'}
+              Bind A2A Servers to this model
+              {!a2aClientsExist && ' (No A2A Servers configured)'}
             </div>
           </div>
 
