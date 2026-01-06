@@ -15,8 +15,8 @@ A VSCode extension that integrates React Flow for visual workflow editing. Build
 </p>
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=-54GrId1jDc">
-    <img src="https://img.youtube.com/vi/-54GrId1jDc/maxresdefault.jpg" alt="Kudosflow Demo" width="600">
+  <a href="https://www.youtube.com/watch?v=usKzPu8Fxkg">
+    <img src="https://www.youtube.com/watch?v=usKzPu8Fxkg/maxresdefault.jpg" alt="Kudosflow Demo" width="600">
   </a>
   <br>
   <em>Click to watch the demo video</em>
@@ -30,6 +30,7 @@ A VSCode extension that integrates React Flow for visual workflow editing. Build
 - 🔌 **Node-Based Architecture**: Connect nodes to build complex workflows
 - 💾 **JSON Storage**: Workflows are stored as JSON files in your workspace
 - 🔄 **A2A Integration**: Support for Agent-to-Agent communication workflows
+- 🔄 **MCP Integration**: Support for MCP communication workflows
 - 🎯 **Context Menu Integration**: Right-click JSON files to open in workflow editor
 - 🚀 **Live Preview**: Real-time workflow execution and testing
 
