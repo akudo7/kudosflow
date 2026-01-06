@@ -52,6 +52,7 @@ export interface WorkflowNode {
   id: string;
   type?: string;  // "ToolNode" or undefined (function node)
   useA2AClients?: boolean;  // For ToolNode
+  useMcpServers?: boolean;  // For ToolNode MCP binding
   handler?: {
     parameters: Array<{ name: string; type: string; modelRef?: string }>;
     function: string;
@@ -100,6 +101,7 @@ export interface CustomNodeData extends Record<string, unknown> {
   label: string;
   nodeType?: string;  // "ToolNode" or undefined
   useA2AClients?: boolean;  // For ToolNode
+  useMcpServers?: boolean;  // For ToolNode MCP binding
   function?: string;
   parameters?: Array<{ name: string; type: string; modelRef?: string }>;
   ends?: string[];

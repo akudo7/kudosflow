@@ -63,7 +63,7 @@
     "install:all": "yarn install && cd webview-ui && yarn install",
     "clean": "rm -rf out .tsbuildinfo webview-ui/build",
     "clean:vsix": "rm -f *.vsix *.vsix.backup",
-    "build": "yarn run build:extension && yarn run build:webview",
+    "build": "yarn run build:webview && yarn run build:extension",
     "build:extension": "rm -f .tsbuildinfo && tsc -p ./",
     "build:webview": "cd webview-ui && yarn run build",
     "watch": "tsc -watch -p ./",

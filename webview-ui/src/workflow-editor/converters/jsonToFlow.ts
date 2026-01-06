@@ -11,6 +11,9 @@ export function jsonToFlow(workflow: WorkflowConfig): {
   const nodes: ReactFlowNode[] = [];
   const edges: ReactFlowEdge[] = [];
 
+  // Extract models for ToolNode MCP binding detection
+  const workflowModels = workflow.models || [];
+
   // Track special nodes referenced in edges
   const specialNodes = new Set<string>();
   workflow.edges.forEach(edge => {
@@ -53,9 +56,11 @@ export function jsonToFlow(workflow: WorkflowConfig): {
         label: node.id,
         nodeType: node.type,
         useA2AClients: node.useA2AClients,
+        useMcpServers: (node as any).useMcpServers, // Add useMcpServers support
         function: node.handler?.function,
         parameters: node.handler?.parameters,
         ends: node.ends,
+        models: workflowModels, // Pass models for MCP binding detection
       },
     });
   });

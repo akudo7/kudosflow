@@ -14,10 +14,16 @@ export const ToolNode = memo(({ data, id }: NodeProps) => {
   const showToolNodeBadge = true; // Always show for ToolNode
   const showA2ABadge = nodeData.useA2AClients === true;
 
-  // Check if any parameter uses a model with MCP binding
+  // Check MCP binding: either useMcpServers flag OR any parameter uses a model with MCP binding
   let hasModelWithMCP = false;
 
-  if (nodeData.parameters && nodeData.models) {
+  // Direct ToolNode MCP flag
+  if (nodeData.useMcpServers === true) {
+    hasModelWithMCP = true;
+  }
+
+  // Or check if any parameter uses a model with MCP binding
+  if (!hasModelWithMCP && nodeData.parameters && nodeData.models) {
     const modelRefs = nodeData.parameters
       .map(p => p.modelRef)
       .filter(ref => ref !== undefined && ref !== '');
@@ -217,6 +223,26 @@ export const ToolNode = memo(({ data, id }: NodeProps) => {
           >
             <span>{nodeData.useA2AClients ? '✓' : '✕'}</span>
             <span>A2A Clients: {nodeData.useA2AClients ? 'Enabled' : 'Disabled'}</span>
+          </div>
+        )}
+
+        {/* MCP Binding Status */}
+        {hasModelWithMCP && (
+          <div
+            style={{
+              fontSize: '12px',
+              color: '#3498db',
+              background: 'rgba(52, 152, 219, 0.15)',
+              padding: '6px 10px',
+              borderRadius: '4px',
+              border: '1px solid #3498db',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            <span>✓</span>
+            <span>MCP Binding: Enabled</span>
           </div>
         )}
 
