@@ -49,8 +49,7 @@
         "parameters": [
           {
             "name": "state",
-            "parameterType": "state",
-            "stateType": "typeof TestWorkflowState.State"
+            "type": "typeof TestWorkflowState.State"
           }
         ],
         "function": "const userInput = interrupt('What is your name?');\n\nif (!userInput) {\n  return {\n    messages: ['Name was not entered'],\n    userName: ''\n  };\n}\n\nconst userName = String(userInput).trim();\nconst result = {\n  messages: [`Hello ${userName}!`],\n  userName: userName\n};\n\nreturn result;"
@@ -62,8 +61,7 @@
         "parameters": [
           {
             "name": "state",
-            "parameterType": "state",
-            "stateType": "typeof TestWorkflowState.State"
+            "type": "typeof TestWorkflowState.State"
           }
         ],
         "function": "const userInput = interrupt('What is your occupation?');\n\nif (!userInput) {\n  return {\n    messages: ['Occupation was not entered'],\n    userJob: ''\n  };\n}\n\nconst userJob = String(userInput).trim();\nconst result = {\n  messages: [`Occupation: ${userJob} received. Generating advice...`],\n  userJob: userJob\n};\n\nreturn result;"
@@ -75,12 +73,11 @@
         "parameters": [
           {
             "name": "state",
-            "parameterType": "state",
-            "stateType": "typeof TestWorkflowState.State"
+            "type": "typeof TestWorkflowState.State"
           },
           {
             "name": "model",
-            "parameterType": "model",
+            "type": "ModelConfig",
             "modelRef": "adviceModel"
           }
         ],
@@ -93,8 +90,7 @@
         "parameters": [
           {
             "name": "state",
-            "parameterType": "state",
-            "stateType": "typeof TestWorkflowState.State"
+            "type": "typeof TestWorkflowState.State"
           }
         ],
         "function": "const adviceMessage = `[Advice for ${state.userName} (${state.userJob})]\\n\\n${state.advice}`;\n\ninterrupt(adviceMessage);\n\nconsole.log('🔍 Final result:', adviceMessage);\n\nreturn {\n  messages: [adviceMessage, 'Process completed']\n};"

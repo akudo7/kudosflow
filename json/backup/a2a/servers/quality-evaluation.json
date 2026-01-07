@@ -57,12 +57,11 @@
         "parameters": [
           {
             "name": "state",
-            "parameterType": "state",
-            "stateType": "typeof AgentState.State"
+            "type": "typeof AgentState.State"
           },
           {
             "name": "model",
-            "parameterType": "model",
+            "type": "ModelConfig",
             "modelRef": "evaluationModel"
           }
         ],

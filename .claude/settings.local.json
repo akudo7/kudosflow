@@ -41,7 +41,8 @@
       "Bash(jq:*)",
       "Bash(yarn run build:extension:*)",
       "Bash(python3:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []

@@ -58,32 +58,7 @@ export function jsonToFlow(workflow: WorkflowConfig): {
         useA2AClients: node.useA2AClients,
         useMcpServers: (node as any).useMcpServers, // Add useMcpServers support
         function: node.handler?.function,
-        parameters: (node.handler?.parameters || []).map((param: any) => {
-          // Handle legacy format (both type and modelRef fields)
-          if (param.type && param.modelRef) {
-            return {
-              name: param.name,
-              parameterType: "model" as const,
-              modelRef: param.modelRef
-            };
-          }
-          if (param.type && !param.parameterType) {
-            return {
-              name: param.name,
-              parameterType: "state" as const,
-              stateType: param.type
-            };
-          }
-          if (param.modelRef && !param.parameterType) {
-            return {
-              name: param.name,
-              parameterType: "model" as const,
-              modelRef: param.modelRef
-            };
-          }
-          // New format or handle existing new format
-          return param;
-        }),
+        parameters: node.handler?.parameters || [],
         ends: node.ends,
         models: workflowModels, // Pass models for MCP binding detection
       },
@@ -138,31 +113,7 @@ export function jsonToFlow(workflow: WorkflowConfig): {
                 name: edge.condition.name || '',
                 handler: {
                   function: edge.condition.handler?.function || '',
-                  parameters: (edge.condition.handler?.parameters || []).map((param: any) => {
-                    // Handle legacy format for conditional edge parameters
-                    if (param.type && param.modelRef) {
-                      return {
-                        name: param.name,
-                        parameterType: "model" as const,
-                        modelRef: param.modelRef
-                      };
-                    }
-                    if (param.type && !param.parameterType) {
-                      return {
-                        name: param.name,
-                        parameterType: "state" as const,
-                        stateType: param.type
-                      };
-                    }
-                    if (param.modelRef && !param.parameterType) {
-                      return {
-                        name: param.name,
-                        parameterType: "model" as const,
-                        modelRef: param.modelRef
-                      };
-                    }
-                    return param;
-                  })
+                  parameters: edge.condition.handler?.parameters || []
                 }
               } : undefined,
               possibleTargets: possibleTargets,

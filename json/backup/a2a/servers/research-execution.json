@@ -71,12 +71,11 @@
         "parameters": [
           {
             "name": "state",
-            "parameterType": "state",
-            "stateType": "typeof AgentState.State"
+            "type": "typeof AgentState.State"
           },
           {
             "name": "model",
-            "parameterType": "model",
+            "type": "ModelConfig",
             "modelRef": "researchModel"
           }
         ],
@@ -94,8 +93,7 @@
         "parameters": [
           {
             "name": "state",
-            "parameterType": "state",
-            "stateType": "typeof AgentState.State"
+            "type": "typeof AgentState.State"
           }
         ],
         "function": "console.log('\\n📋 [result_formatter] 調査結果のフォーマット開始');\n\nconst messages = state.messages || [];\nlet toolResults = [];\nlet llmResponse = '';\n\n// デバッグ: メッセージの構造を確認\nconsole.log('  Total messages:', messages.length);\nif (messages.length > 0) {\n  console.log('  Last 3 messages:');\n  for (let i = Math.max(0, messages.length - 3); i < messages.length; i++) {\n    const msg = messages[i];\n    console.log(`    [${i}] type=${msg.constructor?.name || typeof msg}, role=${msg.role}, hasContent=${!!msg.content}`);\n  }\n}\n\n// ツール実行結果とLLMレスポンスを収集\nfor (let i = messages.length - 1; i >= 0; i--) {\n  const msg = messages[i];\n\n  // ★改善: ToolMessageの判定を拡張\n  const isToolMessage = (\n    msg.role === 'tool' ||\n    msg.constructor?.name === 'ToolMessage' ||\n    msg.type === 'tool' ||\n    (msg.lc_namespace && msg.lc_namespace.includes('tool'))\n  );\n\n  if (isToolMessage) {\n    console.log(`  ✓ Found tool message at index ${i}`);\n    toolResults.unshift(msg.content);\n  } else if (msg.constructor?.name === 'AIMessage') {\n    // ★AIMessageの場合、contentがあればLLM回答として記録\n    if (msg.content && typeof msg.content === 'string' && msg.content.length > 0) {\n      console.log(`  ✓ Found AI response at index ${i}, length:`, msg.content.length);\n      llmResponse = msg.content;\n      break;\n    }\n  } else if (msg.role === 'assistant' && msg.content && typeof msg.content === 'string') {\n    console.log(`  ✓ Found assistant response at index ${i}`);\n    llmResponse = msg.content;\n    break;\n  }\n}\n\nconsole.log('  Tool results count:', toolResults.length);\nconsole.log('  LLM response length:', llmResponse.length, 'chars');\n\n// ツール結果の内容をサマリー表示\nif (toolResults.length > 0) {\n  console.log('  Tool results preview:');\n  toolResults.slice(0, 3).forEach((result, idx) => {\n    const preview = typeof result === 'string' ? result.substring(0, 100) : JSON.stringify(result).substring(0, 100);\n    console.log(`    [${idx}] ${preview}...`);\n  });\n}\n\n// 調査結果の構築\nconst lastMessage = messages[messages.length - 1];\nlet userContent = '';\n\n// 元のタスク説明を探す\nfor (const msg of messages) {\n  if (msg.role === 'user' && msg.content) {\n    userContent = msg.content;\n    break;\n  }\n}\n\nlet findings = '';\nconst sources = [];\n\n// ツール結果からURLを抽出\nfor (const result of toolResults) {\n  try {\n    const parsed = typeof result === 'string' ? JSON.parse(result) : result;\n    if (parsed.results && Array.isArray(parsed.results)) {\n      parsed.results.forEach(r => {\n        if (r.url) sources.push(r.url);\n      });\n    }\n  } catch (e) {\n    // JSON解析失敗は無視\n  }\n}\n\n// ★改善: ツール結果とLLM回答の両方を考慮\nif (toolResults.length === 0 && llmResponse) {\n  // LLMが直接回答した場合（ツールなし）\n  findings = llmResponse;\n  console.log('  ✓ LLMの直接回答を使用');\n} else if (toolResults.length > 0) {\n  // ★LLMの最終回答がない場合は、ツール結果を直接使用\n  if (!llmResponse || llmResponse.length === 0) {\n    // ツール結果を簡潔にまとめる\n    findings = `以下の情報源から調査しました:\\n\\n${toolResults.slice(0, 3).map((r, i) => `${i+1}. ${typeof r === 'string' ? r.substring(0, 200) : JSON.stringify(r).substring(0, 200)}...`).join('\\n\\n')}`;\n    console.log('  ⚠️ LLM回答なし、ツール結果を直接使用');\n  } else {\n    findings = llmResponse;\n    console.log('  ✓ LLMの最終回答を使用');\n  }\n} else {\n  findings = '調査結果なし';\n  console.log('  ⚠️ ツール結果もLLM回答もなし');\n}\n\nconst researchResult = {\n  taskId: 1,\n  objective: userContent.substring(0, 100) + (userContent.length > 100 ? '...' : ''),\n  findings: findings || '調査結果なし',\n  sources: sources.slice(0, 10), // 最大10件\n  completionStatus: findings ? 'completed' : 'error'\n};\n\nconst result = {\n  result: {\n    researchResults: [researchResult],\n    summary: researchResult.completionStatus === 'completed' ? '調査が完了しました' : '調査中にエラーが発生しました'\n  }\n};\n\nconsole.log('\\n📊 調査完了');\nconsole.log('  Status:', researchResult.completionStatus);\nconsole.log('  Findings length:', researchResult.findings.length, 'chars');\nconsole.log('  Sources count:', researchResult.sources.length);\nconsole.log('='.repeat(80) + '\\n');\n\nreturn {\n  messages: [\n    {\n      role: 'assistant',\n      content: JSON.stringify(result, null, 2)\n    }\n  ]\n};"
@@ -116,8 +114,7 @@
           "parameters": [
             {
               "name": "state",
-              "parameterType": "state",
-              "stateType": "typeof AgentState.State"
+              "type": "typeof AgentState.State"
             }
           ],
           "output": "string",

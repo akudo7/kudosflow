@@ -4,6 +4,27 @@ All notable changes to the "bolt-new" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [2.0.0] - 2026-01-07
+
+### Breaking Changes
+
+- **Parameter Format**: Migrated to new parameter format with explicit `parameterType` field
+  - State parameters now require: `{ name, parameterType: "state", stateType }`
+  - Model parameters now require: `{ name, parameterType: "model", modelRef }`
+  - Legacy format support removed - old JSON files will fail to load
+  - See migration guide in [docs/refactoring/parameter-format-migration.md](docs/refactoring/parameter-format-migration.md)
+
+### Changed
+
+- Removed legacy parameter format conversion from jsonToFlow converter
+- Updated all type definitions to use discriminated unions
+- Updated UI to enforce new parameter structure
+- Updated dependency: @kudos/scene-graph-manager to v2.0.0
+
+### Migration Guide
+
+Existing workflow JSON files must be manually updated. See [docs/refactoring/parameter-format-migration/phase5-json-migration.md](docs/refactoring/parameter-format-migration/phase5-json-migration.md) for detailed instructions.
+
 ## [Unreleased]
 
 ### Phase 12: Project Reduction and Optimization (減量化)

@@ -39,8 +39,7 @@
         "parameters": [
           {
             "name": "state",
-            "parameterType": "state",
-            "stateType": "typeof InterruptWorkflowState.State"
+            "type": "typeof InterruptWorkflowState.State"
           }
         ],
         "function": "const userInput = interrupt('What is your name?');\n\nif (!userInput) {\n  return {\n    messages: ['Name was not entered'],\n    lastUserInput: '',\n    userApproval: null\n  };\n}\n\nconst userName = String(userInput).trim();\nconst result = {\n  messages: [`Hello ${userName}!`],\n  lastUserInput: userName,\n  userApproval: null\n};\n\nreturn result;"
@@ -52,8 +51,7 @@
         "parameters": [
           {
             "name": "state",
-            "parameterType": "state",
-            "stateType": "typeof InterruptWorkflowState.State"
+            "type": "typeof InterruptWorkflowState.State"
           }
         ],
         "function": "const userInput = interrupt('What is your occupation?');\n\nif (!userInput) {\n  return {\n    messages: ['Occupation was not entered'],\n    lastUserInput: '',\n    userApproval: null\n  };\n}\n\nconst userJob = String(userInput).trim();\nconst result = {\n  messages: [`Occupation: ${userJob}`, 'Process completed'],\n  lastUserInput: userJob,\n  userApproval: null\n};\n\nreturn result;"
@@ -65,8 +63,7 @@
         "parameters": [
           {
             "name": "state",
-            "parameterType": "state",
-            "stateType": "typeof InterruptWorkflowState.State"
+            "type": "typeof InterruptWorkflowState.State"
           }
         ],
         "function": "console.log('🔍 Final result:', state.messages);\nreturn {};"
