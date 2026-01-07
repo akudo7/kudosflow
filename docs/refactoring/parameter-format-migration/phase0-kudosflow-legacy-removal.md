@@ -119,4 +119,4 @@ parameters: edge.condition.handler?.parameters || []
 
 ---
 
-**Related Main Plan**: [parameter-format-migration.md](./parameter-format-migration.md)
+**Related Main Plan**: [parameter-format-migration.md](../parameter-format-migration.md)

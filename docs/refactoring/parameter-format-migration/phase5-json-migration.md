@@ -261,4 +261,4 @@ if (validateWorkflow(filePath)) {
 
 **Previous Phase**: [phase4-scenegraphmanager-docs.md](./phase4-scenegraphmanager-docs.md)
 **Next Phase**: [phase6-release.md](./phase6-release.md)
-**Related Main Plan**: [parameter-format-migration.md](./parameter-format-migration.md)
+**Related Main Plan**: [parameter-format-migration.md](../parameter-format-migration.md)

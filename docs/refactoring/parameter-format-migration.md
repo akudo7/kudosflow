@@ -42,7 +42,7 @@ This document outlines the refactoring plan to migrate from the legacy parameter
 
 ### Phase 0: KudosFlow - Remove Legacy Support
 **Status**: ⏳ Pending (after /clear)
-**Details**: [phase0-kudosflow-legacy-removal.md](./phase0-kudosflow-legacy-removal.md)
+**Details**: [phase0-kudosflow-legacy-removal.md](./parameter-format-migration/phase0-kudosflow-legacy-removal.md)
 
 Remove legacy format conversion logic from `jsonToFlow.ts` converter.
 
@@ -54,7 +54,7 @@ Remove legacy format conversion logic from `jsonToFlow.ts` converter.
 
 ### Phase 1: SceneGraphManager - Update Type Definitions
 **Status**: ⏳ Pending
-**Details**: [phase1-scenegraphmanager-types.md](./phase1-scenegraphmanager-types.md)
+**Details**: [phase1-scenegraphmanager-types.md](./parameter-format-migration/phase1-scenegraphmanager-types.md)
 
 Update `NodeFunctionParameter` from interface to discriminated union type.
 
@@ -64,7 +64,7 @@ Update `NodeFunctionParameter` from interface to discriminated union type.
 
 ### Phase 2: SceneGraphManager - Update Workflow Engine
 **Status**: ⏳ Pending
-**Details**: [phase2-scenegraphmanager-workflow.md](./phase2-scenegraphmanager-workflow.md)
+**Details**: [phase2-scenegraphmanager-workflow.md](./parameter-format-migration/phase2-scenegraphmanager-workflow.md)
 
 Update model detection and parameter processing logic.
 
@@ -74,7 +74,7 @@ Update model detection and parameter processing logic.
 
 ### Phase 3: SceneGraphManager - Update Tests
 **Status**: ⏳ Pending
-**Details**: [phase3-scenegraphmanager-tests.md](./phase3-scenegraphmanager-tests.md)
+**Details**: [phase3-scenegraphmanager-tests.md](./parameter-format-migration/phase3-scenegraphmanager-tests.md)
 
 Update existing tests and add new parameter validation tests.
 
@@ -84,7 +84,7 @@ Update existing tests and add new parameter validation tests.
 
 ### Phase 4: SceneGraphManager - Update Documentation
 **Status**: ⏳ Pending
-**Details**: [phase4-scenegraphmanager-docs.md](./phase4-scenegraphmanager-docs.md)
+**Details**: [phase4-scenegraphmanager-docs.md](./parameter-format-migration/phase4-scenegraphmanager-docs.md)
 
 Update CLAUDE.md, README.md, and code comments.
 
@@ -94,7 +94,7 @@ Update CLAUDE.md, README.md, and code comments.
 
 ### Phase 5: Migrate JSON Workflow Files
 **Status**: ⏳ Pending
-**Details**: [phase5-json-migration.md](./phase5-json-migration.md)
+**Details**: [phase5-json-migration.md](./parameter-format-migration/phase5-json-migration.md)
 
 Manually convert all existing workflow JSON files to new format.
 
@@ -104,7 +104,7 @@ Manually convert all existing workflow JSON files to new format.
 
 ### Phase 6: Release and Version Management
 **Status**: ⏳ Pending
-**Details**: [phase6-release.md](./phase6-release.md)
+**Details**: [phase6-release.md](./parameter-format-migration/phase6-release.md)
 
 Coordinate v2.0.0 releases for both projects with proper documentation.
 

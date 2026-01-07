@@ -132,4 +132,4 @@ If integration tests exist (e.g., `workflow.integration.test.ts`):
 
 **Previous Phase**: [phase2-scenegraphmanager-workflow.md](./phase2-scenegraphmanager-workflow.md)
 **Next Phase**: [phase4-scenegraphmanager-docs.md](./phase4-scenegraphmanager-docs.md)
-**Related Main Plan**: [parameter-format-migration.md](./parameter-format-migration.md)
+**Related Main Plan**: [parameter-format-migration.md](../parameter-format-migration.md)

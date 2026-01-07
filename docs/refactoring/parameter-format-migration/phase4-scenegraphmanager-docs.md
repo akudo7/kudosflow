@@ -185,4 +185,4 @@ export type NodeFunctionParameter = ...
 
 **Previous Phase**: [phase3-scenegraphmanager-tests.md](./phase3-scenegraphmanager-tests.md)
 **Next Phase**: [phase5-json-migration.md](./phase5-json-migration.md)
-**Related Main Plan**: [parameter-format-migration.md](./parameter-format-migration.md)
+**Related Main Plan**: [parameter-format-migration.md](../parameter-format-migration.md)

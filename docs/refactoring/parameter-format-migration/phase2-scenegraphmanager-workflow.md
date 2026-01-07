@@ -122,4 +122,4 @@ funcDef.parameters.forEach((param) => {
 
 **Previous Phase**: [phase1-scenegraphmanager-types.md](./phase1-scenegraphmanager-types.md)
 **Next Phase**: [phase3-scenegraphmanager-tests.md](./phase3-scenegraphmanager-tests.md)
-**Related Main Plan**: [parameter-format-migration.md](./parameter-format-migration.md)
+**Related Main Plan**: [parameter-format-migration.md](../parameter-format-migration.md)

@@ -86,4 +86,4 @@ export interface ConditionalEdgeFunction {
 ---
 
 **Next Phase**: [phase2-scenegraphmanager-workflow.md](./phase2-scenegraphmanager-workflow.md)
-**Related Main Plan**: [parameter-format-migration.md](./parameter-format-migration.md)
+**Related Main Plan**: [parameter-format-migration.md](../parameter-format-migration.md)

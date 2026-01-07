@@ -291,4 +291,4 @@ git push --delete origin v2.0.0
 ---
 
 **Previous Phase**: [phase5-json-migration.md](./phase5-json-migration.md)
-**Related Main Plan**: [parameter-format-migration.md](./parameter-format-migration.md)
+**Related Main Plan**: [parameter-format-migration.md](../parameter-format-migration.md)
