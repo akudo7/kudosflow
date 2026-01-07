@@ -162,3 +162,12 @@ Node operations (duplicate, delete) handle updating all anchors, params, and con
 - TypeScript compilation outputs to `out/` directory
 - The extension uses `retainContextWhenHidden: true` to preserve webview state when hidden
 - Only WorkflowEditorPanel is used for the workflow editor (legacy ComponentGalleryPanel was removed in Phase 12)
+
+## Git Repository Management
+
+The following directories are not tracked in git (defined in .gitignore):
+- `docs/`: Documentation and planning files (local only)
+- `screenshots/`: Screenshot assets
+- `scripts/`: Utility scripts
+
+These directories may exist locally for development purposes but should not be committed to the repository.
