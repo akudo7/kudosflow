@@ -39,10 +39,11 @@ export function flowToJson(
         workflowNode.handler = {
           parameters: (node.data.parameters || []).map((param: any) => ({
             name: param.name,
+            parameterType: param.parameterType,
             ...(param.parameterType === "state"
-              ? { type: param.stateType }
+              ? { stateType: param.stateType }
               : { modelRef: param.modelRef })
-          })) as any, // Legacy format for JSON output
+          })),
           function: node.data.function || '',
         };
       }
@@ -82,13 +83,14 @@ export function flowToJson(
                 handler: {
                   parameters: (edge.data.condition.handler?.parameters || []).map((param: any) => ({
                     name: param.name,
+                    parameterType: param.parameterType,
                     ...(param.parameterType === "state"
-                      ? { type: param.stateType }
+                      ? { stateType: param.stateType }
                       : { modelRef: param.modelRef })
-                  })) as any, // Legacy format for JSON output
+                  })),
                   function: edge.data.condition.handler?.function || '',
                 },
-              } as any // Legacy format for JSON output
+              }
             : undefined,
         };
 
