@@ -54,7 +54,12 @@ export interface WorkflowNode {
   useA2AClients?: boolean;  // For ToolNode
   useMcpServers?: boolean;  // For ToolNode MCP binding
   handler?: {
-    parameters: Array<{ name: string; type: string; modelRef?: string }>;
+    parameters: Array<{
+      name: string;
+      parameterType: "state" | "model";
+      stateType?: string;
+      modelRef?: string;
+    }>;
     function: string;
   };
   ends?: string[];
@@ -64,7 +69,12 @@ export interface WorkflowNode {
 export interface ConditionalEdgeCondition {
   name: string;
   handler: {
-    parameters: Array<{ name: string; type: string; modelRef?: string }>;
+    parameters: Array<{
+      name: string;
+      parameterType: "state" | "model";
+      stateType?: string;
+      modelRef?: string;
+    }>;
     function: string;
   };
 }
@@ -103,7 +113,12 @@ export interface CustomNodeData extends Record<string, unknown> {
   useA2AClients?: boolean;  // For ToolNode
   useMcpServers?: boolean;  // For ToolNode MCP binding
   function?: string;
-  parameters?: Array<{ name: string; type: string; modelRef?: string }>;
+  parameters?: Array<{
+    name: string;
+    parameterType: "state" | "model";
+    stateType?: string;
+    modelRef?: string;
+  }>;
   ends?: string[];
   models?: ModelConfig[];  // Available models for modelRef dropdown
   onNodeNameChange?: (oldId: string, newId: string) => void;

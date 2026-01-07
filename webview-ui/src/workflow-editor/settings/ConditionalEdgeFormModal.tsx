@@ -13,11 +13,13 @@ interface ConditionalEdgeFormModalProps {
   allNodes: ReactFlowNode[];
   onSave: (updatedEdges: ReactFlowEdge[]) => void;
   onCancel: () => void;
+  stateAnnotationName?: string;
 }
 
 interface Parameter {
   name: string;
-  type: string;
+  parameterType: "state" | "model";
+  stateType?: string;
   modelRef?: string;
 }
 
@@ -27,6 +29,7 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
   allNodes,
   onSave,
   onCancel,
+  stateAnnotationName = 'AgentState',
 }) => {
   const currentCondition = edgeGroup?.[0]?.data?.condition;
   const sourceId = edgeGroup?.[0]?.source || '';
@@ -39,7 +42,8 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
   const [editingParam, setEditingParam] = useState<number | null>(null);
   const [paramForm, setParamForm] = useState<Parameter>({
     name: '',
-    type: '',
+    parameterType: 'state',
+    stateType: '',
     modelRef: '',
   });
 
@@ -58,7 +62,7 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
     setFunctionCode('');
     setError(null);
     setEditingParam(null);
-    setParamForm({ name: '', type: '', modelRef: '' });
+    setParamForm({ name: '', parameterType: 'state', stateType: `typeof ${stateAnnotationName}.State`, modelRef: '' });
   };
 
   const handleCancel = () => {
@@ -125,7 +129,7 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
 
   const handleAddParameter = () => {
     setEditingParam(parameters.length);
-    setParamForm({ name: '', type: '', modelRef: '' });
+    setParamForm({ name: '', parameterType: 'state', stateType: `typeof ${stateAnnotationName}.State`, modelRef: '' });
   };
 
   const handleEditParameter = (index: number) => {
@@ -134,7 +138,15 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
   };
 
   const handleSaveParameter = () => {
-    if (!paramForm.name.trim() || !paramForm.type.trim()) {
+    if (!paramForm.name.trim()) {
+      return;
+    }
+
+    // Validate based on parameterType
+    if (paramForm.parameterType === 'state' && !paramForm.stateType?.trim()) {
+      return;
+    }
+    if (paramForm.parameterType === 'model' && !paramForm.modelRef?.trim()) {
       return;
     }
 
@@ -142,25 +154,29 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
     if (editingParam !== null && editingParam < parameters.length) {
       newParameters[editingParam] = {
         name: paramForm.name.trim(),
-        type: paramForm.type.trim(),
-        modelRef: paramForm.modelRef?.trim() || undefined,
+        parameterType: paramForm.parameterType,
+        ...(paramForm.parameterType === 'state'
+          ? { stateType: paramForm.stateType?.trim() }
+          : { modelRef: paramForm.modelRef?.trim() }),
       };
     } else {
       newParameters.push({
         name: paramForm.name.trim(),
-        type: paramForm.type.trim(),
-        modelRef: paramForm.modelRef?.trim() || undefined,
+        parameterType: paramForm.parameterType,
+        ...(paramForm.parameterType === 'state'
+          ? { stateType: paramForm.stateType?.trim() }
+          : { modelRef: paramForm.modelRef?.trim() }),
       });
     }
 
     setParameters(newParameters);
     setEditingParam(null);
-    setParamForm({ name: '', type: '', modelRef: '' });
+    setParamForm({ name: '', parameterType: 'state', stateType: `typeof ${stateAnnotationName}.State`, modelRef: '' });
   };
 
   const handleCancelParameter = () => {
     setEditingParam(null);
-    setParamForm({ name: '', type: '', modelRef: '' });
+    setParamForm({ name: '', parameterType: 'state', stateType: `typeof ${stateAnnotationName}.State`, modelRef: '' });
   };
 
   const handleDeleteParameter = (index: number) => {
@@ -331,9 +347,13 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
                   <strong>Name:</strong> {param.name}
                 </div>
                 <div style={{ fontSize: '12px', marginBottom: '4px' }}>
-                  <strong>Type:</strong> {param.type}
+                  <strong>Type:</strong> {param.parameterType === 'state' ? 'State' : 'Model'}
                 </div>
-                {param.modelRef && (
+                {param.parameterType === 'state' ? (
+                  <div style={{ fontSize: '12px', marginBottom: '4px' }}>
+                    <strong>State Type:</strong> {param.stateType}
+                  </div>
+                ) : (
                   <div style={{ fontSize: '12px', marginBottom: '4px' }}>
                     <strong>Model Ref:</strong> {param.modelRef}
                   </div>
@@ -420,13 +440,16 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
                   >
                     Type*
                   </label>
-                  <input
-                    type="text"
-                    value={paramForm.type}
+                  <select
+                    value={paramForm.parameterType}
                     onChange={(e) =>
-                      setParamForm({ ...paramForm, type: e.target.value })
+                      setParamForm({
+                        ...paramForm,
+                        parameterType: e.target.value as "state" | "model",
+                        // Clear the other field
+                        ...(e.target.value === "state" ? { modelRef: '' } : { stateType: '' })
+                      })
                     }
-                    placeholder="e.g., string, number, typeof AgentState"
                     style={{
                       width: '100%',
                       padding: '4px 6px',
@@ -435,25 +458,59 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
                       color: 'var(--vscode-input-foreground)',
                       border: '1px solid var(--vscode-input-border)',
                       borderRadius: '2px',
-                    }}
-                  />
-                </div>
-                <div style={{ marginBottom: '8px' }}>
-                  <label
-                    style={{
-                      display: 'block',
-                      marginBottom: '4px',
-                      fontSize: '12px',
+                      cursor: 'pointer',
                     }}
                   >
-                    Model Ref (optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={paramForm.modelRef || ''}
-                    onChange={(e) =>
-                      setParamForm({ ...paramForm, modelRef: e.target.value })
-                    }
+                    <option value="state">State</option>
+                    <option value="model">Model</option>
+                  </select>
+                </div>
+                {paramForm.parameterType === 'state' ? (
+                  <div style={{ marginBottom: '8px' }}>
+                    <label
+                      style={{
+                        display: 'block',
+                        marginBottom: '4px',
+                        fontSize: '12px',
+                      }}
+                    >
+                      State Type*
+                    </label>
+                    <input
+                      type="text"
+                      value={paramForm.stateType || ''}
+                      onChange={(e) =>
+                        setParamForm({ ...paramForm, stateType: e.target.value })
+                      }
+                      placeholder={`e.g., typeof ${stateAnnotationName}.State, string, number`}
+                      style={{
+                        width: '100%',
+                        padding: '4px 6px',
+                        fontSize: '12px',
+                        backgroundColor: 'var(--vscode-input-background)',
+                        color: 'var(--vscode-input-foreground)',
+                        border: '1px solid var(--vscode-input-border)',
+                        borderRadius: '2px',
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div style={{ marginBottom: '8px' }}>
+                    <label
+                      style={{
+                        display: 'block',
+                        marginBottom: '4px',
+                        fontSize: '12px',
+                      }}
+                    >
+                      Model Ref*
+                    </label>
+                    <input
+                      type="text"
+                      value={paramForm.modelRef || ''}
+                      onChange={(e) =>
+                        setParamForm({ ...paramForm, modelRef: e.target.value })
+                      }
                     placeholder="e.g., gpt4"
                     style={{
                       width: '100%',
@@ -465,7 +522,8 @@ export const ConditionalEdgeFormModal: React.FC<ConditionalEdgeFormModalProps> =
                       borderRadius: '2px',
                     }}
                   />
-                </div>
+                  </div>
+                )}
                 <div style={{ display: 'flex', gap: '6px' }}>
                   <button
                     onClick={handleSaveParameter}

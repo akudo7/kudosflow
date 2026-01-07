@@ -8,6 +8,7 @@ interface NodeEditorDialogProps {
   nodeId: string;
   nodeData: CustomNodeData;
   onSave: (nodeId: string, updatedData: Partial<CustomNodeData>) => void;
+  stateAnnotationName?: string;
 }
 
 export const NodeEditorDialog: React.FC<NodeEditorDialogProps> = ({
@@ -16,6 +17,7 @@ export const NodeEditorDialog: React.FC<NodeEditorDialogProps> = ({
   nodeId,
   nodeData,
   onSave,
+  stateAnnotationName = 'AgentState',
 }) => {
   // Node name editing
   const [nameValue, setNameValue] = useState(nodeData.label);
@@ -26,7 +28,12 @@ export const NodeEditorDialog: React.FC<NodeEditorDialogProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Parameters editing
-  const [paramsValue, setParamsValue] = useState<Array<{ name: string; type: string; modelRef?: string }>>(
+  const [paramsValue, setParamsValue] = useState<Array<{
+    name: string;
+    parameterType: "state" | "model";
+    stateType?: string;
+    modelRef?: string;
+  }>>(
     nodeData.parameters || []
   );
   const [paramsError, setParamsError] = useState<string | null>(null);
@@ -74,9 +81,20 @@ export const NodeEditorDialog: React.FC<NodeEditorDialogProps> = ({
     setParamsValue(updatedParams);
   }, [paramsValue]);
 
-  const handleParamTypeChange = useCallback((index: number, newType: string) => {
+  const handleParamTypeToggle = useCallback((index: number, newType: "state" | "model") => {
     const updatedParams = [...paramsValue];
-    updatedParams[index] = { ...updatedParams[index], type: newType };
+    updatedParams[index] = {
+      ...updatedParams[index],
+      parameterType: newType,
+      // Clear the other field
+      ...(newType === "state" ? { modelRef: undefined } : { stateType: undefined })
+    };
+    setParamsValue(updatedParams);
+  }, [paramsValue]);
+
+  const handleParamStateTypeChange = useCallback((index: number, newStateType: string) => {
+    const updatedParams = [...paramsValue];
+    updatedParams[index] = { ...updatedParams[index], stateType: newStateType };
     setParamsValue(updatedParams);
   }, [paramsValue]);
 
@@ -84,7 +102,7 @@ export const NodeEditorDialog: React.FC<NodeEditorDialogProps> = ({
     const updatedParams = [...paramsValue];
     if (newModelRef === '') {
       const { modelRef, ...paramWithoutModelRef } = updatedParams[index];
-      updatedParams[index] = paramWithoutModelRef as { name: string; type: string; modelRef?: string };
+      updatedParams[index] = paramWithoutModelRef as typeof updatedParams[number];
     } else {
       updatedParams[index] = { ...updatedParams[index], modelRef: newModelRef };
     }
@@ -92,8 +110,8 @@ export const NodeEditorDialog: React.FC<NodeEditorDialogProps> = ({
   }, [paramsValue]);
 
   const handleAddParam = useCallback(() => {
-    setParamsValue([...paramsValue, { name: '', type: '' }]);
-  }, [paramsValue]);
+    setParamsValue([...paramsValue, { name: '', parameterType: 'state', stateType: `typeof ${stateAnnotationName}.State` }]);
+  }, [paramsValue, stateAnnotationName]);
 
   const handleRemoveParam = useCallback((index: number) => {
     setParamsValue(paramsValue.filter((_, i) => i !== index));
@@ -116,8 +134,13 @@ export const NodeEditorDialog: React.FC<NodeEditorDialogProps> = ({
         setParamsError(`Parameter ${i + 1}: ${validation.error}`);
         return;
       }
-      if (!param.type.trim()) {
-        setParamsError(`Parameter ${i + 1}: Please enter a type`);
+      // Validate based on parameterType
+      if (param.parameterType === 'state' && (!param.stateType || !param.stateType.trim())) {
+        setParamsError(`Parameter ${i + 1}: Please enter a state type`);
+        return;
+      }
+      if (param.parameterType === 'model' && (!param.modelRef || !param.modelRef.trim())) {
+        setParamsError(`Parameter ${i + 1}: Please select a model reference`);
         return;
       }
     }
@@ -328,11 +351,9 @@ export const NodeEditorDialog: React.FC<NodeEditorDialogProps> = ({
                     <label style={{ fontSize: '11px', color: 'var(--vscode-descriptionForeground)', display: 'block', marginBottom: '4px' }}>
                       Type:
                     </label>
-                    <input
-                      type="text"
-                      value={param.type}
-                      onChange={(e) => handleParamTypeChange(index, e.target.value)}
-                      placeholder="string | number | ..."
+                    <select
+                      value={param.parameterType}
+                      onChange={(e) => handleParamTypeToggle(index, e.target.value as "state" | "model")}
                       style={{
                         width: '100%',
                         padding: '4px 8px',
@@ -342,14 +363,40 @@ export const NodeEditorDialog: React.FC<NodeEditorDialogProps> = ({
                         color: 'var(--vscode-input-foreground)',
                         border: '1px solid var(--vscode-input-border)',
                         borderRadius: '2px',
-                        outline: 'none',
+                        cursor: 'pointer',
                       }}
-                    />
+                    >
+                      <option value="state">State</option>
+                      <option value="model">Model</option>
+                    </select>
                   </div>
-                  {nodeData.models && nodeData.models.length > 0 && (
-                    <div>
+                  {param.parameterType === "state" ? (
+                    <div style={{ marginBottom: '8px' }}>
                       <label style={{ fontSize: '11px', color: 'var(--vscode-descriptionForeground)', display: 'block', marginBottom: '4px' }}>
-                        Model Reference (Optional):
+                        State Type:
+                      </label>
+                      <input
+                        type="text"
+                        value={param.stateType || ''}
+                        onChange={(e) => handleParamStateTypeChange(index, e.target.value)}
+                        placeholder={`e.g., typeof ${stateAnnotationName}.State, string, number`}
+                        style={{
+                          width: '100%',
+                          padding: '4px 8px',
+                          fontSize: '12px',
+                          fontFamily: 'var(--vscode-editor-font-family)',
+                          backgroundColor: 'var(--vscode-input-background)',
+                          color: 'var(--vscode-input-foreground)',
+                          border: '1px solid var(--vscode-input-border)',
+                          borderRadius: '2px',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div style={{ marginBottom: '8px' }}>
+                      <label style={{ fontSize: '11px', color: 'var(--vscode-descriptionForeground)', display: 'block', marginBottom: '4px' }}>
+                        Model Reference:
                       </label>
                       <select
                         value={param.modelRef || ''}
@@ -367,7 +414,7 @@ export const NodeEditorDialog: React.FC<NodeEditorDialogProps> = ({
                         }}
                       >
                         <option value="">None</option>
-                        {nodeData.models.map((model) => (
+                        {nodeData.models?.map((model) => (
                           <option key={model.id} value={model.id}>
                             {model.id} ({model.config.model})
                           </option>

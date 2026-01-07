@@ -37,7 +37,12 @@ export function flowToJson(
     if (node.data.nodeType !== 'ToolNode') {
       if (node.data.function !== undefined || node.data.parameters) {
         workflowNode.handler = {
-          parameters: node.data.parameters || [],
+          parameters: (node.data.parameters || []).map((param: any) => ({
+            name: param.name,
+            ...(param.parameterType === "state"
+              ? { type: param.stateType }
+              : { modelRef: param.modelRef })
+          })) as any, // Legacy format for JSON output
           function: node.data.function || '',
         };
       }
@@ -74,12 +79,16 @@ export function flowToJson(
           condition: edge.data.condition
             ? {
                 ...edge.data.condition,
-                handler: edge.data.condition.handler || {
-                  parameters: [],
-                  output: '',
-                  function: '',
+                handler: {
+                  parameters: (edge.data.condition.handler?.parameters || []).map((param: any) => ({
+                    name: param.name,
+                    ...(param.parameterType === "state"
+                      ? { type: param.stateType }
+                      : { modelRef: param.modelRef })
+                  })) as any, // Legacy format for JSON output
+                  function: edge.data.condition.handler?.function || '',
                 },
-              }
+              } as any // Legacy format for JSON output
             : undefined,
         };
 

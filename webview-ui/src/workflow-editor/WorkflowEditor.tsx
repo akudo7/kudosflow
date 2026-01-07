@@ -527,7 +527,11 @@ export const WorkflowEditor: React.FC = () => {
         data: {
           label: 'New Node',
           implementation: '// Write code here\nreturn state;',
-          parameters: [{ name: 'state', type: 'any' }],
+          parameters: [{
+            name: 'state',
+            parameterType: 'state' as const,
+            stateType: `typeof ${workflowConfig?.stateAnnotation?.name || 'AgentState'}.State`
+          }],
           output: {},
           onNodeNameChange: handleNodeNameChangeFromNode,
           onNodeDoubleClick: handleNodeDoubleClick,
@@ -536,7 +540,7 @@ export const WorkflowEditor: React.FC = () => {
       setNodes((nds) => [...nds, newNode]);
     }
     setIsDirty(true);
-  }, [setNodes, handleNodeNameChangeFromNode, handleNodeDoubleClick]);
+  }, [setNodes, handleNodeNameChangeFromNode, handleNodeDoubleClick, workflowConfig]);
 
   // Delete selected nodes/edges
   const handleDeleteSelected = useCallback(() => {
@@ -928,6 +932,7 @@ export const WorkflowEditor: React.FC = () => {
           setShowConditionalModal(false);
           setEditingEdgeGroup(null);
         }}
+        stateAnnotationName={workflowConfig?.stateAnnotation?.name}
       />
       {selectedNodeForEditor && (
         <NodeEditorDialog
@@ -936,6 +941,7 @@ export const WorkflowEditor: React.FC = () => {
           nodeId={selectedNodeForEditor.nodeId}
           nodeData={selectedNodeForEditor.nodeData}
           onSave={handleSaveNodeChanges}
+          stateAnnotationName={workflowConfig?.stateAnnotation?.name}
         />
       )}
       {showEdgeTypeDialog && (

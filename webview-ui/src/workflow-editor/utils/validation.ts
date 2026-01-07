@@ -209,6 +209,42 @@ export function validateParameterName(
 }
 
 /**
+ * Validate complete parameter object (new format)
+ * @param param - The parameter object to validate
+ * @param allParams - All existing parameters
+ * @param index - Index of the parameter being validated
+ * @returns Error message or null if valid
+ */
+export function validateParameter(
+  param: { name: string; parameterType: "state" | "model"; stateType?: string; modelRef?: string },
+  allParams: any[],
+  index: number
+): string | null {
+  // Validate name
+  const nameError = validateParameterName(param.name, allParams, index);
+  if (!nameError.valid) {
+    return nameError.error || "Invalid parameter name";
+  }
+
+  // Validate parameterType
+  if (!param.parameterType || (param.parameterType !== "state" && param.parameterType !== "model")) {
+    return "Parameter type must be either 'state' or 'model'";
+  }
+
+  // Validate state type is provided when parameterType is "state"
+  if (param.parameterType === "state" && (!param.stateType || param.stateType.trim() === "")) {
+    return "State type is required when parameter type is 'state'";
+  }
+
+  // Validate model reference is provided when parameterType is "model"
+  if (param.parameterType === "model" && (!param.modelRef || param.modelRef.trim() === "")) {
+    return "Model reference is required when parameter type is 'model'";
+  }
+
+  return null;
+}
+
+/**
  * Validate output key
  * @param key - The output key to validate
  * @param existingOutput - Current output record
