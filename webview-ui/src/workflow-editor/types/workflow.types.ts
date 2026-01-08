@@ -51,7 +51,7 @@ export interface WorkflowConfig {
 export interface WorkflowNode {
   id: string;
   type?: string;  // "ToolNode" or undefined (function node)
-  useA2AClients?: boolean;  // For ToolNode
+  useA2AServers?: boolean;  // For ToolNode
   useMcpServers?: boolean;  // For ToolNode MCP binding
   handler?: {
     parameters: Array<{
@@ -101,7 +101,7 @@ export interface ModelConfig {
     temperature?: number;
     [key: string]: any;
   };
-  bindA2AClients?: boolean;
+  bindA2AServers?: boolean;
   bindMcpServers?: boolean;  // For Phase 9E (MCP Server integration)
   systemPrompt?: string;
 }
@@ -110,7 +110,7 @@ export interface ModelConfig {
 export interface CustomNodeData extends Record<string, unknown> {
   label: string;
   nodeType?: string;  // "ToolNode" or undefined
-  useA2AClients?: boolean;  // For ToolNode
+  useA2AServers?: boolean;  // For ToolNode
   useMcpServers?: boolean;  // For ToolNode MCP binding
   function?: string;
   parameters?: Array<{

@@ -12,7 +12,7 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
 
   // Determine badges to display
   const showToolNodeBadge = nodeData.nodeType === 'ToolNode';
-  const showA2ABadge = nodeData.useA2AClients === true;
+  const showA2ABadge = nodeData.useA2AServers === true;
 
   // Check if any parameter uses a model with A2A or MCP binding
   let hasModelWithA2A = false;
@@ -26,7 +26,7 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
     modelRefs.forEach(modelRef => {
       const model = nodeData.models?.find(m => m.id === modelRef);
       if (model) {
-        if (model.bindA2AClients) hasModelWithA2A = true;
+        if (model.bindA2AServers) hasModelWithA2A = true;
         if (model.bindMcpServers) hasModelWithMCP = true;
       }
     });

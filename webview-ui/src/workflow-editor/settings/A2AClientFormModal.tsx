@@ -194,7 +194,7 @@ export const A2AClientFormModal: React.FC<Props> = ({
     <div style={overlayStyle} onClick={onCancel}>
       <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
         <div style={headerStyle}>
-          {isEditing ? 'Edit A2A Client' : 'Add A2A Client'}
+          {isEditing ? 'Edit A2A Server' : 'Add A2A Server'}
         </div>
 
         <div style={bodyStyle}>

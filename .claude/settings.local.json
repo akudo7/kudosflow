@@ -42,7 +42,21 @@
       "Bash(yarn run build:extension:*)",
       "Bash(python3:*)",
       "Bash(pkill:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npx yarn compile)",
+      "Bash(./node_modules/.bin/tsc:*)",
+      "Bash(echo:*)",
+      "Bash(yarn build:esm:*)",
+      "Bash(grep:*)",
+      "Bash(yarn build:extension:*)",
+      "Bash(for file in json/a2a/servers/*.json)",
+      "Bash(do cat \"$file\")",
+      "Bash(for file in json/model.json json/interrupt.json)",
+      "Bash(do if [ -f \"$file\" ])",
+      "Bash(then cat \"$file\")",
+      "Bash(fi)",
+      "Bash(yarn run tsc:*)",
+      "Bash(yarn lint:*)"
     ],
     "deny": [],
     "ask": []

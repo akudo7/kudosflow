@@ -12,7 +12,7 @@ export const ToolNode = memo(({ data, id }: NodeProps) => {
 
   // Determine badges to display
   const showToolNodeBadge = true; // Always show for ToolNode
-  const showA2ABadge = nodeData.useA2AClients === true;
+  const showA2ABadge = nodeData.useA2AServers === true;
 
   // Check MCP binding: either useMcpServers flag OR any parameter uses a model with MCP binding
   let hasModelWithMCP = false;
@@ -205,24 +205,24 @@ export const ToolNode = memo(({ data, id }: NodeProps) => {
         )}
 
         {/* A2A Servers Status */}
-        {nodeData.useA2AClients !== undefined && (
+        {nodeData.useA2AServers !== undefined && (
           <div
             style={{
               fontSize: '12px',
-              color: nodeData.useA2AClients ? '#27ae60' : '#95a5a6',
-              background: nodeData.useA2AClients
+              color: nodeData.useA2AServers ? '#27ae60' : '#95a5a6',
+              background: nodeData.useA2AServers
                 ? 'rgba(39, 174, 96, 0.15)'
                 : 'rgba(149, 165, 166, 0.15)',
               padding: '6px 10px',
               borderRadius: '4px',
-              border: `1px solid ${nodeData.useA2AClients ? '#27ae60' : '#95a5a6'}`,
+              border: `1px solid ${nodeData.useA2AServers ? '#27ae60' : '#95a5a6'}`,
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
             }}
           >
-            <span>{nodeData.useA2AClients ? '✓' : '✕'}</span>
-            <span>A2A Binding: {nodeData.useA2AClients ? 'Enabled' : 'Disabled'}</span>
+            <span>{nodeData.useA2AServers ? '✓' : '✕'}</span>
+            <span>A2A Binding: {nodeData.useA2AServers ? 'Enabled' : 'Disabled'}</span>
           </div>
         )}
 

@@ -55,7 +55,7 @@ export function jsonToFlow(workflow: WorkflowConfig): {
       data: {
         label: node.id,
         nodeType: node.type,
-        useA2AClients: node.useA2AClients,
+        useA2AServers: node.useA2AServers,
         useMcpServers: (node as any).useMcpServers, // Add useMcpServers support
         function: node.handler?.function,
         parameters: node.handler?.parameters || [],

@@ -349,10 +349,10 @@ export function validateA2AClient(server: A2AServerConfig): ValidationResult {
 /**
  * Validate ToolNode configuration
  * @param node - The ToolNode to validate
- * @param workflowHasA2AClients - Whether the workflow has any A2A clients defined
+ * @param workflowHasA2AServers - Whether the workflow has any A2A servers defined
  * @returns ValidationResult
  */
-export function validateToolNode(node: WorkflowNode, workflowHasA2AClients: boolean): ValidationResult {
+export function validateToolNode(node: WorkflowNode, workflowHasA2AServers: boolean): ValidationResult {
   // Check node type is ToolNode
   if (node.type !== 'ToolNode') {
     return {
@@ -361,11 +361,11 @@ export function validateToolNode(node: WorkflowNode, workflowHasA2AClients: bool
     };
   }
 
-  // Check useA2AClients is boolean
-  if (node.useA2AClients !== undefined && typeof node.useA2AClients !== 'boolean') {
+  // Check useA2AServers is boolean
+  if (node.useA2AServers !== undefined && typeof node.useA2AServers !== 'boolean') {
     return {
       valid: false,
-      error: 'useA2AClients must be a boolean',
+      error: 'useA2AServers must be a boolean',
     };
   }
 
@@ -377,11 +377,11 @@ export function validateToolNode(node: WorkflowNode, workflowHasA2AClients: bool
     };
   }
 
-  // Warn if useA2AClients is true but no A2A clients defined
-  if (node.useA2AClients && !workflowHasA2AClients) {
+  // Warn if useA2AServers is true but no A2A servers defined
+  if (node.useA2AServers && !workflowHasA2AServers) {
     return {
       valid: false,
-      error: 'useA2AClients is true, but no A2A clients are defined in the workflow',
+      error: 'useA2AServers is true, but no A2A servers are defined in the workflow',
     };
   }
 
@@ -466,13 +466,13 @@ export function validateConditionalEdge(
 /**
  * Validate ModelConfig configuration
  * @param model - The model configuration to validate
- * @param a2aClientsExist - Whether the workflow has any A2A clients defined
+ * @param a2aServersExist - Whether the workflow has any A2A servers defined
  * @param mcpServersExist - Whether the workflow has any MCP servers defined
  * @returns ValidationResult
  */
 export function validateModelConfig(
   model: ModelConfig,
-  a2aClientsExist?: boolean,
+  a2aServersExist?: boolean,
   mcpServersExist?: boolean
 ): ValidationResult {
   // Check model ID exists
@@ -523,11 +523,11 @@ export function validateModelConfig(
     }
   }
 
-  // Warn if bindA2AClients is true but no A2A clients defined
-  if (model.bindA2AClients && a2aClientsExist === false) {
+  // Warn if bindA2AServers is true but no A2A servers defined
+  if (model.bindA2AServers && a2aServersExist === false) {
     return {
       valid: false,
-      error: 'bindA2AClients is true, but no A2A clients are defined in the workflow',
+      error: 'bindA2AServers is true, but no A2A servers are defined in the workflow',
     };
   }
 

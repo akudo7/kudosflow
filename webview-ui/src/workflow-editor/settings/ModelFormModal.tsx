@@ -8,7 +8,7 @@ interface Props {
   existingModels: ModelConfig[];
   onSave: (modelConfig: ModelConfig) => void;
   onCancel: () => void;
-  a2aClientsExist?: boolean;
+  a2aServersExist?: boolean;
   mcpServersExist?: boolean;
 }
 
@@ -18,7 +18,7 @@ export const ModelFormModal: React.FC<Props> = ({
   existingModels,
   onSave,
   onCancel,
-  a2aClientsExist = false,
+  a2aServersExist = false,
   mcpServersExist = false,
 }) => {
   const [modelId, setModelId] = useState(initialModelConfig?.id || '');
@@ -27,8 +27,8 @@ export const ModelFormModal: React.FC<Props> = ({
   const [temperature, setTemperature] = useState(
     initialModelConfig?.config.temperature?.toString() || '0.7'
   );
-  const [bindA2AClients, setBindA2AClients] = useState(
-    initialModelConfig?.bindA2AClients || false
+  const [bindA2AServers, setBindA2AServers] = useState(
+    initialModelConfig?.bindA2AServers || false
   );
   const [bindMcpServers, setBindMcpServers] = useState(
     initialModelConfig?.bindMcpServers || false
@@ -42,7 +42,7 @@ export const ModelFormModal: React.FC<Props> = ({
       setModelType(initialModelConfig?.type || 'OpenAI');
       setModelName(initialModelConfig?.config.model || '');
       setTemperature(initialModelConfig?.config.temperature?.toString() || '0.7');
-      setBindA2AClients(initialModelConfig?.bindA2AClients || false);
+      setBindA2AServers(initialModelConfig?.bindA2AServers || false);
       setBindMcpServers(initialModelConfig?.bindMcpServers || false);
       setSystemPrompt(initialModelConfig?.systemPrompt || '');
       setError(null);
@@ -86,13 +86,13 @@ export const ModelFormModal: React.FC<Props> = ({
         model: modelName.trim(),
         temperature: tempValue,
       },
-      ...(bindA2AClients && { bindA2AClients: true }),
+      ...(bindA2AServers && { bindA2AServers: true }),
       ...(bindMcpServers && { bindMcpServers: true }),
       ...(systemPrompt.trim() && { systemPrompt: systemPrompt.trim() }),
     };
 
     // Validate using validation utility
-    const validation = validateModelConfig(modelConfig, a2aClientsExist, mcpServersExist);
+    const validation = validateModelConfig(modelConfig, a2aServersExist, mcpServersExist);
     if (!validation.valid) {
       setError(validation.error || 'Invalid model configuration');
       return;
@@ -303,15 +303,15 @@ export const ModelFormModal: React.FC<Props> = ({
             <label style={checkboxLabelStyle}>
               <input
                 type="checkbox"
-                checked={bindA2AClients}
-                onChange={(e) => setBindA2AClients(e.target.checked)}
+                checked={bindA2AServers}
+                onChange={(e) => setBindA2AServers(e.target.checked)}
                 style={checkboxStyle}
               />
               <span>Bind A2A Servers</span>
             </label>
             <div style={hintStyle}>
               Bind A2A Servers to this model
-              {!a2aClientsExist && ' (No A2A Servers configured)'}
+              {!a2aServersExist && ' (No A2A Servers configured)'}
             </div>
           </div>
 

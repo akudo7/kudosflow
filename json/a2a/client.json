@@ -64,7 +64,7 @@
         "model": "gpt-4o-mini",
         "temperature": 0.3
       },
-      "bindA2AClients": true,
+      "bindA2AServers": true,
       "systemPrompt": "You are an orchestrator for a multi-agent research system with three specialized agents: TaskCreationAgent, ResearchExecutionAgent, and QualityEvaluationAgent."
     }
   ],
@@ -90,7 +90,7 @@
     {
       "id": "tools",
       "type": "ToolNode",
-      "useA2AClients": true
+      "useA2AServers": true
     },
     {
       "id": "approval_gate_task",

@@ -5,7 +5,7 @@ import { ModelFormModal } from './ModelFormModal';
 interface Props {
   models: ModelConfig[];
   onModelsChange: (models: ModelConfig[]) => void;
-  a2aClientsExist?: boolean;
+  a2aServersExist?: boolean;
   mcpServersExist?: boolean;
   nodes?: ReactFlowNode[];  // For checking modelRef usage
 }
@@ -13,7 +13,7 @@ interface Props {
 export const ModelEditor: React.FC<Props> = ({
   models,
   onModelsChange,
-  a2aClientsExist = false,
+  a2aServersExist = false,
   mcpServersExist = false,
   nodes = [],
 }) => {
@@ -251,7 +251,7 @@ export const ModelEditor: React.FC<Props> = ({
                   <code>{model.config.model}</code>
                 </td>
                 <td style={tdStyle}>
-                  {model.bindA2AClients && <span style={checkmarkStyle}>✓</span>}
+                  {model.bindA2AServers && <span style={checkmarkStyle}>✓</span>}
                 </td>
                 <td style={tdStyle}>
                   {model.bindMcpServers && <span style={checkmarkStyle}>✓</span>}
@@ -284,7 +284,7 @@ export const ModelEditor: React.FC<Props> = ({
         existingModels={models}
         onSave={handleSaveModel}
         onCancel={handleCancelForm}
-        a2aClientsExist={a2aClientsExist}
+        a2aServersExist={a2aServersExist}
         mcpServersExist={mcpServersExist}
       />
 

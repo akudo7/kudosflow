@@ -28,9 +28,9 @@ export function flowToJson(
       workflowNode.type = node.data.nodeType;
     }
 
-    // Add useA2AClients flag if present
-    if (node.data.useA2AClients !== undefined) {
-      workflowNode.useA2AClients = node.data.useA2AClients;
+    // Add useA2AServers flag if present
+    if (node.data.useA2AServers !== undefined) {
+      workflowNode.useA2AServers = node.data.useA2AServers;
     }
 
     // Only add handler property if node is not a ToolNode

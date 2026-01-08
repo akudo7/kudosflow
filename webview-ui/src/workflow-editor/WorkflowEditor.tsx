@@ -512,7 +512,7 @@ export const WorkflowEditor: React.FC = () => {
         data: {
           label: 'New ToolNode',
           nodeType: 'ToolNode',
-          useA2AClients: true,
+          useA2AServers: true,
           onNodeNameChange: handleNodeNameChangeFromNode,
           onNodeDoubleClick: handleNodeDoubleClick,
         },

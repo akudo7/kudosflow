@@ -35,7 +35,7 @@ export const NodeBadges: React.FC<Props> = ({
         </span>
       )}
       {showA2ABadge && (
-        <span style={badgeStyle} title="A2A Client Binding">
+        <span style={badgeStyle} title="A2A Server Binding">
           🔗
         </span>
       )}

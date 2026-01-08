@@ -271,7 +271,7 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
           <ModelEditor
             models={workflowConfig.models || []}
             onModelsChange={handleModelsChange}
-            a2aClientsExist={
+            a2aServersExist={
               workflowConfig.a2aServers !== undefined &&
               Object.keys(workflowConfig.a2aServers).length > 0
             }
