@@ -28,6 +28,9 @@ yarn-error.log*
 *.swo
 *~
 
+# Claude Code files
+.claude/
+
 # Local documentation and assets
 docs/
 screenshots/
