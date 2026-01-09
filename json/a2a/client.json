@@ -1,5 +1,11 @@
 {
   "config": {
+    "info": {
+      "version": "1.0.0",
+      "description": "Multi-agent research orchestrator with A2A integration",
+      "copyright": "Copyright 2026",
+      "author": "Akira Kudo"
+    },
     "recursionLimit": 100,
     "eventEmitter": {
       "defaultMaxListeners": 20

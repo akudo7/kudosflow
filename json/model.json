@@ -1,5 +1,11 @@
 {
   "config": {
+    "info": {
+      "version": "1.0.0",
+      "description": "Career counselor workflow with model integration",
+      "copyright": "Copyright 2026",
+      "author": "Akira Kudo"
+    },
     "recursionLimit": 25,
     "eventEmitter": {
       "defaultMaxListeners": 10

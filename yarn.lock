@@ -114,9 +114,9 @@
     levn "^0.4.1"
 
 "@hono/node-server@^1.19.7":
-  version "1.19.7"
-  resolved "https://registry.yarnpkg.com/@hono/node-server/-/node-server-1.19.7.tgz#ecb2d3a7af40d1d378e53ce1fc1219f199fbcd6f"
-  integrity sha512-vUcD0uauS7EU2caukW8z5lJKtoGMokxNbJtBiwHgpqxEXokaHCBkQUmCHhjFB1VUTWdqj25QoMkMKzgjq+uhrw==
+  version "1.19.8"
+  resolved "https://registry.yarnpkg.com/@hono/node-server/-/node-server-1.19.8.tgz#3944fc44a682ce8f770fb94c4eda527f88c1a615"
+  integrity sha512-0/g2lIOPzX8f3vzW1ggQgvG5mjtFBDBHFAzI5SFAi2DzSqS9luJwqg9T6O/gKYLi+inS7eNxBeIFkkghIPvrMA==
 
 "@humanfs/core@^0.19.1":
   version "0.19.1"
@@ -181,8 +181,9 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@kudos/scene-graph-manager@file:../../TypeScript/SceneGraphManager":
+"@kudos/scene-graph-manager@file:/Users/akirakudo/Desktop/MyWork/TypeScript/SceneGraphManager/kudos-scene-graph-manager-2.0.0.tgz":
   version "2.0.0"
+  resolved "file:/Users/akirakudo/Desktop/MyWork/TypeScript/SceneGraphManager/kudos-scene-graph-manager-2.0.0.tgz#768137a69ded8e67b45e56c16ff6075dbfea03ff"
   dependencies:
     "@a2a-js/sdk" "^0.3.4"
     "@langchain/anthropic" "^1.0.0"
@@ -195,9 +196,9 @@
     agentkeepalive "^4.6.0"
 
 "@langchain/anthropic@^1.0.0":
-  version "1.3.6"
-  resolved "https://registry.yarnpkg.com/@langchain/anthropic/-/anthropic-1.3.6.tgz#47f9f753e0d5971a8f6d639c68ac77741413c155"
-  integrity sha512-ltbZD0VgAS0uLqwot71rhkoqaukbOmtvWwtNaddqNkfj9L15suSYijWsJI7DfqmVOUoxXdFJBprCiOvtbecjmw==
+  version "1.3.7"
+  resolved "https://registry.yarnpkg.com/@langchain/anthropic/-/anthropic-1.3.7.tgz#a0a51faea2b6a46ddb42c9fd82f58af1343f24a3"
+  integrity sha512-tuj877NsygqpQXdv1QCnhcycRNntZnv8S86oY4/0TEkq4aKqyB8VfCcKxcf03EdKufdPkF6phmWY59czV2CM0g==
   dependencies:
     "@anthropic-ai/sdk" "^0.71.0"
     zod "^3.25.76 || ^4"
@@ -220,9 +221,9 @@
     langsmith ">=0.4.0 <1.0.0"
 
 "@langchain/community@^1.0.0":
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/@langchain/community/-/community-1.1.2.tgz#07dd80782695901d8a8c8ebcfdd03ee65f7edc27"
-  integrity sha512-61u1b3OKk+wlNQqTNnp0IANflvBy4h3EHRaYeKD7kiAh1I3eoyrutFRjEqJX4A/90k9JJD/ZA+mWrpyK9So9dQ==
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/@langchain/community/-/community-1.1.3.tgz#f929dd84133909113727203af032d7597204f47a"
+  integrity sha512-FHL18eHif5ZlI9VPkSd3ey1YPFUuZMrbd2bFpJSXGqTz5RXChMWZPZI90hUGKeSA0dMySb1FxIADOJ9T9QpigQ==
   dependencies:
     "@langchain/classic" "1.0.8"
     "@langchain/openai" "1.2.1"
@@ -234,9 +235,9 @@
     zod "^3.25.76 || ^4"
 
 "@langchain/core@^1.1.8":
-  version "1.1.11"
-  resolved "https://registry.yarnpkg.com/@langchain/core/-/core-1.1.11.tgz#c766545a21ae7db3c62eb1d9c69f8d6a55d9e999"
-  integrity sha512-voW7j1eNdEhwBRSW947EDIwFoeRP3xabxi8YuUy6FOw3C52SthXpTr2TJrbmVJM1Q3UV7aTXB7a/q/X0Q26zoQ==
+  version "1.1.12"
+  resolved "https://registry.yarnpkg.com/@langchain/core/-/core-1.1.12.tgz#cd7aad4d118a7808ed66adf138d4a774816d0280"
+  integrity sha512-sHWLvhyLi3fntlg3MEPB89kCjxEX7/+imlIYJcp6uFGCAZfGxVWklqp22HwjT1szorUBYrkO8u0YA554ReKxGQ==
   dependencies:
     "@cfworker/json-schema" "^4.0.2"
     ansi-styles "^5.0.0"
@@ -256,22 +257,22 @@
   dependencies:
     uuid "^10.0.0"
 
-"@langchain/langgraph-sdk@~1.3.1":
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/@langchain/langgraph-sdk/-/langgraph-sdk-1.3.1.tgz#3ad5bd8553b499844745c3c1488573f6c14ad16e"
-  integrity sha512-zTi7DZHwqtMEzapvm3I1FL4Q7OZsxtq9tTXy6s2gcCxyIU3sphqRboqytqVN7dNHLdTCLb8nXy49QKurs2MIBg==
+"@langchain/langgraph-sdk@~1.4.5":
+  version "1.4.5"
+  resolved "https://registry.yarnpkg.com/@langchain/langgraph-sdk/-/langgraph-sdk-1.4.5.tgz#e3f85dc4565d6836fb645cb56753a9f97802403d"
+  integrity sha512-suG98WbIUIgfz4bik62ACIDRqGbaOV+4iMCL1T73G+E7nkoE67qB0n/Ljm1hImJdnQZh06pC7HKPGLhZW9tHhg==
   dependencies:
-    p-queue "^6.6.2"
-    p-retry "4"
-    uuid "^9.0.0"
+    p-queue "^9.0.1"
+    p-retry "^7.1.1"
+    uuid "^13.0.0"
 
 "@langchain/langgraph@^1.0.1":
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/@langchain/langgraph/-/langgraph-1.0.7.tgz#4727b5168a921ee3e3f11ad4cbf2293611f36232"
-  integrity sha512-EBGqNOWoRiEoLUaeuiXRpUM8/DE6QcwiirNyd97XhezStebBoTTilWH8CUt6S94JRGl5zwfBBRHfzotDnZS/eA==
+  version "1.0.13"
+  resolved "https://registry.yarnpkg.com/@langchain/langgraph/-/langgraph-1.0.13.tgz#a2550386fb6e2edd0d9038142a1e32dfffff0909"
+  integrity sha512-V+T9xr9xd1raHBwFV43Wie+af0FjWF6SozUbe3nn9wlURhUlWE/8G2d6PXcSpN70Lxf6taPfLUy+C5GKq02Ctg==
   dependencies:
     "@langchain/langgraph-checkpoint" "^1.0.0"
-    "@langchain/langgraph-sdk" "~1.3.1"
+    "@langchain/langgraph-sdk" "~1.4.5"
     uuid "^10.0.0"
 
 "@langchain/mcp-adapters@^1.0.1":
@@ -432,11 +433,6 @@
   version "1.2.7"
   resolved "https://registry.npmjs.org/@types/range-parser/-/range-parser-1.2.7.tgz"
   integrity sha512-hKormJbkJqzQGhziax5PItDUTMAM9uE2XXQmM37dyd4hVM+5aVl7oVxMVUiVQn2oCQFN/LKCZdvSM0pFRqbSmQ==
-
-"@types/retry@0.12.0":
-  version "0.12.0"
-  resolved "https://registry.yarnpkg.com/@types/retry/-/retry-0.12.0.tgz#2b35eccfcee7d38cd72ad99232fbd58bffb3c84d"
-  integrity sha512-wWKOClTTiizcZhXnPY4wikVAwmdYHp8q6DmC+EJUzAMsycb7HB32Kh9RN4+0gExjmPmZSAQjgURXIGATPegAvA==
 
 "@types/send@*":
   version "1.2.1"
@@ -1139,6 +1135,11 @@ eventemitter3@^4.0.4:
   resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-4.0.7.tgz#2de9b68f6528d5644ef5c59526a1b4a07306169f"
   integrity sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==
 
+eventemitter3@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-5.0.1.tgz#53f5ffd0a492ac800721bb42c66b841de96423c4"
+  integrity sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==
+
 eventsource-parser@^3.0.0, eventsource-parser@^3.0.1:
   version "3.0.6"
   resolved "https://registry.yarnpkg.com/eventsource-parser/-/eventsource-parser-3.0.6.tgz#292e165e34cacbc936c3c92719ef326d4aeb4e90"
@@ -1529,6 +1530,11 @@ is-interactive@^2.0.0:
   version "2.0.0"
   resolved "https://registry.npmjs.org/is-interactive/-/is-interactive-2.0.0.tgz"
   integrity sha512-qP1vozQRI+BMOPcjFzrjXuQvdak2pHNUMZoeG2eRbiSqyvbEf/wQtEOTOX1guk6E3t36RkaqiSt8A/6YElNxLQ==
+
+is-network-error@^1.1.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/is-network-error/-/is-network-error-1.3.0.tgz#2ce62cbca444abd506f8a900f39d20b898d37512"
+  integrity sha512-6oIwpsgRfnDiyEDLMay/GqCl3HoAtH5+RUKW29gYkL0QA+ipzpDLA16yQs7/RHCSu+BwgbJaOUqa4A99qNVQVw==
 
 is-number@^7.0.0:
   version "7.0.0"
@@ -1970,13 +1976,20 @@ p-queue@^6.6.2:
     eventemitter3 "^4.0.4"
     p-timeout "^3.2.0"
 
-p-retry@4:
-  version "4.6.2"
-  resolved "https://registry.yarnpkg.com/p-retry/-/p-retry-4.6.2.tgz#9baae7184057edd4e17231cee04264106e092a16"
-  integrity sha512-312Id396EbJdvRONlngUx0NydfrIQ5lsYu0znKVUzVvArzEIt08V1qhtyESbGVd1FGX7UKtiFp5uwKZdM8wIuQ==
+p-queue@^9.0.1:
+  version "9.1.0"
+  resolved "https://registry.yarnpkg.com/p-queue/-/p-queue-9.1.0.tgz#846e517c461fb6e3cf8fc09904e57d342ac448b2"
+  integrity sha512-O/ZPaXuQV29uSLbxWBGGZO1mCQXV2BLIwUr59JUU9SoH76mnYvtms7aafH/isNSNGwuEfP6W/4xD0/TJXxrizw==
   dependencies:
-    "@types/retry" "0.12.0"
-    retry "^0.13.1"
+    eventemitter3 "^5.0.1"
+    p-timeout "^7.0.0"
+
+p-retry@^7.1.1:
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/p-retry/-/p-retry-7.1.1.tgz#7470fdecb1152ba50f1334e48378c9e401330e24"
+  integrity sha512-J5ApzjyRkkf601HpEeykoiCvzHQjWxPAHhyjFcEUP2SWq0+35NKh8TLhpLw+Dkq5TZBFvUM6UigdE9hIVYTl5w==
+  dependencies:
+    is-network-error "^1.1.0"
 
 p-timeout@^3.2.0:
   version "3.2.0"
@@ -1984,6 +1997,11 @@ p-timeout@^3.2.0:
   integrity sha512-rhIwUycgwwKcP9yTOOFK/AKsAopjjCakVqLHePO3CC6Mir1Z99xT+R63jZxAT5lFZLa2inS5h+ZS2GvR99/FBg==
   dependencies:
     p-finally "^1.0.0"
+
+p-timeout@^7.0.0:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/p-timeout/-/p-timeout-7.0.1.tgz#95680a6aa693c530f14ac337b8bd32d4ec6ae4f0"
+  integrity sha512-AxTM2wDGORHGEkPCt8yqxOTMgpfbEHqF51f/5fJCmwFC3C/zNcGT63SymH2ttOAaiIws2zVg4+izQCjrakcwHg==
 
 package-json-from-dist@^1.0.0:
   version "1.0.1"
@@ -2153,11 +2171,6 @@ restore-cursor@^4.0.0:
   dependencies:
     onetime "^5.1.0"
     signal-exit "^3.0.2"
-
-retry@^0.13.1:
-  version "0.13.1"
-  resolved "https://registry.yarnpkg.com/retry/-/retry-0.13.1.tgz#185b1587acf67919d63b357349e03537b2484658"
-  integrity sha512-XQBQ3I8W1Cge0Seh+6gjj03LbmRFWuoszgK9ooCpwYIrhhoO80pfq4cUkU5DkknwfOfFteRwlZ56PYOGYyFWdg==
 
 reusify@^1.0.4:
   version "1.0.4"
@@ -2533,10 +2546,10 @@ uuid@^11.1.0:
   resolved "https://registry.npmjs.org/uuid/-/uuid-11.1.0.tgz"
   integrity sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==
 
-uuid@^9.0.0:
-  version "9.0.1"
-  resolved "https://registry.yarnpkg.com/uuid/-/uuid-9.0.1.tgz#e188d4c8853cc722220392c424cd637f32293f30"
-  integrity sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==
+uuid@^13.0.0:
+  version "13.0.0"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-13.0.0.tgz#263dc341b19b4d755eb8fe36b78d95a6b65707e8"
+  integrity sha512-XQegIaBTVUjSHliKqcnFqYypAd4S+WCYt5NIeRs6w/UAry7z8Y9j5ZwRRL4kzq9U3sD6v+85er9FvkEaBpji2w==
 
 v8-to-istanbul@^9.0.0:
   version "9.3.0"

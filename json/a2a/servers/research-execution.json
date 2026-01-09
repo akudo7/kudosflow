@@ -1,5 +1,11 @@
 {
   "config": {
+    "info": {
+      "version": "1.0.0",
+      "description": "Research execution agent with MCP integration",
+      "copyright": "Copyright 2026",
+      "author": "Akira Kudo"
+    },
     "recursionLimit": 100,
     "eventEmitter": {
       "defaultMaxListeners": 20
