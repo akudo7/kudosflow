@@ -97,10 +97,24 @@ class AgentExecutor {
   ) {}
 
   /**
-   * Execute workflow with task tracking
+   * Execute workflow with task tracking and state management
+   *
+   * @param message - Message content in A2A protocol format (object with parts array)
+   * @param taskId - Unique task identifier for tracking this specific execution
+   * @param threadId - Optional thread identifier for state continuity across requests
+   * @returns Workflow execution result with messages and current phase
+   *
+   * Thread Management:
+   * - threadId is used for LangGraph's MemorySaver to persist state
+   * - Same threadId across requests maintains conversation context
+   * - Different threadId creates fresh state
+   * - Falls back to taskId if threadId not provided (backward compatibility)
    */
-  async execute(message: any, taskId: string): Promise<any> {
-    console.log(`[AgentExecutor] Executing task ${taskId}`);
+  async execute(message: any, taskId: string, threadId?: string): Promise<any> {
+    // Use provided threadId or fallback to taskId for backward compatibility
+    const effectiveThreadId = threadId || taskId;
+
+    console.log(`[AgentExecutor] Executing task ${taskId} with thread_id: ${effectiveThreadId}`);
     console.log(`[AgentExecutor] Raw message received:`, JSON.stringify(message, null, 2));
 
     // Extract message content - handle multiple formats
@@ -165,7 +179,7 @@ class AgentExecutor {
         {
           recursionLimit,
           configurable: {
-            thread_id: taskId
+            thread_id: effectiveThreadId
           }
         }
       );
@@ -181,7 +195,7 @@ class AgentExecutor {
       });
 
       // Format result for A2A protocol
-      return this.formatResult(result, taskId);
+      return this.formatResult(result, taskId, effectiveThreadId);
 
     } catch (error: any) {
       console.error(`[AgentExecutor] Task ${taskId} failed:`, error);
@@ -226,12 +240,16 @@ class AgentExecutor {
 
   /**
    * Format result according to A2A protocol
+   * @param result - Workflow execution result
+   * @param taskId - Unique task identifier for tracking
+   * @param threadId - Thread identifier for state management
+   * @returns Formatted result with task and thread information
    */
-  private formatResult(result: any, taskId: string): any {
+  private formatResult(result: any, taskId: string, threadId: string): any {
     return {
-      taskId,
-      result,
-      thread_id: taskId
+      taskId,        // For task tracking
+      result,        // Workflow execution result
+      thread_id: threadId  // For state continuity
     };
   }
 }
@@ -401,7 +419,20 @@ export async function runServer(configPath: string, port: number): Promise<void>
       res.json(agentCard);
     });
 
-    // JSON-RPC endpoint (used by A2A SDK)
+    /**
+     * JSON-RPC 2.0 endpoint (used by A2A SDK)
+     *
+     * Supported methods:
+     * - message/send: Send message with optional thread_id for state continuity
+     * - agent/getAuthenticatedExtendedCard: Get agent card information
+     *
+     * Thread Management (for message/send):
+     * - Params.thread_id: Optional thread identifier for state persistence
+     * - If thread_id provided: Uses existing state for that thread
+     * - If thread_id omitted: Creates new thread with fresh state
+     *
+     * Response format follows JSON-RPC 2.0 specification with result/error fields.
+     */
     app.post('/', async (req: any, res: any) => {
       const { id, method, params } = req.body;
 
@@ -409,13 +440,11 @@ export async function runServer(configPath: string, port: number): Promise<void>
 
       // Handle JSON-RPC methods
       if (method === 'message/send') {
-        // Generate unique task ID
-        const taskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        console.log(`[JSON-RPC message/send] Creating task ${taskId}`);
-
         try {
-          // Extract message from params
+          // Extract message and thread_id from params
           const message = params?.message;
+          const thread_id = params?.thread_id;
+
           if (!message) {
             return res.json({
               jsonrpc: '2.0',
@@ -427,23 +456,38 @@ export async function runServer(configPath: string, port: number): Promise<void>
             });
           }
 
-          // Execute workflow with the message
-          const result = await executor.execute(message, taskId);
+          // Use provided thread_id if available, otherwise generate new one
+          const effectiveThreadId =
+            thread_id || `thread-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 
-          // Return JSON-RPC response
+          // For task tracking, always use a unique taskId
+          const taskId = `task-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+
+          console.log(`[JSON-RPC message/send] Creating task ${taskId} with thread_id: ${effectiveThreadId}`);
+
+          // Execute workflow with the message
+          const result = await executor.execute(message, taskId, effectiveThreadId);
+
+          // Return JSON-RPC response with both taskId and thread_id
           res.json({
             jsonrpc: '2.0',
             id,
-            result
+            result: {
+              ...result,
+              taskId,
+              thread_id: effectiveThreadId
+            }
           });
         } catch (error: any) {
           console.error(`[JSON-RPC message/send] Error:`, error);
+          const errorTaskId = `error-${Date.now()}`;
           res.json({
             jsonrpc: '2.0',
             id,
             error: {
               code: -32603,
-              message: error.message || 'Internal error'
+              message: error.message || 'Internal error',
+              data: { taskId: errorTaskId }
             }
           });
         }
@@ -486,19 +530,43 @@ export async function runServer(configPath: string, port: number): Promise<void>
       }
     });
 
-    // A2A Protocol: Message Send endpoint (REST fallback)
+    /**
+     * A2A Protocol: Message Send endpoint (REST fallback)
+     *
+     * Accepts a message and optional thread_id for state continuity.
+     *
+     * Request Body:
+     * - message: Message content in A2A protocol format (required)
+     * - thread_id: Thread identifier for state persistence (optional)
+     * - session_id: Session identifier (optional, currently unused)
+     *
+     * Response:
+     * - taskId: Unique task identifier for tracking this specific execution
+     * - thread_id: Thread identifier used for state management (returned for client tracking)
+     * - result: Workflow execution result
+     *
+     * Thread Management:
+     * - If thread_id provided: Uses existing state for that thread
+     * - If thread_id omitted: Creates new thread with fresh state
+     * - taskId is always unique per request (for task tracking)
+     * - thread_id can be reused across requests (for state continuity)
+     */
     app.post('/message/send', async (req: any, res: any) => {
-      // Generate unique task ID
-      const taskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-      console.log(`[POST /message/send] Creating task ${taskId}`);
-
       try {
         const { message, thread_id, session_id } = req.body;
 
         if (!message) {
           return res.status(400).json({ error: 'Message is required' });
         }
+
+        // Use provided thread_id if available, otherwise generate new one
+        // This allows chat history to persist across sessions when thread_id is provided
+        const effectiveThreadId = thread_id || `thread-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+
+        // For task tracking, always use a unique taskId
+        const taskId = `task-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+
+        console.log(`[POST /message/send] Creating task ${taskId} with thread_id: ${effectiveThreadId}`);
 
         // Create task in store
         await globalTaskStore!.createTask(taskId, {
@@ -507,15 +575,21 @@ export async function runServer(configPath: string, port: number): Promise<void>
           createdAt: new Date()
         });
 
-        // Execute via AgentExecutor
-        const result = await executor.execute(message, taskId);
+        // Execute via AgentExecutor with both taskId and threadId
+        const result = await executor.execute(message, taskId, effectiveThreadId);
 
-        res.json(result);
+        res.json({
+          ...result,
+          taskId,  // Include taskId for task tracking
+          thread_id: effectiveThreadId  // Include thread_id for client state management
+        });
       } catch (error: any) {
         console.error(`[POST /message/send] Error:`, error);
+        // Generate error taskId if needed
+        const errorTaskId = `error-${Date.now()}`;
         res.status(500).json({
           error: error.message,
-          taskId
+          taskId: errorTaskId
         });
       }
     });

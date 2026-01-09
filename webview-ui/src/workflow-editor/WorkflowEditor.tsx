@@ -743,12 +743,22 @@ export const WorkflowEditor: React.FC = () => {
   }, [isWaitingForInterrupt, sessionId, filePath]);
 
   const handleClearChat = useCallback(() => {
+    // Clear UI state
     setChatMessages([]);
     setIsExecuting(false);
     setIsWaitingForInterrupt(false);
     setInterruptMessage('');
     setUnreadCount(0);
-  }, []);
+
+    // Request thread_id reset from extension
+    if (typeof vscode !== 'undefined') {
+      vscode.postMessage({
+        command: 'clearChatHistory',
+        sessionId
+        // threadId is optional - if not provided, will be auto-generated
+      });
+    }
+  }, [sessionId]);
 
   // Handle reload workflow (reload JSON from file)
   const handleReload = useCallback(() => {

@@ -330,6 +330,12 @@ export class WorkflowEditorPanel {
           case "clearSession":
             this._clearSession(message.sessionId);
             break;
+          case "clearChatHistory":
+            await this._clearChatHistory(message.sessionId, message.threadId);
+            break;
+          case "clearAllChatHistory":
+            await this._clearAllChatHistory();
+            break;
         }
       },
       undefined,
@@ -545,6 +551,44 @@ export class WorkflowEditorPanel {
    */
   private _clearSession(sessionId: string): void {
     this._workflowExecutor.clearSession(sessionId);
+  }
+
+  /**
+   * Clear chat history for a specific session
+   */
+  private async _clearChatHistory(sessionId: string, threadId?: string): Promise<void> {
+    try {
+      const newThreadId = await this._workflowExecutor.clearChatHistory(sessionId, threadId);
+      console.log(`[WorkflowEditorPanel] Chat history cleared for session ${sessionId}. New thread_id: ${newThreadId}`);
+    } catch (error: any) {
+      console.error('[WorkflowEditorPanel] Failed to clear chat history:', error);
+      this._panel.webview.postMessage({
+        command: 'error',
+        message: `Failed to clear chat history: ${error.message}`
+      });
+    }
+  }
+
+  /**
+   * Clear chat history for all sessions
+   */
+  private async _clearAllChatHistory(): Promise<void> {
+    try {
+      const results = await this._workflowExecutor.clearAllChatHistory();
+      console.log(`[WorkflowEditorPanel] All chat history cleared (${results.size} sessions)`);
+
+      // Notify webview of success
+      this._panel.webview.postMessage({
+        command: 'allChatHistoryCleared',
+        sessionCount: results.size
+      });
+    } catch (error: any) {
+      console.error('[WorkflowEditorPanel] Failed to clear all chat history:', error);
+      this._panel.webview.postMessage({
+        command: 'error',
+        message: `Failed to clear all chat history: ${error.message}`
+      });
+    }
   }
 
   /**

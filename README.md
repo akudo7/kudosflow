@@ -129,6 +129,42 @@ See [CLAUDE.md](CLAUDE.md) for detailed development documentation.
 
 &nbsp;
 
+## State Management and Thread Persistence
+
+The A2A server supports stateful conversations using thread IDs:
+
+- **thread_id**: Optional parameter for maintaining conversation state across requests
+- **State Persistence**: Same thread_id retrieves previous conversation context
+- **Fresh Start**: Omit thread_id to start new conversation with clean state
+
+### Example Usage
+
+```bash
+# Start new conversation (no thread_id)
+curl -X POST http://localhost:3000/message/send \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": {"parts": [{"type": "text", "text": "AI市場について調査してください"}]}
+  }'
+# Response includes thread_id: "thread-1234567890-abc123"
+
+# Continue conversation (with thread_id)
+curl -X POST http://localhost:3000/message/send \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": {"parts": [{"type": "text", "text": "許可"}]},
+    "thread_id": "thread-1234567890-abc123"
+  }'
+# Response uses same thread_id, state is preserved
+```
+
+### Documentation
+
+- [A2A Server API Documentation](docs/api/a2a-server.md)
+- [Thread Management Guide](docs/guides/thread-management.md)
+
+&nbsp;
+
 **Samples:**
 
 ```text

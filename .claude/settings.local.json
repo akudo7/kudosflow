@@ -56,7 +56,11 @@
       "Bash(then cat \"$file\")",
       "Bash(fi)",
       "Bash(yarn run tsc:*)",
-      "Bash(yarn lint:*)"
+      "Bash(yarn lint:*)",
+      "Bash(yarn run)",
+      "Bash(yarn tsc:*)",
+      "Bash(node:*)",
+      "Bash(yarn run build:*)"
     ],
     "deny": [],
     "ask": []

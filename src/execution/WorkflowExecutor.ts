@@ -309,7 +309,113 @@ export class WorkflowExecutor {
    * Generate unique thread ID
    */
   private generateThreadId(): string {
-    return `thread_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `thread_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+  }
+
+  /**
+   * Clear chat history for a specific session
+   * Resets thread_id and execution state
+   * Also deletes the thread from MemorySaver using LangGraph's deleteThread()
+   *
+   * @param sessionId - The session to clear
+   * @param newThreadId - Optional new thread_id. If not provided, generates a new one.
+   * @returns The new thread_id that was set
+   */
+  async clearChatHistory(sessionId: string, newThreadId?: string): Promise<string> {
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      console.warn(`[WorkflowExecutor] Session ${sessionId} not found`);
+      throw new Error(`Session ${sessionId} not found`);
+    }
+
+    // Store old thread_id for logging
+    const oldThreadId = session.threadId;
+
+    // Delete old thread from MemorySaver using LangGraph's deleteThread()
+    try {
+      const checkpointer = (session.engine as any)?.checkpointer;
+      if (checkpointer && typeof checkpointer.deleteThread === 'function') {
+        await checkpointer.deleteThread(oldThreadId);
+        console.log(`[WorkflowExecutor] Deleted MemorySaver state for thread: ${oldThreadId}`);
+      } else {
+        console.warn(`[WorkflowExecutor] Checkpointer does not support deleteThread()`);
+      }
+    } catch (error: any) {
+      console.error(`[WorkflowExecutor] Failed to delete thread ${oldThreadId}:`, error.message);
+      // Continue with thread_id reset even if deletion fails
+    }
+
+    // Use provided thread_id or generate new one
+    const effectiveThreadId = newThreadId || this.generateThreadId();
+    session.threadId = effectiveThreadId;
+
+    // Reset execution state
+    session.isExecuting = false;
+    session.isWaitingForInterrupt = false;
+    session.currentInterrupt = undefined;
+
+    console.log(`[WorkflowExecutor] Chat history cleared for session ${sessionId}`);
+    console.log(`  Old thread_id: ${oldThreadId}`);
+    console.log(`  New thread_id: ${effectiveThreadId}`);
+    console.log(`  Source: ${newThreadId ? 'provided' : 'auto-generated'}`);
+
+    // Notify webview
+    this.sendMessage({
+      command: 'chatHistoryCleared',
+      sessionId,
+      threadId: effectiveThreadId
+    });
+
+    return effectiveThreadId;
+  }
+
+  /**
+   * Clear chat history for all sessions
+   * Resets thread_id and execution state for every active session
+   *
+   * @returns Map of sessionId to new thread_id
+   */
+  async clearAllChatHistory(): Promise<Map<string, string>> {
+    const results = new Map<string, string>();
+
+    console.log(`[WorkflowExecutor] Clearing all chat history (${this.sessions.size} sessions)`);
+
+    for (const [sessionId, session] of this.sessions.entries()) {
+      const oldThreadId = session.threadId;
+
+      // Delete old thread from MemorySaver
+      try {
+        const checkpointer = (session.engine as any)?.checkpointer;
+        if (checkpointer && typeof checkpointer.deleteThread === 'function') {
+          await checkpointer.deleteThread(oldThreadId);
+          console.log(`  Deleted MemorySaver state for thread: ${oldThreadId}`);
+        }
+      } catch (error: any) {
+        console.error(`  Failed to delete thread ${oldThreadId}:`, error.message);
+      }
+
+      const newThreadId = this.generateThreadId();
+
+      session.threadId = newThreadId;
+      session.isExecuting = false;
+      session.isWaitingForInterrupt = false;
+      session.currentInterrupt = undefined;
+
+      results.set(sessionId, newThreadId);
+
+      console.log(`  Session ${sessionId}: ${oldThreadId} → ${newThreadId}`);
+
+      // Notify webview for each session
+      this.sendMessage({
+        command: 'chatHistoryCleared',
+        sessionId,
+        threadId: newThreadId
+      });
+    }
+
+    console.log(`[WorkflowExecutor] All chat history cleared`);
+
+    return results;
   }
 
   /**
