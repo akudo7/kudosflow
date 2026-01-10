@@ -1,9 +1,9 @@
 {
-  "name": "kudosflow",
-  "displayName": "Kudosflow",
+  "name": "kudosflow2",
+  "displayName": "Kudosflow2",
   "description": "Visual workflow editor for building node-based AI agent workflows with drag-and-drop interface powered by React Flow",
-  "version": "2.0.0",
-  "publisher": "akirakudo",
+  "version": "1.0.0",
+  "publisher": "akirakudo911",
   "license": "MIT",
   "author": {
     "name": "Akira Kudo",
@@ -17,6 +17,7 @@
     "url": "https://github.com/akudo7/kudosflow.git"
   },
   "homepage": "https://github.com/akudo7/kudosflow#readme",
+  "icon": "icon.png",
   "engines": {
     "vscode": "^1.96.0"
   },

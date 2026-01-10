@@ -1,4 +1,4 @@
-<h1 align="center">Kudosflow</h1>
+<h1 align="center">Kudosflow2</h1>
 
 <p align="center">
   <a href="https://github.com/akudo7/kudosflow">https://github.com/akudo7/kudosflow</a>
@@ -19,9 +19,7 @@ A VSCode extension that integrates React Flow for visual workflow editing. Build
 </p>
 
 <p align="center">
-  <strong>Current Version: v2.0.0</strong>
-  <br>
-  <em>Note: KudosFlow v1.0.0 is now deprecated. Please upgrade to v2.0.0 for continued support and latest features.</em>
+  <strong>Current Version: v1.0.0</strong>
 </p>
 
 <p align="center">
@@ -52,14 +50,13 @@ A VSCode extension that integrates React Flow for visual workflow editing. Build
 
 ```bash
 # Install from marketplace
-code --install-extension kudosflow-2.0.0.vsix
+code --install-extension kudosflow2-2.0.0.vsix
 ```
 
 Or install from the VSCode marketplace (coming soon) or build from source.
 
 **Requirements:**
 - VSCode 1.96.0 or higher
-- SceneGraphManager v2.0.0 or higher
 
 **Setup:**
 
@@ -76,7 +73,7 @@ Or install from the VSCode marketplace (coming soon) or build from source.
    OLLAMA_BASE_URL=http://127.0.0.1:11434
    ```
 
-1. Sample workflow files are automatically installed to `~/.vscode/extensions/akirakudo.kudosflow-2.0.0/json/`
+1. Sample workflow files are automatically installed to `~/.vscode/extensions/akirakudo911.kudosflow2-1.0.0/json/`
 
 #### Sample Workflows
 
@@ -182,17 +179,6 @@ The extension consists of two separate build systems:
    - Contains the React Flow canvas UI
 
 &nbsp;
-
-## What's New in v2.0.0
-
-- Removed legacy parameter format conversion from jsonToFlow converter
-- Updated all type definitions to use discriminated unions
-- Updated UI to enforce new parameter structure
-- Updated dependency: @kudos/scene-graph-manager to v2.0.0
-
-For migration guides and detailed documentation, see:
-- [Parameter Format Migration Guide](./docs/refactoring/parameter-format-migration.md)
-- [JSON Migration Instructions](./docs/refactoring/parameter-format-migration/phase5-json-migration.md)
 
 &nbsp;
 
