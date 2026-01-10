@@ -1,7 +1,22 @@
 <h1 align="center">Kudosflow2</h1>
 
 <p align="center">
-  <a href="https://github.com/akudo7/kudosflow">https://github.com/akudo7/kudosflow</a>
+  <strong>Visual Workflow Editor for AI Agent Orchestration</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/akudo7/kudosflow">
+    <img src="https://img.shields.io/github/v/release/akudo7/kudosflow?style=flat-square" alt="Release">
+  </a>
+  <a href="https://github.com/akudo7/kudosflow/blob/master/LICENSE">
+    <img src="https://img.shields.io/github/license/akudo7/kudosflow?style=flat-square" alt="License">
+  </a>
+  <a href="https://github.com/akudo7/kudosflow/stargazers">
+    <img src="https://img.shields.io/github/stars/akudo7/kudosflow?style=flat-square" alt="Stars">
+  </a>
+  <a href="https://github.com/akudo7/kudosflow/issues">
+    <img src="https://img.shields.io/github/issues/akudo7/kudosflow?style=flat-square" alt="Issues">
+  </a>
 </p>
 
 <h4 align="center">
@@ -15,11 +30,7 @@
 </h4>
 
 <p align="center">
-A VSCode extension that integrates React Flow for visual workflow editing. Build node-based workflows with a drag-and-drop canvas interface, right inside VSCode.
-</p>
-
-<p align="center">
-  <strong>Current Version: v1.0.0</strong>
+Build and execute node-based AI agent workflows with drag-and-drop interface, A2A integration, and real-time execution - all inside VSCode.
 </p>
 
 <p align="center">
