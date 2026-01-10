@@ -6,13 +6,16 @@ src/**
 .git/**
 .gitignore
 .yarnrc
+.env
 
 # Documentation
-vsc-extension-quickstart.md
-README.md
 CLAUDE.md
+screenshots/**
+scripts/**
 docs/**
 *.md
+!README.md
+!LICENSE
 
 # Configuration files
 **/tsconfig.json

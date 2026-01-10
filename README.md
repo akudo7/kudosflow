@@ -1,5 +1,9 @@
 <h1 align="center">Kudosflow</h1>
 
+<p align="center">
+  <a href="https://github.com/akudo7/kudosflow">https://github.com/akudo7/kudosflow</a>
+</p>
+
 <h4 align="center">
   <a href="#features">Features</a>
   ·
@@ -7,7 +11,7 @@
   ·
   <a href="#development">Development</a>
   ·
-  <a href="https://github.com/akudo7/kudos-gpt/issues">Support</a>
+  <a href="https://github.com/akudo7/kudosflow/issues">Support</a>
 </h4>
 
 <p align="center">
@@ -15,8 +19,14 @@ A VSCode extension that integrates React Flow for visual workflow editing. Build
 </p>
 
 <p align="center">
+  <strong>Current Version: v2.0.0</strong>
+  <br>
+  <em>Note: KudosFlow v1.0.0 is now deprecated. Please upgrade to v2.0.0 for continued support and latest features.</em>
+</p>
+
+<p align="center">
   <a href="https://www.youtube.com/watch?v=usKzPu8Fxkg">
-    <img src="https://www.youtube.com/watch?v=usKzPu8Fxkg/maxresdefault.jpg" alt="Kudosflow Demo" width="600">
+    <img src="https://img.youtube.com/vi/usKzPu8Fxkg/maxresdefault.jpg" alt="Kudosflow Demo" width="600">
   </a>
   <br>
   <em>Click to watch the demo video</em>
@@ -40,8 +50,54 @@ A VSCode extension that integrates React Flow for visual workflow editing. Build
 
 ### Installation
 
-1. Install the extension from the VSCode marketplace (coming soon) or build from source
-2. Create a `.env` file in your project root with required API keys (see [.env.example](.env.example))
+```bash
+# Install from marketplace
+code --install-extension kudosflow-2.0.0.vsix
+```
+
+Or install from the VSCode marketplace (coming soon) or build from source.
+
+**Requirements:**
+- VSCode 1.96.0 or higher
+- SceneGraphManager v2.0.0 or higher
+
+**Setup:**
+
+1. Create a `.env` file in your project root with required API keys:
+
+   ```bash
+   # OpenAI API Configuration
+   OPENAI_API_KEY=your_openai_api_key_here
+
+   # Anthropic API Configuration
+   ANTHROPIC_API_KEY=your_anthropic_api_key_here
+
+   # Ollama Configuration
+   OLLAMA_BASE_URL=http://127.0.0.1:11434
+   ```
+
+1. Sample workflow files are automatically installed to `~/.vscode/extensions/akirakudo.kudosflow-2.0.0/json/`
+
+#### Sample Workflows
+
+The extension includes several example workflows to help you get started:
+
+**Basic Workflows:**
+- `interrupt.json` - Interactive workflow demonstrating user interrupts and state management
+- `model.json` - Career counselor workflow showing OpenAI model integration
+
+**A2A (Agent-to-Agent) Workflows:**
+- `a2a/client.json` - A2A client workflow for agent-to-agent communication
+- `a2a/servers/task-creation.json` - Task creation server workflow
+- `a2a/servers/research-execution.json` - Research execution server workflow
+- `a2a/servers/quality-evaluation.json` - Quality evaluation server workflow
+
+These samples demonstrate key features including:
+- User interaction with interrupt nodes
+- AI model integration (OpenAI)
+- State management and persistence
+- Agent-to-agent communication patterns
+- Multi-step workflow orchestration
 
 ### Usage
 
@@ -125,7 +181,18 @@ The extension consists of two separate build systems:
    - Build: Vite + React → `webview-ui/build/` directory
    - Contains the React Flow canvas UI
 
-See [CLAUDE.md](CLAUDE.md) for detailed development documentation.
+&nbsp;
+
+## What's New in v2.0.0
+
+- Removed legacy parameter format conversion from jsonToFlow converter
+- Updated all type definitions to use discriminated unions
+- Updated UI to enforce new parameter structure
+- Updated dependency: @kudos/scene-graph-manager to v2.0.0
+
+For migration guides and detailed documentation, see:
+- [Parameter Format Migration Guide](./docs/refactoring/parameter-format-migration.md)
+- [JSON Migration Instructions](./docs/refactoring/parameter-format-migration/phase5-json-migration.md)
 
 &nbsp;
 
@@ -144,7 +211,7 @@ The A2A server supports stateful conversations using thread IDs:
 curl -X POST http://localhost:3000/message/send \
   -H "Content-Type: application/json" \
   -d '{
-    "message": {"parts": [{"type": "text", "text": "AI市場について調査してください"}]}
+    "message": {"parts": [{"type": "text", "text": "Please research the AI market"}]}
   }'
 # Response includes thread_id: "thread-1234567890-abc123"
 
@@ -152,7 +219,7 @@ curl -X POST http://localhost:3000/message/send \
 curl -X POST http://localhost:3000/message/send \
   -H "Content-Type: application/json" \
   -d '{
-    "message": {"parts": [{"type": "text", "text": "許可"}]},
+    "message": {"parts": [{"type": "text", "text": "Approved"}]},
     "thread_id": "thread-1234567890-abc123"
   }'
 # Response uses same thread_id, state is preserved
@@ -171,6 +238,14 @@ curl -X POST http://localhost:3000/message/send \
 Task Creation → Approval → Research Execution → Approval
   → Report Generation → Report Approval → Quality Evaluation → Complete
 ```
+
+&nbsp;
+
+## Related Projects
+
+- **[OpenAgentJson](https://github.com/akudo7/OpenAgentJson)** - JSON schema and definitions for agent workflows
+- **[a2a-server](https://github.com/akudo7/a2a-server)** - Agent-to-Agent communication server
+- **[SceneGraphManager](https://github.com/akudo7/SceneGraphManager)** - Scene graph management library (Private repository, separate license - see [LICENSE](LICENSE) for details.)
 
 &nbsp;
 

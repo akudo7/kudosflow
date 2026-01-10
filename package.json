@@ -1,7 +1,7 @@
 {
   "name": "kudosflow",
-  "displayName": "kudosflow",
-  "description": "kudosflow",
+  "displayName": "Kudosflow",
+  "description": "Visual workflow editor for building node-based AI agent workflows with drag-and-drop interface powered by React Flow",
   "version": "2.0.0",
   "publisher": "akirakudo",
   "license": "MIT",
@@ -10,17 +10,46 @@
     "url": "https://www.linkedin.com/in/akira-kudo-4b04163/"
   },
   "bugs": {
-    "url": "https://github.com/akudo7/kudos-gpt/issues"
+    "url": "https://github.com/akudo7/kudosflow/issues"
   },
   "repository": {
-    "url": "https://github.com/akudo7/kudos-gpt/blob/main/README.md"
+    "type": "git",
+    "url": "https://github.com/akudo7/kudosflow.git"
   },
-  "homepage": "https://github.com/akudo7/kudos-gpt/blob/main/README.md",
+  "homepage": "https://github.com/akudo7/kudosflow#readme",
   "engines": {
     "vscode": "^1.96.0"
   },
   "categories": [
+    "Visualization",
     "Other"
+  ],
+  "keywords": [
+    "workflow",
+    "workflow editor",
+    "visual editor",
+    "node editor",
+    "flow editor",
+    "graph editor",
+    "react flow",
+    "agent",
+    "ai agent",
+    "agent workflow",
+    "a2a",
+    "agent-to-agent",
+    "mcp",
+    "model context protocol",
+    "ai workflow",
+    "automation",
+    "drag-and-drop",
+    "canvas",
+    "flowchart",
+    "diagram",
+    "langgraph",
+    "langchain",
+    "openai",
+    "anthropic",
+    "ollama"
   ],
   "activationEvents": [
     "onStartupFinished"
