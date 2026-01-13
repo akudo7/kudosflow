@@ -75,7 +75,7 @@ code --install-extension kudosflow2-1.0.0.vsix
 
 #### Option 2: From VSCode Marketplace (Coming Soon)
 
-Search for "Kudosflow" in the VSCode extensions marketplace.
+Search for "Kudosflow2" in the VSCode extensions marketplace.
 
 ### Setup
 
