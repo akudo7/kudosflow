@@ -70,7 +70,7 @@ Build and execute node-based AI agent workflows with a drag-and-drop interface i
 #### Option 1: From VSIX (Current)
 
 ```bash
-code --install-extension kudosflow2-2.0.0.vsix
+code --install-extension kudosflow2-1.0.0.vsix
 ```
 
 #### Option 2: From VSCode Marketplace (Coming Soon)
