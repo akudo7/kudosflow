@@ -1,6 +1,6 @@
 ---
 skill_id: visualization
-name: Data Visualization
+name: data_visualization
 category: data
 version: 1.0.0
 description: Create interactive and static visualizations including charts, graphs, and dashboards

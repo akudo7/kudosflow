@@ -1,6 +1,6 @@
 ---
 skill_id: statistical_analysis
-name: Statistical Analysis
+name: statistical_analysis
 category: data
 version: 1.0.0
 description: Advanced statistical analysis including regression, correlation, hypothesis testing, and inferential statistics

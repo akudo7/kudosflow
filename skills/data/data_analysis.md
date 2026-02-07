@@ -1,6 +1,6 @@
 ---
 skill_id: data_analysis
-name: Data Analysis
+name: data_analysis
 category: data
 version: 1.0.0
 description: Comprehensive data analysis capabilities including statistical analysis, data cleaning, and transformation

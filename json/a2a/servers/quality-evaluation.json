@@ -37,7 +37,7 @@
   "models": [
     {
       "id": "evaluationModel",
-      "type": "OpenAI",
+      "type": "openai",
       "config": {
         "model": "gpt-4o-mini",
         "temperature": 0.2

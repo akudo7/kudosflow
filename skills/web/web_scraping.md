@@ -1,6 +1,6 @@
 ---
 skill_id: web_scraping
-name: Web Scraping
+name: web_scraping
 category: web
 version: 1.0.0
 description: Extract structured data from websites using CSS selectors, XPath, and headless browser automation

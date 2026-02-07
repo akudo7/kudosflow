@@ -1,6 +1,6 @@
 ---
 skill_id: web_search
-name: Web Search
+name: web_search
 category: web
 version: 1.0.0
 description: Comprehensive web search capabilities with multiple search engines, result aggregation, and intelligent filtering
