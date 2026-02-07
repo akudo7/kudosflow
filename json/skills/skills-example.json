@@ -8,7 +8,7 @@
     },
     "recursionLimit": 25,
     "skillsRegistry": {
-      "localPath": "./skills",
+      "localPath": "/Users/akirakudo/Desktop/MyWork/VSCode/kudosflow/skills",
       "cache": {
         "enabled": true,
         "ttl": 3600,
@@ -42,9 +42,9 @@
   "models": [
     {
       "id": "claude",
-      "type": "anthropic",
+      "type": "openai",
       "config": {
-        "model": "claude-3-5-sonnet-20241022",
+        "model": "gpt-4o-mini",
         "temperature": 0.7,
         "maxTokens": 4096
       },
@@ -68,11 +68,25 @@
           }
         ],
         "output": {},
-        "function": "const systemMessage = { role: 'system', content: (model.systemPrompt || '') + (skillsContent || '') }; const messages = [systemMessage, ...state.messages]; const result = await model.invoke(messages); return { messages: [result] };"
+        "function": "try {\n  console.log('🤖 [support_agent] Processing user request');\n  \n  const systemMessage = { \n    role: 'system', \n    content: (model.systemPrompt || '') + (skillsContent || '') \n  };\n  \n  const messages = [systemMessage, ...state.messages];\n  \n  console.log('📤 [support_agent] Invoking model with', messages.length, 'messages');\n  const result = await model.invoke(messages);\n  \n  console.log('✅ [support_agent] Model response received');\n  return { messages: [result] };\n}\ncatch (error) {\n  console.error('❌ [support_agent] Error:', error);\n  return { \n    messages: [{ role: 'assistant', content: `Error: ${error.message}` }]\n  };\n}"
       },
       "useSkills": ["product_knowledge", "excel_operations"],
       "skillLoadMode": "lazy",
       "failOnSkillError": false
+    },
+    {
+      "id": "showResult",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof AgentState.State"
+          }
+        ],
+        "output": {},
+        "function": "try {\n  const lastMessage = state.messages[state.messages.length - 1];\n  const resultMessage = lastMessage?.content || 'No response generated';\n  \n  interrupt(resultMessage);\n  \n  console.log('🔍 Final result:', resultMessage);\n  \n  return {\n    messages: []\n  };\n}\ncatch (error) {\n  console.error('❌ [showResult] Error:', error);\n  return { \n    messages: [{ role: 'assistant', content: `Error: ${error.message}` }]\n  };\n}"
+      }
     }
   ],
   "edges": [
@@ -82,10 +96,19 @@
     },
     {
       "from": "support_agent",
+      "to": "showResult"
+    },
+    {
+      "from": "showResult",
       "to": "__end__"
     }
   ],
   "stateGraph": {
-    "annotationRef": "AgentState"
+    "annotationRef": "AgentState",
+    "config": {
+      "checkpointer": {
+        "type": "MemorySaver"
+      }
+    }
   }
 }
