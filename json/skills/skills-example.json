@@ -85,7 +85,7 @@
           }
         ],
         "output": {},
-        "function": "try {\n  const lastMessage = state.messages[state.messages.length - 1];\n  const resultMessage = lastMessage?.content || 'No response generated';\n  \n  interrupt(resultMessage);\n  \n  console.log('🔍 Final result:', resultMessage);\n  \n  return {\n    messages: []\n  };\n}\ncatch (error) {\n  console.error('❌ [showResult] Error:', error);\n  return { \n    messages: [{ role: 'assistant', content: `Error: ${error.message}` }]\n  };\n}"
+        "function": "const lastMessage = state.messages[state.messages.length - 1];\nconst resultMessage = lastMessage?.content || 'No response generated';\n\nconsole.log('🔍 Final result:', resultMessage);\n\ninterrupt(resultMessage);\n\nreturn {\n  messages: []\n};"
       }
     }
   ],
