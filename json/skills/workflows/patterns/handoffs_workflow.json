@@ -1,0 +1,112 @@
+{
+  "$schema": "https://scenegraphmanager.com/schema/workflow.json",
+  "config": {
+    "name": "handoffs_workflow",
+    "description": "Agent handoff pattern for sequential collaboration",
+    "recursionLimit": 30
+  },
+  "stateAnnotation": {
+    "name": "HandoffState",
+    "type": "Annotation.Root"
+  },
+  "annotation": {
+    "messages": {
+      "type": "BaseMessage[]",
+      "reducer": "(x, y) => x.concat(y)",
+      "default": "[]"
+    },
+    "currentAgent": {
+      "type": "string",
+      "default": "'researcher'"
+    },
+    "context": {
+      "type": "Record<string, any>",
+      "reducer": "(x, y) => ({ ...x, ...y })",
+      "default": "{}"
+    },
+    "handoffReason": {
+      "type": "string",
+      "default": "''"
+    }
+  },
+  "models": [
+    {
+      "id": "researcher",
+      "type": "anthropic",
+      "config": {
+        "model": "claude-3-5-sonnet-20241022",
+        "apiKey": "${ANTHROPIC_API_KEY}",
+        "maxTokens": 4096
+      },
+      "systemPrompt": "You are a researcher. Gather information and when ready, hand off to the writer by setting currentAgent to 'writer' in your response."
+    },
+    {
+      "id": "writer",
+      "type": "anthropic",
+      "config": {
+        "model": "claude-3-5-sonnet-20241022",
+        "apiKey": "${ANTHROPIC_API_KEY}",
+        "maxTokens": 4096
+      },
+      "systemPrompt": "You are a writer. Transform research into content and hand off to the reviewer by setting currentAgent to 'reviewer'."
+    },
+    {
+      "id": "reviewer",
+      "type": "anthropic",
+      "config": {
+        "model": "claude-3-5-sonnet-20241022",
+        "apiKey": "${ANTHROPIC_API_KEY}",
+        "maxTokens": 2048
+      },
+      "systemPrompt": "You are a reviewer. Review the content and provide final approval."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "researcher_node",
+      "type": "model",
+      "modelRef": "researcher"
+    },
+    {
+      "id": "writer_node",
+      "type": "model",
+      "modelRef": "writer"
+    },
+    {
+      "id": "reviewer_node",
+      "type": "model",
+      "modelRef": "reviewer"
+    },
+    {
+      "id": "router",
+      "type": "function",
+      "function": "async (state) => { return { currentAgent: state.currentAgent }; }"
+    }
+  ],
+  "edges": [
+    {
+      "from": "__start__",
+      "to": "researcher_node"
+    },
+    {
+      "from": "researcher_node",
+      "to": "router"
+    },
+    {
+      "from": "router",
+      "type": "conditional",
+      "condition": "(state) => { if (state.currentAgent === 'writer') return 'writer_node'; if (state.currentAgent === 'reviewer') return 'reviewer_node'; return '__end__'; }"
+    },
+    {
+      "from": "writer_node",
+      "to": "router"
+    },
+    {
+      "from": "reviewer_node",
+      "to": "__end__"
+    }
+  ],
+  "stateGraph": {
+    "annotationRef": "HandoffState"
+  }
+}

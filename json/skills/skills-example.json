@@ -1,0 +1,91 @@
+{
+  "config": {
+    "name": "Skills Example Workflow",
+    "info": {
+      "version": "1.0.0",
+      "description": "Example workflow demonstrating Skills functionality with Progressive Disclosure",
+      "author": "SceneGraphManager Team"
+    },
+    "recursionLimit": 25,
+    "skillsRegistry": {
+      "localPath": "./skills",
+      "cache": {
+        "enabled": true,
+        "ttl": 3600,
+        "maxSize": 52428800
+      },
+      "security": {
+        "maxFileSize": 1048576,
+        "maxLoadedSkills": 100,
+        "strictValidation": true,
+        "allowedExtensions": [".md"]
+      },
+      "performance": {
+        "parallelLoading": true,
+        "maxConcurrentLoads": 10,
+        "preloadSkills": ["product_knowledge"],
+        "enableMetrics": true
+      }
+    }
+  },
+  "stateAnnotation": {
+    "name": "AgentState",
+    "type": "Annotation.Root"
+  },
+  "annotation": {
+    "messages": {
+      "type": "BaseMessage[]",
+      "reducer": "(x, y) => x.concat(y)",
+      "default": "[]"
+    }
+  },
+  "models": [
+    {
+      "id": "claude",
+      "type": "anthropic",
+      "config": {
+        "model": "claude-3-5-sonnet-20241022",
+        "temperature": 0.7,
+        "maxTokens": 4096
+      },
+      "systemPrompt": "You are a helpful customer support agent with access to product knowledge and excel expertise."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "support_agent",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof AgentState.State"
+          },
+          {
+            "name": "model",
+            "parameterType": "model",
+            "modelRef": "claude"
+          }
+        ],
+        "output": {},
+        "function": "const systemMessage = { role: 'system', content: (model.systemPrompt || '') + (skillsContent || '') }; const messages = [systemMessage, ...state.messages]; const result = await model.invoke(messages); return { messages: [result] };"
+      },
+      "useSkills": ["product_knowledge", "excel_operations"],
+      "skillLoadMode": "lazy",
+      "failOnSkillError": false
+    }
+  ],
+  "edges": [
+    {
+      "from": "__start__",
+      "to": "support_agent"
+    },
+    {
+      "from": "support_agent",
+      "to": "__end__"
+    }
+  ],
+  "stateGraph": {
+    "annotationRef": "AgentState"
+  }
+}

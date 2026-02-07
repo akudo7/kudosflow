@@ -1,0 +1,223 @@
+{
+  "$schema": "https://scenegraphmanager.com/schema/workflow.json",
+  "config": {
+    "name": "peer_collaboration_workflow",
+    "description": "Peer collaboration pattern with team coordination",
+    "recursionLimit": 40
+  },
+  "stateAnnotation": {
+    "name": "CollaborationState",
+    "type": "Annotation.Root"
+  },
+  "annotation": {
+    "messages": {
+      "type": "BaseMessage[]",
+      "reducer": "(x, y) => x.concat(y)",
+      "default": "[]"
+    },
+    "teamMembers": {
+      "type": "string[]",
+      "default": "['technical', 'business', 'ux']"
+    },
+    "proposals": {
+      "type": "Record<string, string>",
+      "reducer": "(x, y) => ({ ...x, ...y })",
+      "default": "{}"
+    },
+    "consensusReached": {
+      "type": "boolean",
+      "default": "false"
+    },
+    "finalDecision": {
+      "type": "string",
+      "default": "''"
+    }
+  },
+  "models": [
+    {
+      "id": "coordinator",
+      "type": "anthropic",
+      "config": {
+        "model": "claude-3-5-sonnet-20241022",
+        "apiKey": "${ANTHROPIC_API_KEY}",
+        "maxTokens": 4096
+      },
+      "systemPrompt": "You are a team coordinator. You facilitate collaboration between technical, business, and user experience experts. Your role is to synthesize their proposals and guide the team to consensus."
+    },
+    {
+      "id": "expert1",
+      "type": "anthropic",
+      "config": {
+        "model": "claude-3-5-sonnet-20241022",
+        "apiKey": "${ANTHROPIC_API_KEY}",
+        "maxTokens": 3072
+      },
+      "systemPrompt": "You are a technical expert. Focus on technical feasibility, architecture, performance, and implementation details. Provide practical, engineering-focused proposals."
+    },
+    {
+      "id": "expert2",
+      "type": "anthropic",
+      "config": {
+        "model": "claude-3-5-sonnet-20241022",
+        "apiKey": "${ANTHROPIC_API_KEY}",
+        "maxTokens": 3072
+      },
+      "systemPrompt": "You are a business expert. Focus on market value, ROI, competitive advantage, and business impact. Provide strategic, business-focused proposals."
+    },
+    {
+      "id": "expert3",
+      "type": "anthropic",
+      "config": {
+        "model": "claude-3-5-sonnet-20241022",
+        "apiKey": "${ANTHROPIC_API_KEY}",
+        "maxTokens": 3072
+      },
+      "systemPrompt": "You are a user experience expert. Focus on usability, accessibility, user satisfaction, and design quality. Provide user-centric, UX-focused proposals."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "gather_proposals",
+      "type": "function",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof CollaborationState.State"
+          }
+        ],
+        "function": "async (state) => {\n  const { Send } = require('@langchain/langgraph');\n  const lastMessage = state.messages[state.messages.length - 1];\n  const problem = lastMessage?.content || 'No problem defined';\n  \n  return [\n    new Send('technical_expert', { ...state, currentExpert: 'technical' }),\n    new Send('business_expert', { ...state, currentExpert: 'business' }),\n    new Send('ux_expert', { ...state, currentExpert: 'ux' })\n  ];\n}"
+      }
+    },
+    {
+      "id": "technical_expert",
+      "type": "function",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof CollaborationState.State"
+          },
+          {
+            "name": "model",
+            "parameterType": "model",
+            "modelRef": "expert1"
+          }
+        ],
+        "function": "async (state, model) => {\n  const lastMessage = state.messages[state.messages.length - 1];\n  const result = await model.invoke([{ role: 'user', content: `Provide a technical perspective on: ${lastMessage.content}` }]);\n  return {\n    proposals: { technical: result.content.toString() },\n    messages: [{ role: 'assistant', content: `Technical Expert: ${result.content}` }]\n  };\n}"
+      }
+    },
+    {
+      "id": "business_expert",
+      "type": "function",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof CollaborationState.State"
+          },
+          {
+            "name": "model",
+            "parameterType": "model",
+            "modelRef": "expert2"
+          }
+        ],
+        "function": "async (state, model) => {\n  const lastMessage = state.messages[state.messages.length - 1];\n  const result = await model.invoke([{ role: 'user', content: `Provide a business perspective on: ${lastMessage.content}` }]);\n  return {\n    proposals: { business: result.content.toString() },\n    messages: [{ role: 'assistant', content: `Business Expert: ${result.content}` }]\n  };\n}"
+      }
+    },
+    {
+      "id": "ux_expert",
+      "type": "function",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof CollaborationState.State"
+          },
+          {
+            "name": "model",
+            "parameterType": "model",
+            "modelRef": "expert3"
+          }
+        ],
+        "function": "async (state, model) => {\n  const lastMessage = state.messages[state.messages.length - 1];\n  const result = await model.invoke([{ role: 'user', content: `Provide a UX perspective on: ${lastMessage.content}` }]);\n  return {\n    proposals: { ux: result.content.toString() },\n    messages: [{ role: 'assistant', content: `UX Expert: ${result.content}` }]\n  };\n}"
+      }
+    },
+    {
+      "id": "synthesize_consensus",
+      "type": "function",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof CollaborationState.State"
+          },
+          {
+            "name": "model",
+            "parameterType": "model",
+            "modelRef": "coordinator"
+          }
+        ],
+        "function": "async (state, model) => {\n  const proposalsText = Object.entries(state.proposals)\n    .map(([expert, proposal]) => `${expert.toUpperCase()}: ${proposal}`)\n    .join('\\n\\n');\n  \n  const prompt = `Synthesize these expert proposals into a unified decision:\\n\\n${proposalsText}`;\n  const result = await model.invoke([{ role: 'user', content: prompt }]);\n  \n  return {\n    consensusReached: true,\n    messages: [{ role: 'assistant', content: `Coordinator Synthesis: ${result.content}` }]\n  };\n}"
+      }
+    },
+    {
+      "id": "make_decision",
+      "type": "function",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof CollaborationState.State"
+          },
+          {
+            "name": "model",
+            "parameterType": "model",
+            "modelRef": "coordinator"
+          }
+        ],
+        "function": "async (state, model) => {\n  const lastMessage = state.messages[state.messages.length - 1];\n  const result = await model.invoke([{ role: 'user', content: `Based on the synthesis, make a final decision: ${lastMessage.content}` }]);\n  \n  return {\n    finalDecision: result.content.toString(),\n    messages: [{ role: 'assistant', content: `Final Decision: ${result.content}` }]\n  };\n}"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "__start__",
+      "to": "gather_proposals"
+    },
+    {
+      "from": "gather_proposals",
+      "type": "conditional",
+      "condition": "(state) => {\n  const { Send } = require('@langchain/langgraph');\n  return [\n    new Send('technical_expert', state),\n    new Send('business_expert', state),\n    new Send('ux_expert', state)\n  ];\n}"
+    },
+    {
+      "from": "technical_expert",
+      "to": "synthesize_consensus"
+    },
+    {
+      "from": "business_expert",
+      "to": "synthesize_consensus"
+    },
+    {
+      "from": "ux_expert",
+      "to": "synthesize_consensus"
+    },
+    {
+      "from": "synthesize_consensus",
+      "to": "make_decision"
+    },
+    {
+      "from": "make_decision",
+      "to": "__end__"
+    }
+  ],
+  "stateGraph": {
+    "annotationRef": "CollaborationState"
+  }
+}

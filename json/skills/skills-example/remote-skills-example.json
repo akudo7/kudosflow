@@ -1,0 +1,119 @@
+{
+  "config": {
+    "name": "Remote Skills Example",
+    "description": "Demonstrates fetching and using skills from remote registries",
+    "recursionLimit": 25,
+    "skillsRegistry": {
+      "localPath": "./skills",
+      "remoteSources": [
+        {
+          "name": "company-registry",
+          "url": "https://skills.company.com/api",
+          "apiKey": "${SKILLS_REGISTRY_API_KEY}",
+          "timeout": 10000,
+          "enabled": true
+        },
+        {
+          "name": "public-registry",
+          "url": "https://skills.agentskills.io/api",
+          "timeout": 15000,
+          "enabled": true
+        }
+      ],
+      "cache": {
+        "enabled": true,
+        "ttl": 3600,
+        "maxSize": 52428800,
+        "directory": ".cache/skills"
+      },
+      "security": {
+        "maxFileSize": 1048576,
+        "maxLoadedSkills": 100,
+        "strictValidation": true
+      },
+      "performance": {
+        "parallelLoading": true,
+        "maxConcurrentLoads": 10,
+        "preloadSkills": ["data_analysis", "report_generation"],
+        "enableMetrics": true
+      }
+    }
+  },
+  "stateAnnotation": {
+    "name": "RemoteSkillsState",
+    "type": "Annotation.Root"
+  },
+  "annotation": {
+    "messages": {
+      "type": "BaseMessage[]",
+      "reducer": "(x, y) => x.concat(y)",
+      "default": "[]"
+    },
+    "dataSource": {
+      "type": "string",
+      "default": "\"\""
+    },
+    "analysisResults": {
+      "type": "Record<string, any>",
+      "default": "{}"
+    },
+    "report": {
+      "type": "string",
+      "default": "\"\""
+    }
+  },
+  "models": [
+    {
+      "id": "claude",
+      "type": "anthropic",
+      "config": {
+        "model": "claude-3-5-sonnet-20241022",
+        "maxTokens": 4096
+      },
+      "systemPrompt": "You are a data analyst with access to advanced skills from remote registries."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "data_analyst",
+      "type": "model",
+      "modelRef": "claude",
+      "useSkills": [
+        "data_analysis@latest",
+        "statistical_modeling@1.2.0",
+        "data_visualization@^2.0.0"
+      ],
+      "skillLoadMode": "eager",
+      "failOnSkillError": false,
+      "skillLoadTimeout": 5000
+    },
+    {
+      "id": "report_generator",
+      "type": "model",
+      "modelRef": "claude",
+      "useSkills": [
+        "report_generation@latest",
+        "chart_embedding@*"
+      ],
+      "skillLoadMode": "lazy",
+      "ends": true
+    }
+  ],
+  "edges": [
+    {
+      "from": "__start__",
+      "to": "data_analyst"
+    },
+    {
+      "from": "data_analyst",
+      "to": "report_generator"
+    },
+    {
+      "from": "report_generator",
+      "to": "__end__"
+    }
+  ],
+  "stateGraph": {
+    "annotationRef": "RemoteSkillsState"
+  }
+}

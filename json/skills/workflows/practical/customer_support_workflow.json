@@ -1,0 +1,156 @@
+{
+  "$schema": "https://scenegraphmanager.com/schema/workflow.json",
+  "config": {
+    "name": "customer_support_workflow",
+    "description": "Complete customer support workflow with knowledge retrieval",
+    "recursionLimit": 35
+  },
+  "stateAnnotation": {
+    "name": "CustomerSupportState",
+    "type": "Annotation.Root"
+  },
+  "annotation": {
+    "messages": {
+      "type": "BaseMessage[]",
+      "reducer": "(x, y) => x.concat(y)",
+      "default": "[]"
+    },
+    "customerQuery": {
+      "type": "string",
+      "default": "''"
+    },
+    "productInfo": {
+      "type": "Record<string, any>",
+      "reducer": "(x, y) => ({ ...x, ...y })",
+      "default": "{}"
+    },
+    "troubleshootingSteps": {
+      "type": "string[]",
+      "reducer": "(x, y) => [...x, ...y]",
+      "default": "[]"
+    },
+    "resolution": {
+      "type": "string",
+      "default": "''"
+    },
+    "customerSatisfaction": {
+      "type": "string",
+      "default": "'pending'"
+    }
+  },
+  "models": [
+    {
+      "id": "support_agent",
+      "type": "anthropic",
+      "config": {
+        "model": "claude-3-5-sonnet-20241022",
+        "apiKey": "${ANTHROPIC_API_KEY}",
+        "maxTokens": 4096
+      },
+      "systemPrompt": "You are a customer support agent with three specialized skills:\n\n1. product_knowledge: Retrieve detailed product information, specifications, and documentation\n2. troubleshooting: Guide customers through step-by-step problem resolution\n3. faq_handling: Access frequently asked questions and standard solutions\n\nYour goal is to provide accurate, helpful, and empathetic support to customers. Always:\n- Listen carefully to the customer's issue\n- Use the appropriate skill to gather relevant information\n- Provide clear, actionable solutions\n- Follow up to ensure satisfaction"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "understand_query",
+      "type": "function",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof CustomerSupportState.State"
+          },
+          {
+            "name": "model",
+            "parameterType": "model",
+            "modelRef": "support_agent"
+          }
+        ],
+        "function": "async (state, model) => {\n  const query = state.customerQuery || state.messages[state.messages.length - 1]?.content || '';\n  const prompt = `Analyze this customer query and identify the key issue: ${query}`;\n  \n  const result = await model.invoke([{ role: 'user', content: prompt }]);\n  \n  return {\n    customerQuery: query,\n    messages: [{ role: 'assistant', content: `Query Analysis: ${result.content}` }]\n  };\n}"
+      }
+    },
+    {
+      "id": "search_knowledge",
+      "type": "function",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof CustomerSupportState.State"
+          },
+          {
+            "name": "model",
+            "parameterType": "model",
+            "modelRef": "support_agent"
+          }
+        ],
+        "function": "async (state, model) => {\n  const prompt = `Use the product_knowledge skill to find relevant information for: ${state.customerQuery}`;\n  \n  const result = await model.invoke([{ role: 'user', content: prompt }]);\n  \n  return {\n    productInfo: { retrieved: true, data: result.content.toString() },\n    messages: [{ role: 'assistant', content: `Knowledge Retrieved: ${result.content}` }]\n  };\n}"
+      }
+    },
+    {
+      "id": "provide_solution",
+      "type": "function",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof CustomerSupportState.State"
+          },
+          {
+            "name": "model",
+            "parameterType": "model",
+            "modelRef": "support_agent"
+          }
+        ],
+        "function": "async (state, model) => {\n  const context = `Customer Query: ${state.customerQuery}\\nProduct Info: ${JSON.stringify(state.productInfo)}`;\n  const prompt = `Use the troubleshooting skill to provide a solution for:\\n${context}`;\n  \n  const result = await model.invoke([{ role: 'user', content: prompt }]);\n  \n  return {\n    troubleshootingSteps: [result.content.toString()],\n    resolution: result.content.toString(),\n    messages: [{ role: 'assistant', content: `Solution Provided: ${result.content}` }]\n  };\n}"
+      }
+    },
+    {
+      "id": "verify_satisfaction",
+      "type": "function",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof CustomerSupportState.State"
+          },
+          {
+            "name": "model",
+            "parameterType": "model",
+            "modelRef": "support_agent"
+          }
+        ],
+        "function": "async (state, model) => {\n  const prompt = `Summarize the support interaction and ask for feedback:\\nQuery: ${state.customerQuery}\\nResolution: ${state.resolution}`;\n  \n  const result = await model.invoke([{ role: 'user', content: prompt }]);\n  \n  return {\n    customerSatisfaction: 'verified',\n    messages: [{ role: 'assistant', content: `Follow-up: ${result.content}` }]\n  };\n}"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "__start__",
+      "to": "understand_query"
+    },
+    {
+      "from": "understand_query",
+      "to": "search_knowledge"
+    },
+    {
+      "from": "search_knowledge",
+      "to": "provide_solution"
+    },
+    {
+      "from": "provide_solution",
+      "to": "verify_satisfaction"
+    },
+    {
+      "from": "verify_satisfaction",
+      "to": "__end__"
+    }
+  ],
+  "stateGraph": {
+    "annotationRef": "CustomerSupportState"
+  }
+}

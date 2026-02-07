@@ -1,0 +1,152 @@
+{
+  "$schema": "https://scenegraphmanager.com/schema/workflow.json",
+  "config": {
+    "name": "data_analysis_workflow",
+    "description": "Data analysis and reporting workflow",
+    "recursionLimit": 40
+  },
+  "stateAnnotation": {
+    "name": "DataAnalysisState",
+    "type": "Annotation.Root"
+  },
+  "annotation": {
+    "messages": {
+      "type": "BaseMessage[]",
+      "reducer": "(x, y) => x.concat(y)",
+      "default": "[]"
+    },
+    "dataSource": {
+      "type": "string",
+      "default": "''"
+    },
+    "analysisResults": {
+      "type": "Record<string, any>",
+      "reducer": "(x, y) => ({ ...x, ...y })",
+      "default": "{}"
+    },
+    "visualizations": {
+      "type": "string[]",
+      "reducer": "(x, y) => [...x, ...y]",
+      "default": "[]"
+    },
+    "report": {
+      "type": "string",
+      "default": "''"
+    }
+  },
+  "models": [
+    {
+      "id": "analyst_agent",
+      "type": "anthropic",
+      "config": {
+        "model": "claude-3-5-sonnet-20241022",
+        "apiKey": "${ANTHROPIC_API_KEY}",
+        "maxTokens": 4096
+      },
+      "systemPrompt": "You are a data analyst agent with specialized skills:\n\n1. data_analysis: Perform statistical analysis, identify patterns, calculate metrics\n2. visualization: Create charts, graphs, and visual representations of data\n3. statistical_analysis: Apply statistical methods, hypothesis testing, correlation analysis\n\nYour workflow:\n- Load and validate data from various sources\n- Apply appropriate analytical techniques\n- Create clear visualizations\n- Generate comprehensive reports with insights and recommendations\n\nAlways provide data-driven insights backed by rigorous analysis."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "load_data",
+      "type": "function",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof DataAnalysisState.State"
+          },
+          {
+            "name": "model",
+            "parameterType": "model",
+            "modelRef": "analyst_agent"
+          }
+        ],
+        "function": "async (state, model) => {\n  const dataSource = state.dataSource || 'default_dataset.csv';\n  const prompt = `Load and validate data from: ${dataSource}. Provide a summary of the data structure and quality.`;\n  \n  const result = await model.invoke([{ role: 'user', content: prompt }]);\n  \n  return {\n    analysisResults: { dataLoaded: true, summary: result.content.toString() },\n    messages: [{ role: 'assistant', content: `Data Loaded: ${result.content}` }]\n  };\n}"
+      }
+    },
+    {
+      "id": "analyze_data",
+      "type": "function",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof DataAnalysisState.State"
+          },
+          {
+            "name": "model",
+            "parameterType": "model",
+            "modelRef": "analyst_agent"
+          }
+        ],
+        "function": "async (state, model) => {\n  const dataSummary = state.analysisResults.summary || 'No data summary available';\n  const prompt = `Use the data_analysis and statistical_analysis skills to analyze:\\n${dataSummary}\\n\\nProvide key metrics, patterns, and statistical insights.`;\n  \n  const result = await model.invoke([{ role: 'user', content: prompt }]);\n  \n  return {\n    analysisResults: {\n      ...state.analysisResults,\n      analysis: result.content.toString(),\n      timestamp: new Date().toISOString()\n    },\n    messages: [{ role: 'assistant', content: `Analysis Complete: ${result.content}` }]\n  };\n}"
+      }
+    },
+    {
+      "id": "create_visualizations",
+      "type": "function",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof DataAnalysisState.State"
+          },
+          {
+            "name": "model",
+            "parameterType": "model",
+            "modelRef": "analyst_agent"
+          }
+        ],
+        "function": "async (state, model) => {\n  const analysis = state.analysisResults.analysis || 'No analysis available';\n  const prompt = `Use the visualization skill to create charts and graphs for:\\n${analysis}\\n\\nRecommend appropriate visualization types and describe them.`;\n  \n  const result = await model.invoke([{ role: 'user', content: prompt }]);\n  \n  return {\n    visualizations: [\n      'bar_chart.png',\n      'line_graph.png',\n      'scatter_plot.png'\n    ],\n    messages: [{ role: 'assistant', content: `Visualizations Created: ${result.content}` }]\n  };\n}"
+      }
+    },
+    {
+      "id": "generate_report",
+      "type": "function",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof DataAnalysisState.State"
+          },
+          {
+            "name": "model",
+            "parameterType": "model",
+            "modelRef": "analyst_agent"
+          }
+        ],
+        "function": "async (state, model) => {\n  const context = `\nData Source: ${state.dataSource}\nAnalysis Results: ${JSON.stringify(state.analysisResults)}\nVisualizations: ${state.visualizations.join(', ')}\n`;\n  \n  const prompt = `Generate a comprehensive data analysis report with:\n1. Executive Summary\n2. Key Findings\n3. Detailed Analysis\n4. Visualizations Reference\n5. Recommendations\n\nContext:${context}`;\n  \n  const result = await model.invoke([{ role: 'user', content: prompt }]);\n  \n  return {\n    report: result.content.toString(),\n    messages: [{ role: 'assistant', content: `Report Generated: ${result.content}` }]\n  };\n}"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "__start__",
+      "to": "load_data"
+    },
+    {
+      "from": "load_data",
+      "to": "analyze_data"
+    },
+    {
+      "from": "analyze_data",
+      "to": "create_visualizations"
+    },
+    {
+      "from": "create_visualizations",
+      "to": "generate_report"
+    },
+    {
+      "from": "generate_report",
+      "to": "__end__"
+    }
+  ],
+  "stateGraph": {
+    "annotationRef": "DataAnalysisState"
+  }
+}
