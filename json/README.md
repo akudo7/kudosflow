@@ -1,156 +1,208 @@
 # JSON Configuration Examples
 
-このディレクトリには、SceneGraphManagerのワークフロー設定ファイル（JSON）の例が含まれています。
+This directory contains example workflow configuration files (JSON) for SceneGraphManager.
 
-## 📁 ディレクトリ構成
+## 📁 Directory Structure
 
-```
+```text
 json/
-├── README.md                    # このファイル
-├── interrupt.json               # 割り込み処理の例
-├── model.json                   # モデル設定の基本例
-├── ollama.json                  # Ollama使用例
-├── a2a/                         # A2A (Agent-to-Agent) 設定
-│   ├── client.json              # A2Aクライアント設定
-│   └── servers/                 # A2Aサーバー設定
-│       ├── quality-evaluation.json
-│       ├── research-execution.json
-│       └── task-creation.json
-├── a2a-jp/                      # A2A 日本語設定
-│   ├── client.json
-│   └── servers/
-│       ├── quality-evaluation.json
-│       ├── research-execution.json
-│       └── task-creation.json
-└── skills/                      # スキルシステム関連
-    ├── skills-example.json      # スキル機能の基本例
-    ├── skills-example/          # 追加のスキル例
-    │   ├── peer-collaboration-example.json
-    │   └── remote-skills-example.json
-    └── workflows/               # ワークフロー例
-        ├── patterns/            # パターン実装
-        │   ├── handoffs_workflow.json
-        │   ├── peer_collaboration_team.json
-        │   ├── skills_office_automation.json
-        │   └── subagents_research.json
-        └── practical/           # 実用的な例
-            ├── customer_support_workflow.json
-            ├── data_analysis_workflow.json
-            ├── document_generation_workflow.json
-            └── web_research_workflow.json
+├── README.md                    # This file
+├── interrupt.json               # Interrupt handling example
+├── model.json                   # Basic model configuration
+├── ollama.json                  # Ollama usage example
+├── skillsWithShowResult.json    # Custum and System Skills + result display node example
+└── a2a/                         # A2A (Agent-to-Agent) configuration
+    ├── client.json              # A2A client configuration
+    └── servers/                 # A2A server configurations
+        ├── quality-evaluation.json
+        ├── research-execution.json
+        └── task-creation.json
 ```
 
-## 📄 ファイル説明
+## 📄 File Descriptions
 
-### ルートレベルのファイル
+### Root Level Files
 
 #### interrupt.json
-ユーザー割り込み処理のワークフロー例。
 
-**特徴:**
-- 人間の介入が必要なポイントでの中断
-- 状態の保存と復元
-- インタラクティブなワークフロー
+Workflow example demonstrating user interrupt handling.
 
-**使用シーン:**
-- 承認フローの実装
-- 手動レビューが必要な処理
-- ユーザー確認を伴うタスク
+**Features:**
+
+- Interruption at points requiring human intervention
+- State saving and restoration
+- Interactive workflow execution
+
+**Use Cases:**
+
+- Implementing approval flows
+- Processes requiring manual review
+- Tasks with user confirmation steps
 
 #### model.json
-基本的なモデル設定の例。
 
-**特徴:**
-- 複数のAIモデルの設定
-- Anthropic Claude、OpenAI GPT、Ollamaの使用例
-- システムプロンプトの設定
-- パラメータ調整（temperature、maxTokensなど）
+Basic model configuration example.
 
-**含まれる設定:**
-- モデルの初期化
-- 基本的なメッセージフロー
-- シンプルなワークフロー構造
+**Features:**
+
+- Multiple AI model configurations
+- Usage examples for Anthropic Claude, OpenAI GPT, and Ollama
+- System prompt configuration
+- Parameter tuning (temperature, maxTokens, etc.)
+
+**Included Settings:**
+
+- Model initialization
+- Basic message flow
+- Simple workflow structure
 
 #### ollama.json
-Ollamaを使用したローカルLLMの実行例。
 
-**特徴:**
-- ローカルで動作するLLMの使用
-- プライバシーに配慮した実装
-- カスタムモデルのサポート
+Example using Ollama for local LLM execution.
 
-**使用シーン:**
-- オフライン環境での実行
-- データの外部送信を避けたい場合
-- カスタムモデルのテスト
+**Features:**
 
-### a2a/ - Agent-to-Agent プロトコル
+- Local LLM usage
+- Privacy-focused implementation
+- Custom model support
+
+**Use Cases:**
+
+- Offline environment execution
+- When avoiding external data transmission
+- Custom model testing
+
+#### skillsWithShowResult.json
+
+Workflow example integrating System Skills with a result display node.
+
+**Features:**
+
+- System Skills enabled with GPT-5.2 model (`bindSystemSkills: true`)
+- Skills execution in ToolNode (`useSystemSkills: true`)
+- Skill management via FilesystemBackend
+- Conditional branching for tool_calls detection
+- Dedicated result display node (showResult)
+
+**Workflow Structure:**
+
+1. **agent** - LLM processes user requests
+2. **Conditional branch** - Detects presence of tool_calls
+3. **tools** - Executes System Skills (ToolNode)
+4. **showResult** - Formats and displays final results
+
+**Use Cases:**
+
+- Claude Code-style tool execution environment
+- Workflows involving filesystem operations
+- When explicit display of tool execution results is needed
+- Reference implementation for Skills integration
+
+**Example Prompts:**
+
+1. **arXiv Search:**
+
+   ```text
+   Search arXiv for papers about 'transformers in natural language processing' and show me the top 3 results. Use the arxiv-search skill.
+   ```
+
+2. **LangGraph Documentation:**
+
+   ```text
+   Can you explain how to create a basic agent using LangGraph? Use the langgraph-docs skill to get the latest documentation.
+   ```
+
+3. **File Search with System Skills:**
+
+   ```text
+   Use glob_files to find all TypeScript files in the /Users/akirakudo/Desktop/MyWork/test/src directory, then use grep_search to find files containing 'greetAll'.
+   ```
+
+### a2a/ - Agent-to-Agent Protocol
 
 #### client.json
-A2Aクライアントの設定例。複数のエージェントと通信するクライアント側の設定。
 
-**特徴:**
-- リモートエージェントへの接続
-- エージェントカードの取得
-- タスクの委譲とレスポンス処理
+A2A client configuration example. Client-side configuration for communicating with multiple agents.
 
-#### servers/ サブディレクトリ
-A2Aサーバーとして動作するエージェントの設定例。
+**Features:**
 
-- **quality-evaluation.json** - 品質評価エージェント
-- **research-execution.json** - 調査実行エージェント
-- **task-creation.json** - タスク作成エージェント
+- Connection to remote agents
+- Agent card retrieval
+- Task delegation and response handling
 
-### a2a-jp/ - Agent-to-Agent 日本語対応
+#### servers/ Subdirectory
 
-`a2a/` と同じ構造で、日本語に最適化された設定例。
+Configuration examples for agents acting as A2A servers.
 
-**特徴:**
-- 日本語システムプロンプト
-- 日本語コンテキストでの最適化
-- 文化的配慮を含むレスポンス
+- **quality-evaluation.json** - Quality evaluation agent
+- **research-execution.json** - Research execution agent
+- **task-creation.json** - Task creation agent
 
-### skills/ - スキルシステム
+### skills/ - Skills System
 
-スキル機能を使用したワークフローの例。詳細は [skills/README.md](skills/README.md) を参照してください。
+Workflow examples using the skills feature. See [skills/README.md](skills/README.md) for details.
 
-**主な内容:**
-- プログレッシブディスクロージャ（段階的スキル開示）
-- ローカルスキルの管理
-- リモートスキルとの連携
-- パターン実装例（ハンドオフ、ピアコラボレーション、サブエージェント）
-- 実用的なワークフロー例（カスタマーサポート、データ分析、Web調査など）
+**Main Content:**
 
-## 🚀 使用方法
+- Progressive disclosure (gradual skill revelation)
+- Local skill management
+- Integration with remote skills
+- Pattern implementation examples (handoffs, peer collaboration, subagents)
+- Practical workflow examples (customer support, data analysis, web research, etc.)
 
-### 基本的な使い方
+## 🎨 Visual Workflow Editor
+
+As a VSCode extension, you can edit workflows with an intuitive visual editor:
+
+**Key Features:**
+
+- **Drag & Drop** - Freely position nodes
+- **Real-time Preview** - See changes immediately
+- **Settings Panel** - Unified management of nodes, models, A2A, MCP, and Skills
+- **Visual Indicators**
+  - 🤖 ToolNode badge
+  - 🔄 A2A enabled badge
+  - 🔌 MCP enabled badge
+  - 🔧 System Skills enabled badge
+
+**How to Use:**
+
+1. Right-click on a `.json` file
+2. Select "Open with Kudosflow Editor"
+3. Edit workflow in visual editor
+4. Double-click to open node settings
+5. Manage global settings in settings panel
+
+## 🚀 Usage
+
+### Basic Usage
 
 ```typescript
 import { WorkflowEngine } from '@kudosflow/scene-graph-manager';
 import fs from 'fs';
 
-// JSONファイルの読み込み
+// Load JSON file
 const config = JSON.parse(
   fs.readFileSync('./json/model.json', 'utf-8')
 );
 
-// WorkflowEngineの初期化
+// Initialize WorkflowEngine
 const engine = new WorkflowEngine(config);
 await engine.build();
 
-// ワークフローの実行
+// Execute workflow
 const result = await engine.invoke({
   messages: [
-    { role: "user", content: "こんにちは" }
+    { role: "user", content: "Hello" }
   ]
 });
 
 console.log(result.messages[result.messages.length - 1].content);
 ```
 
-### 環境変数の設定
+### Environment Variables
 
-ワークフローを実行する前に、必要な環境変数を設定してください：
+Set required environment variables before running workflows:
 
 ```bash
 # Anthropic API Key
@@ -159,27 +211,27 @@ export ANTHROPIC_API_KEY="your-api-key"
 # OpenAI API Key
 export OPENAI_API_KEY="your-api-key"
 
-# Azure OpenAI (使用する場合)
+# Azure OpenAI (if using)
 export AZURE_OPENAI_API_KEY="your-api-key"
 export AZURE_OPENAI_ENDPOINT="https://your-endpoint.openai.azure.com"
 ```
 
-### ストリーミング実行
+### Streaming Execution
 
 ```typescript
-// ストリーミングでリアルタイムに結果を取得
+// Get results in real-time with streaming
 for await (const chunk of engine.stream(
-  { messages: [{ role: "user", content: "長い説明をお願いします" }] },
+  { messages: [{ role: "user", content: "Please provide a detailed explanation" }] },
   { streamMode: "values" }
 )) {
   console.log("Update:", chunk);
 }
 ```
 
-### A2A ワークフローの実行
+### A2A Workflow Execution
 
 ```typescript
-// A2Aクライアント設定の読み込み
+// Load A2A client configuration
 const a2aConfig = JSON.parse(
   fs.readFileSync('./json/a2a/client.json', 'utf-8')
 );
@@ -187,75 +239,79 @@ const a2aConfig = JSON.parse(
 const engine = new WorkflowEngine(a2aConfig);
 await engine.build();
 
-// リモートエージェントを活用した実行
+// Execute using remote agents
 const result = await engine.invoke({
   messages: [
-    { role: "user", content: "この論文の品質を評価してください" }
+    { role: "user", content: "Please evaluate the quality of this paper" }
   ]
 });
 ```
 
-## 🎯 ユースケース別の推奨ファイル
+## 🎯 Recommended Files by Use Case
 
-### シンプルなチャットボット
+### Simple Chatbot
 
 → [model.json](model.json)
 
-### カスタマーサポート
+### Tool Execution with System Skills
+
+→ [skillsWithShowResult.json](skillsWithShowResult.json)
+
+### Customer Support
 
 → [skills/workflows/practical/customer_support_workflow.json](skills/workflows/practical/customer_support_workflow.json)
 
-### データ分析自動化
+### Data Analysis Automation
 
 → [skills/workflows/practical/data_analysis_workflow.json](skills/workflows/practical/data_analysis_workflow.json)
 
-### Web調査
+### Web Research
 
 → [skills/workflows/practical/web_research_workflow.json](skills/workflows/practical/web_research_workflow.json)
 
-### 複数エージェントの協調作業
+### Multi-Agent Collaboration
 
 → [skills/workflows/patterns/peer_collaboration_team.json](skills/workflows/patterns/peer_collaboration_team.json)
 
-### 承認フロー付きワークフロー
+### Workflows with Approval Flow
 
 → [interrupt.json](interrupt.json)
 
-### ローカル実行（Ollama）
+### Local Execution (Ollama)
 
 → [ollama.json](ollama.json)
 
-## 📚 関連ドキュメント
+## 📚 Related Documentation
 
-### 設計ガイド
+### Design Guides
 
-- [CLAUDE.md](../CLAUDE.md) - プロジェクト全体の技術ドキュメント
-- [Workflow Design Guide](../docs/guides/WORKFLOW_DESIGN_GUIDE.md) - ワークフロー設計ガイド
-- [Skills Authoring Guide](../docs/guides/SKILLS_AUTHORING_GUIDE.md) - スキル作成ガイド
+- [CLAUDE.md](../CLAUDE.md) - Project-wide technical documentation
+- [Workflow Design Guide](../docs/guides/WORKFLOW_DESIGN_GUIDE.md) - Workflow design guide
+- [Skills Authoring Guide](../docs/guides/SKILLS_AUTHORING_GUIDE.md) - Skills creation guide
 
-### パターンとベストプラクティス
+### Patterns and Best Practices
 
-- [Patterns Comparison](../docs/guides/PATTERNS_COMPARISON.md) - 各パターンの比較
-- [Performance Tuning Guide](../docs/guides/PERFORMANCE_TUNING_GUIDE.md) - パフォーマンス最適化
-- [Troubleshooting Guide](../docs/guides/TROUBLESHOOTING_GUIDE.md) - トラブルシューティング
+- [Patterns Comparison](../docs/guides/PATTERNS_COMPARISON.md) - Comparison of patterns
+- [Performance Tuning Guide](../docs/guides/PERFORMANCE_TUNING_GUIDE.md) - Performance optimization
+- [Troubleshooting Guide](../docs/guides/TROUBLESHOOTING_GUIDE.md) - Troubleshooting
 
-### API リファレンス
+### API Reference
 
-- [README.md](../README.md) - プロジェクト全体のREADME
-- [LangGraph Skills Implementation](../docs/LANGGRAPH_SKILLS_IMPLEMENTATION/README.md) - スキルシステムの実装詳細
+- [README.md](../README.md) - Project README
+- [LangGraph Skills Implementation](../docs/LANGGRAPH_SKILLS_IMPLEMENTATION/README.md) - Skills system implementation details
 
-## 🔧 カスタマイズのヒント
+## 🔧 Customization Tips
 
-### モデルの変更
+### Changing Models
 
 ```json
 {
   "models": [
     {
       "id": "my_model",
-      "type": "anthropic",
+      "type": "openai",
       "config": {
-        "model": "claude-3-5-sonnet-20241022",
+        "model": "gpt-5.2",
         "temperature": 0.7,
         "maxTokens": 4096
       }
@@ -264,7 +320,13 @@ const result = await engine.invoke({
 }
 ```
 
-### システムプロンプトのカスタマイズ
+**Supported Models:**
+
+- OpenAI GPT-5.2 (Latest & Recommended)
+- Anthropic Claude 3.5 Sonnet
+- Ollama Local Models
+
+### Customizing System Prompts
 
 ```json
 {
@@ -273,13 +335,13 @@ const result = await engine.invoke({
       "id": "custom_assistant",
       "type": "anthropic",
       "config": { ... },
-      "systemPrompt": "あなたは専門的な技術サポートエージェントです。常に丁寧で正確な回答を心がけてください。"
+      "systemPrompt": "You are a professional technical support agent. Always strive to provide courteous and accurate responses."
     }
   ]
 }
 ```
 
-### ツールの追加
+### Adding Tools
 
 ```json
 {
@@ -298,60 +360,151 @@ const result = await engine.invoke({
 }
 ```
 
-## 🧪 テスト
+### Enabling System Skills
 
-各設定ファイルの動作確認用テストは [../tests/skills/](../tests/skills/) にあります：
+The Skills system provides automatic discovery of skill definitions via `SKILL.md` files and integrates System Skills (Claude Code-style tools) for enhanced AI capabilities.
 
-- `test-skills.ts` - スキル機能のテスト
-- `test-skills-phase4.mjs` - Phase 4 スキルシステムのテスト
-- `test_skills_loading.ts` - スキル読み込みのテスト
-- `test_skills_integration.ts` - 統合テスト
-- その他のパターン別テスト
+**Node-level Skills Activation:**
 
-### テストの実行
-
-```bash
-# TypeScriptテストのビルドと実行
-yarn build
-node dist/tests/skills/test-skills.js
-
-# mjsテストの直接実行
-node tests/skills/test-skills-phase4.mjs
+```json
+{
+  "nodes": [
+    {
+      "id": "agent_node",
+      "type": "ToolNode",
+      "useSystemSkills": true,
+      "handler": {
+        "function": "agent_handler",
+        "parameters": [...]
+      }
+    }
+  ]
+}
 ```
 
-## 💡 よくある質問
+**Model-level Skills Activation:**
 
-### Q: どのファイルから始めればいい？
+```json
+{
+  "models": [
+    {
+      "id": "skilled_model",
+      "type": "openai",
+      "config": {
+        "model": "gpt-5.2"
+      },
+      "bindSystemSkills": true,
+      "systemPrompt": "You are an AI assistant with access to various skills and tools."
+    }
+  ]
+}
+```
 
-A: シンプルな例から始めることをお勧めします：
+**Managing Skills Configuration:**
 
-1. [model.json](model.json) - 基本的なワークフロー
-2. [skills/skills-example.json](skills/skills-example.json) - スキル機能の基本
-3. [skills/workflows/practical/](skills/workflows/practical/) - 実用例
+The Skills system supports automatic skill discovery through `SKILL.md` files and provides integration with System Skills.
 
-### Q: 自分のワークフローを作成するには？
+```json
+{
+  "config": {
+    "skills": {
+      "enabled": true,
+      "skillsPath": "skills",
+      "backend": {
+        "virtualMode": true,
+        "rootDir": "."
+      }
+    }
+  }
+}
+```
 
-A: 既存の例をコピーして、以下を変更してください：
+**Available System Skills:**
 
-1. モデル設定（APIキー、モデル名）
-2. システムプロンプト
-3. ノードとエッジの構成
-4. 使用するスキルやツール
+When `bindSystemSkills` or `useSystemSkills` is enabled, the following System Skills are automatically available:
 
-### Q: エラーが発生した場合は？
+- `read_file` - Read file contents with line numbers
+- `write_file` - Write new files or overwrite existing ones
+- `edit_file` - Make precise edits using string replacement
+- `glob_files` - Search for files using glob patterns
+- `grep_search` - Search file contents using regex
+- `bash_command` - Execute bash commands
+- `web_fetch` - Fetch and process web content
 
-A: [Troubleshooting Guide](../docs/guides/TROUBLESHOOTING_GUIDE.md) を参照してください。
+**Skills Discovery:**
 
-## 📝 ライセンス
+Skills are automatically discovered from `SKILL.md` files in the skills directory:
 
-MIT License - 詳細は [LICENSE](../LICENSE) を参照してください。
+```text
+skills/
+├── SKILL.md              # Skill definition with name, description, instructions
+├── my-custom-skill/
+│   └── SKILL.md          # Another skill definition
+└── data-processing/
+    └── SKILL.md          # Data processing skill
+```
 
-## 🤝 コントリビューション
+Each `SKILL.md` file should contain:
 
-新しいワークフロー例の追加や改善を歓迎します！
-詳細は [README.md](../README.md) を参照してください。
+- **name**: Skill identifier
+- **description**: Brief explanation of the skill's purpose
+- **instructions**: Detailed usage instructions and examples
+
+**Skills Prompt Injection:**
+
+When skills are enabled, their definitions are automatically injected into the system prompt, allowing the AI to understand and use available skills contextually.
+
+## 💡 Frequently Asked Questions
+
+### Q: Which file should I start with?
+
+A: We recommend starting with simple examples:
+
+1. [model.json](model.json) - Basic workflow
+
+### Q: How do I create my own workflow?
+
+A: Copy an existing example and modify the following:
+
+1. Model configuration (API keys, model names)
+2. System prompts
+3. Node and edge composition
+4. Skills and tools to use
+
+### Q: What should I do if I encounter an error?
+
+A: Please refer to the [Troubleshooting Guide](../docs/guides/TROUBLESHOOTING_GUIDE.md).
+
+## 📝 License
+
+MIT License - See [LICENSE](../LICENSE) for details.
+
+## 🤝 Contributing
+
+We welcome additions of new workflow examples and improvements!
+See [README.md](../README.md) for details.
 
 ---
 
-**最終更新:** 2026-02-06
-**バージョン:** 2.0.0
+**Last Updated:** 2026-02-14
+**Version:** 1.0.1 (unreleased)
+
+## 🆕 Latest Updates (v1.0.1)
+
+### System Skills Integration
+
+- Node-level and model-level Skills activation
+- Intuitive configuration management with SkillsConfigEditor
+- Visual indicator (🔧 icon) to display Skills enabled state
+- Direct access to skills folder from VSCode File Explorer
+
+### UI/UX Improvements
+
+- Dedicated ToolNode editor dialog (Skills, MCP, A2A unified configuration)
+- Quick node settings editing with double-click
+- Improved badge system visualizing enabled state of each feature
+
+### Model Upgrades
+
+- GPT-5.2 support (latest OpenAI model)
+- Enhanced performance and accuracy

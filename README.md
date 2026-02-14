@@ -52,6 +52,8 @@ Build and execute node-based AI agent workflows with a drag-and-drop interface i
 - 🔌 **Node-Based Architecture**: Connect nodes to build complex AI agent workflows
 - 💾 **JSON Storage**: Workflows stored as portable JSON files in your workspace
 - 🔄 **A2A & MCP Integration**: Support for Agent-to-Agent and MCP communication protocols
+- 🔧 **System Skills Integration**: Comprehensive support for System Skills with visual indicators and centralized management
+- 🤖 **Advanced AI Models**: Powered by GPT-5.2 for enhanced performance
 - 🎯 **Context Menu Integration**: Right-click any JSON file to open in workflow editor
 - 🚀 **Live Execution**: Real-time workflow execution and testing
 - 🧵 **State Management**: Thread-based conversation persistence across requests
@@ -70,7 +72,7 @@ Build and execute node-based AI agent workflows with a drag-and-drop interface i
 #### Option 1: From VSIX (Current)
 
 ```bash
-code --install-extension kudosflow2-1.0.0.vsix
+code --install-extension kudosflow2-1.1.0.vsix
 ```
 
 #### Option 2: From VSCode Marketplace (Coming Soon)
@@ -99,7 +101,7 @@ Search for "Kudosflow2" in the VSCode extensions marketplace.
    Sample workflows are automatically installed to:
 
    ```text
-   ~/.vscode/extensions/akirakudo911.kudosflow2-1.0.0/json/
+   ~/.vscode/extensions/akirakudo911.kudosflow2-1.1.0/json/
    ```
 
    **Basic Examples:**
