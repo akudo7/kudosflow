@@ -67,7 +67,7 @@
       "id": "mainModel",
       "type": "OpenAI",
       "config": {
-        "model": "gpt-4o-mini",
+        "model": "gpt-5.2",
         "temperature": 0.3
       },
       "bindA2AServers": true,

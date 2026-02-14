@@ -1,0 +1,125 @@
+{
+  "config": {
+    "info": {
+      "version": "1.0.0",
+      "description": "LangGraph workflow with Claude Code-style tools and FilesystemBackend skills integration",
+      "copyright": "Copyright 2026",
+      "author": "Akira Kudo"
+    },
+    "recursionLimit": 25,
+    "eventEmitter": {
+      "defaultMaxListeners": 10
+    },
+    "skills": {
+      "enabled": true,
+      "skillsPath": "skills",
+      "backend": {
+        "virtualMode": true,
+        "rootDir": "."
+      }
+    },
+    "store": {
+      "type": "InMemoryStore"
+    }
+  },
+  "stateAnnotation": {
+    "name": "StateAnnotation",
+    "type": "Annotation.Root"
+  },
+  "annotation": {
+    "messages": {
+      "type": "BaseMessage[]",
+      "reducer": "(x, y) => x.concat(y)",
+      "default": []
+    }
+  },
+  "models": [
+    {
+      "id": "opanai",
+      "type": "openai",
+      "config": {
+        "model": "gpt-5.2",
+        "temperature": 0.7
+      },
+      "bindSystemSkills": true,
+      "systemPrompt": "You are a helpful AI assistant with access to various tools and skills. When asked to perform a task, you MUST use the available tools to complete it. ALWAYS read and report the actual results returned by tools. DO NOT just describe how to use tools - actually invoke them and return real results. When tools return data, you MUST include that data in your response to the user."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "agent",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof StateAnnotation.State"
+          },
+          {
+            "name": "model",
+            "parameterType": "model",
+            "modelRef": "opanai"
+          }
+        ],
+        "function": "const messages = state.messages;\nconst response = await model.invoke(messages);\nreturn { messages: [response] };"
+      }
+    },
+    {
+      "id": "tools",
+      "type": "ToolNode",
+      "useSystemSkills": true
+    },
+    {
+      "id": "showResult",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof StateAnnotation.State"
+          }
+        ],
+        "function": "const messages = state.messages;\nconst lastMessage = messages[messages.length - 1];\nconst resultMessage = lastMessage.content || 'No result';\n\nconsole.log('🔍 Final result:', resultMessage);\n\nreturn {\n  messages: [{ role: 'assistant', content: resultMessage }]\n};"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "__start__",
+      "to": "agent"
+    },
+    {
+      "from": "agent",
+      "type": "conditional",
+      "condition": {
+        "name": "shouldContinue",
+        "handler": {
+          "parameters": [
+            {
+              "name": "state",
+              "parameterType": "state",
+              "stateType": "typeof StateAnnotation.State"
+            }
+          ],
+          "function": "const messages = state.messages;\nconst lastMessage = messages[messages.length - 1];\nif (lastMessage && lastMessage.tool_calls && lastMessage.tool_calls.length > 0) {\n  return 'tools';\n}\nreturn 'showResult';"
+        }
+      }
+    },
+    {
+      "from": "tools",
+      "to": "agent"
+    },
+    {
+      "from": "showResult",
+      "to": "__end__"
+    }
+  ],
+  "stateGraph": {
+    "annotationRef": "StateAnnotation",
+    "config": {
+      "checkpointer": {
+        "type": "MemorySaver"
+      }
+    }
+  }
+}

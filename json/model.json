@@ -42,7 +42,7 @@
       "id": "adviceModel",
       "type": "OpenAI",
       "config": {
-        "model": "gpt-4o-mini",
+        "model": "gpt-5.2",
         "temperature": 0.7
       },
       "systemPrompt": "You are a career counselor. Based on the user's occupation, provide appropriate advice within 100 characters. Keep it concise and practical."

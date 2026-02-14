@@ -24,7 +24,8 @@
 		".vscode-test",
 		"out",
 		"dist",
-		"webview-ui"
+		"webview-ui",
+		"skills"
 	]
 }
 

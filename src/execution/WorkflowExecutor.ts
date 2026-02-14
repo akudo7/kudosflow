@@ -251,7 +251,19 @@ export class WorkflowExecutor {
     session.isExecuting = false;
 
     // Send result to chat
-    if (result && result.output) {
+    // LangGraph workflows return result with messages array
+    if (result && result.messages && Array.isArray(result.messages) && result.messages.length > 0) {
+      // Get the last message from the workflow
+      const lastMessage = result.messages[result.messages.length - 1];
+      const content = lastMessage.content || this.formatOutput(result);
+
+      this.sendMessage({
+        command: 'executionMessage',
+        role: 'assistant',
+        content: typeof content === 'string' ? content : this.formatOutput(content)
+      });
+    } else if (result && result.output) {
+      // Fallback for other result formats
       this.sendMessage({
         command: 'executionMessage',
         role: 'assistant',
