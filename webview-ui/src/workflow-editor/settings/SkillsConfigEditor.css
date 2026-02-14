@@ -1,0 +1,170 @@
+/* Skills Configuration Editor Styles */
+
+.config-section h3 {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.form-group input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+.form-group input[type="text"] {
+  width: 100%;
+  padding: 6px 12px;
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-input-border);
+  color: var(--vscode-input-foreground);
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.form-group input[type="text"]:focus {
+  outline: 1px solid var(--vscode-focusBorder);
+}
+
+.input-with-button {
+  display: flex;
+  gap: 8px;
+}
+
+.input-with-button input {
+  flex: 1;
+}
+
+.secondary-button {
+  padding: 6px 12px;
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.secondary-button:hover {
+  background: var(--vscode-button-secondaryHoverBackground);
+}
+
+.secondary-button:active {
+  opacity: 0.8;
+}
+
+.help-text {
+  margin: 4px 0 0 0;
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground);
+  line-height: 1.4;
+}
+
+.info-text {
+  margin: 4px 0 0 0;
+  font-size: 11px;
+  color: var(--vscode-textLink-foreground);
+}
+
+.info-box {
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--vscode-textBlockQuote-background);
+  border-left: 3px solid var(--vscode-textLink-foreground);
+  border-radius: 4px;
+}
+
+.info-box p {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+}
+
+.info-box p:last-child {
+  margin-bottom: 0;
+}
+
+.info-box ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.info-box li {
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.info-box code {
+  background: var(--vscode-textCodeBlock-background);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: var(--vscode-editor-font-family);
+}
+
+.tools-details {
+  margin-top: 8px;
+}
+
+.tools-details summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--vscode-textLink-foreground);
+  user-select: none;
+}
+
+.tools-details summary:hover {
+  text-decoration: underline;
+}
+
+.tools-list {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
+.tools-list li {
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--vscode-descriptionForeground);
+}
+
+.tools-list code {
+  background: var(--vscode-textCodeBlock-background);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: var(--vscode-editor-font-family);
+  color: var(--vscode-textPreformat-foreground);
+}
+
+/* Node Badges */
+.node-badges {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  display: flex;
+  gap: 4px;
+}
+
+.node-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--vscode-badge-background);
+  font-size: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.tools-badge {
+  background: var(--vscode-testing-iconPassed);
+}

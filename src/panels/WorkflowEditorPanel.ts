@@ -6,6 +6,7 @@ import {
   Uri,
   ViewColumn,
   workspace,
+  commands,
 } from "vscode";
 import * as path from "path";
 import { getUri } from "../utilities/getUri";
@@ -336,6 +337,9 @@ export class WorkflowEditorPanel {
           case "clearAllChatHistory":
             await this._clearAllChatHistory();
             break;
+          case "skills:openFolder":
+            await this._openSkillsFolder(message.path);
+            break;
         }
       },
       undefined,
@@ -631,6 +635,28 @@ export class WorkflowEditorPanel {
    */
   public reveal(): void {
     this._panel.reveal(ViewColumn.One);
+  }
+
+  /**
+   * Opens the skills folder in VSCode File Explorer
+   */
+  private async _openSkillsFolder(skillsPath: string): Promise<void> {
+    try {
+      const workspaceFolder = workspace.workspaceFolders?.[0];
+      if (!workspaceFolder) {
+        window.showWarningMessage('No workspace folder is open');
+        return;
+      }
+
+      const fullPath = path.join(workspaceFolder.uri.fsPath, skillsPath || 'skills');
+      const uri = Uri.file(fullPath);
+
+      // Reveal the folder in the File Explorer
+      await commands.executeCommand('revealInExplorer', uri);
+    } catch (error) {
+      console.error('Error opening skills folder:', error);
+      window.showErrorMessage(`Failed to open skills folder: ${error}`);
+    }
   }
 
   /**

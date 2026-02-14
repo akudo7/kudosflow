@@ -8,6 +8,7 @@ import { AnnotationFieldsEditor } from './settings/AnnotationFieldsEditor';
 import { ModelEditor } from './settings/ModelEditor';
 import { MCPServerEditor } from './settings/MCPServerEditor';
 import { A2AClientEditor } from './settings/A2AClientEditor';
+import { SkillsConfigEditor } from './settings/SkillsConfigEditor';
 interface Props {
   show: boolean;
   workflowConfig: WorkflowConfig;
@@ -19,7 +20,7 @@ interface Props {
   onUpdateEdges: (edges: ReactFlowEdge[]) => void;
 }
 
-type TabType = 'nodes' | 'settings' | 'stateGraph' | 'annotation' | 'a2aServers' | 'models' | 'mcpServers';
+type TabType = 'nodes' | 'settings' | 'stateGraph' | 'annotation' | 'a2aServers' | 'models' | 'mcpServers' | 'skills';
 
 export const WorkflowSettingsPanel: React.FC<Props> = ({
   show,
@@ -83,6 +84,15 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
 
   const handleA2AServersChange = (a2aServers: Record<string, A2AServerConfig>) => {
     onUpdateConfig({ a2aServers });
+  };
+
+  const handleSkillsChange = (skills: any) => {
+    onUpdateConfig({
+      config: {
+        ...workflowConfig.config,
+        skills
+      }
+    });
   };
 
   const panelStyle: React.CSSProperties = {
@@ -205,6 +215,12 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
         >
           MCP
         </button>
+        <button
+          onClick={() => setActiveTab('skills')}
+          style={getTabStyle(activeTab === 'skills')}
+        >
+          Skills
+        </button>
       </div>
 
       <div style={contentStyle}>
@@ -286,6 +302,12 @@ export const WorkflowSettingsPanel: React.FC<Props> = ({
           <MCPServerEditor
             mcpServers={workflowConfig.mcpServers || {}}
             onMcpServersChange={handleMcpServersChange}
+          />
+        )}
+        {activeTab === 'skills' && (
+          <SkillsConfigEditor
+            config={workflowConfig.config?.skills}
+            onConfigUpdate={handleSkillsChange}
           />
         )}
       </div>

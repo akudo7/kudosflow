@@ -4,7 +4,9 @@ import { CustomNodeData } from './types/workflow.types';
 import { NodeBadges } from './settings/NodeBadges';
 
 export const ToolNode = memo(({ data, id }: NodeProps) => {
-  const nodeData = data as CustomNodeData;
+  const nodeData = data as CustomNodeData & {
+    onNodeDoubleClick?: (nodeId: string, nodeData: CustomNodeData) => void;
+  };
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(nodeData.label);
   const [nameError, setNameError] = useState<string | null>(null);
@@ -14,27 +16,31 @@ export const ToolNode = memo(({ data, id }: NodeProps) => {
   const showToolNodeBadge = true; // Always show for ToolNode
   const showA2ABadge = nodeData.useA2AServers === true;
 
-  // Check MCP binding: either useMcpServers flag OR any parameter uses a model with MCP binding
+  // Check MCP and System Skills binding: either direct flags OR any parameter uses a model with binding
   let hasModelWithMCP = false;
+  let hasModelWithSystemSkills = false;
 
   // Direct ToolNode MCP flag
   if (nodeData.useMcpServers === true) {
     hasModelWithMCP = true;
   }
 
-  // Or check if any parameter uses a model with MCP binding
-  if (!hasModelWithMCP && nodeData.parameters && nodeData.models) {
+  // Or check if any parameter uses a model with MCP or System Skills binding
+  if (nodeData.parameters && nodeData.models) {
     const modelRefs = nodeData.parameters
       .map(p => p.modelRef)
       .filter(ref => ref !== undefined && ref !== '');
 
     modelRefs.forEach(modelRef => {
       const model = nodeData.models?.find(m => m.id === modelRef);
-      if (model?.bindMcpServers) {
-        hasModelWithMCP = true;
+      if (model) {
+        if (model.bindMcpServers) hasModelWithMCP = true;
+        if (model.bindSystemSkills) hasModelWithSystemSkills = true;
       }
     });
   }
+
+  const finalShowSystemSkillsBadge = nodeData.useSystemSkills || hasModelWithSystemSkills;
 
   // Handle node name double-click
   const handleNameDoubleClick = useCallback(() => {
@@ -74,8 +80,22 @@ export const ToolNode = memo(({ data, id }: NodeProps) => {
     }
   }, [handleNameSave, handleNameCancel]);
 
+  // Handle node double-click to open settings dialog
+  const handleNodeDoubleClick = useCallback((e: React.MouseEvent) => {
+    // Don't open dialog if clicking on name input area
+    if (isEditingName) {
+      return;
+    }
+    // Prevent double-click from propagating to canvas
+    e.stopPropagation();
+    if (nodeData.onNodeDoubleClick) {
+      nodeData.onNodeDoubleClick(id, nodeData);
+    }
+  }, [id, nodeData, isEditingName]);
+
   return (
     <div
+      onDoubleClick={handleNodeDoubleClick}
       style={{
         padding: '16px',
         border: '2px solid #e67e22',
@@ -84,7 +104,9 @@ export const ToolNode = memo(({ data, id }: NodeProps) => {
         minWidth: '240px',
         boxShadow: '0 4px 6px rgba(230, 126, 34, 0.3)',
         color: '#fff',
+        cursor: 'pointer',
       }}
+      title="Double-click to edit node settings (Skills, MCP, A2A)"
     >
       {/* Input Handle */}
       <Handle
@@ -126,6 +148,7 @@ export const ToolNode = memo(({ data, id }: NodeProps) => {
             showToolNodeBadge={false}
             showA2ABadge={showA2ABadge}
             showMCPBadge={hasModelWithMCP}
+            showSystemSkillsBadge={finalShowSystemSkillsBadge}
           />
         </div>
 
@@ -243,6 +266,26 @@ export const ToolNode = memo(({ data, id }: NodeProps) => {
           >
             <span>✓</span>
             <span>MCP Binding: Enabled</span>
+          </div>
+        )}
+
+        {/* System Skills Binding Status */}
+        {finalShowSystemSkillsBadge && (
+          <div
+            style={{
+              fontSize: '12px',
+              color: '#9b59b6',
+              background: 'rgba(155, 89, 182, 0.15)',
+              padding: '6px 10px',
+              borderRadius: '4px',
+              border: '1px solid #9b59b6',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            <span>✓</span>
+            <span>System Skills: Enabled</span>
           </div>
         )}
 

@@ -14,9 +14,10 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
   const showToolNodeBadge = nodeData.nodeType === 'ToolNode';
   const showA2ABadge = nodeData.useA2AServers === true;
 
-  // Check if any parameter uses a model with A2A or MCP binding
+  // Check if any parameter uses a model with A2A, MCP, or System Skills binding
   let hasModelWithA2A = false;
   let hasModelWithMCP = false;
+  let hasModelWithSystemSkills = false;
 
   if (nodeData.parameters && nodeData.models) {
     const modelRefs = nodeData.parameters
@@ -28,12 +29,14 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
       if (model) {
         if (model.bindA2AServers) hasModelWithA2A = true;
         if (model.bindMcpServers) hasModelWithMCP = true;
+        if (model.bindSystemSkills) hasModelWithSystemSkills = true;
       }
     });
   }
 
   const finalShowA2ABadge = showA2ABadge || hasModelWithA2A;
   const finalShowMCPBadge = hasModelWithMCP;
+  const finalShowSystemSkillsBadge = nodeData.useSystemSkills || hasModelWithSystemSkills;
 
   // Handle node double-click to open dialog
   const handleNodeDoubleClick = useCallback((e: React.MouseEvent) => {
@@ -129,6 +132,7 @@ export const WorkflowNode = memo(({ data, id }: NodeProps) => {
             showToolNodeBadge={showToolNodeBadge}
             showA2ABadge={finalShowA2ABadge}
             showMCPBadge={finalShowMCPBadge}
+            showSystemSkillsBadge={finalShowSystemSkillsBadge}
           />
         </div>
       </div>

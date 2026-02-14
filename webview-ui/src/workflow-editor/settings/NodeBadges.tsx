@@ -4,14 +4,16 @@ interface Props {
   showA2ABadge?: boolean;
   showMCPBadge?: boolean;
   showToolNodeBadge?: boolean;
+  showSystemSkillsBadge?: boolean;
 }
 
 export const NodeBadges: React.FC<Props> = ({
   showA2ABadge = false,
   showMCPBadge = false,
   showToolNodeBadge = false,
+  showSystemSkillsBadge = false,
 }) => {
-  if (!showA2ABadge && !showMCPBadge && !showToolNodeBadge) {
+  if (!showA2ABadge && !showMCPBadge && !showToolNodeBadge && !showSystemSkillsBadge) {
     return null;
   }
 
@@ -42,6 +44,11 @@ export const NodeBadges: React.FC<Props> = ({
       {showMCPBadge && (
         <span style={badgeStyle} title="MCP Server Binding">
           🔌
+        </span>
+      )}
+      {showSystemSkillsBadge && (
+        <span style={badgeStyle} title="System Skills Enabled">
+          🔧
         </span>
       )}
     </span>

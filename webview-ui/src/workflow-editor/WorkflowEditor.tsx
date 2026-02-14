@@ -27,6 +27,7 @@ import { WorkflowSettingsPanel } from './WorkflowSettingsPanel';
 import { ChatPanel } from './ChatPanel';
 import { ConditionalEdgeFormModal } from './settings/ConditionalEdgeFormModal';
 import { NodeEditorDialog } from './NodeEditorDialog';
+import { ToolNodeEditorDialog } from './ToolNodeEditorDialog';
 
 // VSCode API
 declare const vscode: any;
@@ -944,7 +945,15 @@ export const WorkflowEditor: React.FC = () => {
         }}
         stateAnnotationName={workflowConfig?.stateAnnotation?.name}
       />
-      {selectedNodeForEditor && (
+      {selectedNodeForEditor && selectedNodeForEditor.nodeData.nodeType === 'ToolNode' ? (
+        <ToolNodeEditorDialog
+          show={showNodeEditor}
+          onClose={handleCloseNodeEditor}
+          nodeId={selectedNodeForEditor.nodeId}
+          nodeData={selectedNodeForEditor.nodeData}
+          onSave={handleSaveNodeChanges}
+        />
+      ) : selectedNodeForEditor && (
         <NodeEditorDialog
           show={showNodeEditor}
           onClose={handleCloseNodeEditor}

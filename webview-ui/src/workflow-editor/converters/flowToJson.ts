@@ -33,6 +33,16 @@ export function flowToJson(
       workflowNode.useA2AServers = node.data.useA2AServers;
     }
 
+    // Add useMcpServers flag if present
+    if (node.data.useMcpServers !== undefined) {
+      (workflowNode as any).useMcpServers = node.data.useMcpServers;
+    }
+
+    // Add useSystemSkills flag if present
+    if (node.data.useSystemSkills !== undefined) {
+      (workflowNode as any).useSystemSkills = node.data.useSystemSkills;
+    }
+
     // Only add handler property if node is not a ToolNode
     if (node.data.nodeType !== 'ToolNode') {
       if (node.data.function !== undefined || node.data.parameters) {

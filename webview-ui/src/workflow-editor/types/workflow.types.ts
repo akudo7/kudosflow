@@ -1,4 +1,5 @@
 import { Node as FlowNode, Edge as FlowEdge } from '@xyflow/react';
+import { SkillsConfig } from './skills.types';
 
 // A2A Server Configuration
 export interface A2AServerConfig {
@@ -29,6 +30,7 @@ export interface WorkflowConfigSettings {
       additionalToolNamePrefix?: string;
     };
   };
+  skills?: SkillsConfig;  // Skills configuration (Phase 6)
   [key: string]: any;
 }
 
@@ -103,6 +105,7 @@ export interface ModelConfig {
   };
   bindA2AServers?: boolean;
   bindMcpServers?: boolean;  // For Phase 9E (MCP Server integration)
+  bindSystemSkills?: boolean;  // For Skills integration (Phase 6)
   systemPrompt?: string;
 }
 
@@ -112,6 +115,8 @@ export interface CustomNodeData extends Record<string, unknown> {
   nodeType?: string;  // "ToolNode" or undefined
   useA2AServers?: boolean;  // For ToolNode
   useMcpServers?: boolean;  // For ToolNode MCP binding
+  useSystemSkills?: boolean;  // For node-level System Skills (Phase 6)
+  modelRef?: string;  // Model reference for this node
   function?: string;
   parameters?: Array<{
     name: string;

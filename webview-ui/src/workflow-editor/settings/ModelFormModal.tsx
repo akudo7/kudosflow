@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ModelConfig } from '../types/workflow.types';
 import { validateModelConfig } from '../utils/validation';
+import { SystemSkillsToggle } from './SystemSkillsToggle';
 
 interface Props {
   show: boolean;
@@ -33,6 +34,9 @@ export const ModelFormModal: React.FC<Props> = ({
   const [bindMcpServers, setBindMcpServers] = useState(
     initialModelConfig?.bindMcpServers || false
   );
+  const [bindSystemSkills, setBindSystemSkills] = useState(
+    initialModelConfig?.bindSystemSkills || false
+  );
   const [systemPrompt, setSystemPrompt] = useState(initialModelConfig?.systemPrompt || '');
   const [error, setError] = useState<string | null>(null);
 
@@ -44,6 +48,7 @@ export const ModelFormModal: React.FC<Props> = ({
       setTemperature(initialModelConfig?.config.temperature?.toString() || '0.7');
       setBindA2AServers(initialModelConfig?.bindA2AServers || false);
       setBindMcpServers(initialModelConfig?.bindMcpServers || false);
+      setBindSystemSkills(initialModelConfig?.bindSystemSkills || false);
       setSystemPrompt(initialModelConfig?.systemPrompt || '');
       setError(null);
     }
@@ -88,6 +93,7 @@ export const ModelFormModal: React.FC<Props> = ({
       },
       ...(bindA2AServers && { bindA2AServers: true }),
       ...(bindMcpServers && { bindMcpServers: true }),
+      ...(bindSystemSkills && { bindSystemSkills: true }),
       ...(systemPrompt.trim() && { systemPrompt: systemPrompt.trim() }),
     };
 
@@ -329,6 +335,14 @@ export const ModelFormModal: React.FC<Props> = ({
               Bind MCP servers to this model
               {!mcpServersExist && ' (No MCP servers configured)'}
             </div>
+          </div>
+
+          <div style={{ marginBottom: '16px' }}>
+            <SystemSkillsToggle
+              enabled={bindSystemSkills}
+              level="model"
+              onToggle={setBindSystemSkills}
+            />
           </div>
 
           <div style={{ marginBottom: '16px' }}>
