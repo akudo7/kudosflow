@@ -1,0 +1,71 @@
+{
+  "config": {
+    "name": "{{WORKER_NAME}}",
+    "recursionLimit": 25,
+    "eventEmitter": {
+      "defaultMaxListeners": 10
+    },
+    "a2aEndpoint": {
+      "port": {{WORKER_PORT}},
+      "agentCard": {
+        "name": "{{WORKER_NAME}}",
+        "description": "Swarms worker agent - {{WORKER_NAME}}",
+        "supportedMessageFormats": ["text/plain", "application/json"]
+      }
+    }
+  },
+  "stateAnnotation": {
+    "name": "WorkerState",
+    "type": "Annotation.Root"
+  },
+  "annotation": {
+    "messages": {
+      "type": "BaseMessage[]",
+      "reducer": "(x, y) => x.concat(y)",
+      "default": []
+    },
+    "result": {
+      "type": "string",
+      "reducer": "(x, y) => y || x",
+      "default": ""
+    }
+  },
+  "models": [
+    {
+      "id": "workerModel",
+      "type": "anthropic",
+      "config": {
+        "model": "claude-sonnet-4-6",
+        "temperature": 0.3
+      },
+      "systemPrompt": "{{ROLE_SYSTEM_PROMPT}}"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "worker",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof WorkerState.State"
+          },
+          {
+            "name": "model",
+            "parameterType": "model",
+            "modelRef": "workerModel"
+          }
+        ],
+        "function": "const lastMessage = state.messages[state.messages.length - 1];\nconst userContent = lastMessage?.content || '';\nconsole.log('[worker] Processing task:', userContent.substring(0, 100));\nconst response = await model.invoke(state.messages);\nconsole.log('[worker] Task completed');\nreturn { messages: [response], result: response.content || '' };"
+      }
+    }
+  ],
+  "edges": [
+    { "from": "__start__", "to": "worker" },
+    { "from": "worker", "to": "__end__" }
+  ],
+  "stateGraph": {
+    "annotationRef": "WorkerState"
+  }
+}

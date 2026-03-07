@@ -25,7 +25,8 @@
 		"out",
 		"dist",
 		"webview-ui",
-		"skills"
+		"skills",
+		"scripts"
 	]
 }
 

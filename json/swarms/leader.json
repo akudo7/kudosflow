@@ -1,0 +1,130 @@
+{
+  "config": {
+    "info": {
+      "version": "1.0.0",
+      "description": "Swarms Leader - ユーザのプロンプトを解析し、専門エージェントチームを動的に生成・統括する",
+      "author": "Akira Kudo"
+    },
+    "recursionLimit": 50,
+    "eventEmitter": {
+      "defaultMaxListeners": 20
+    },
+    "skills": {
+      "enabled": true,
+      "skillsPath": "skills",
+      "backend": {
+        "virtualMode": true,
+        "rootDir": "/Users/akirakudo/Desktop/MyWork/VSCode/kudosflow"
+      }
+    },
+    "store": {
+      "type": "InMemoryStore"
+    }
+  },
+  "stateAnnotation": {
+    "name": "SwarmsState",
+    "type": "Annotation.Root"
+  },
+  "annotation": {
+    "messages": {
+      "type": "BaseMessage[]",
+      "reducer": "(x, y) => x.concat(y)",
+      "default": []
+    },
+    "teamPlan": {
+      "type": "string",
+      "reducer": "(x, y) => y || x",
+      "default": ""
+    },
+    "finalReport": {
+      "type": "string",
+      "reducer": "(x, y) => y || x",
+      "default": ""
+    }
+  },
+  "models": [
+    {
+      "id": "leader",
+      "type": "anthropic",
+      "config": {
+        "model": "claude-sonnet-4-6",
+        "temperature": 0.2
+      },
+      "bindSystemSkills": true,
+      "systemPrompt": "You are a Swarms Team Leader. Your role is to plan, delegate, and coordinate — NOT to write code yourself.\n\nWhen a user gives you a task:\n1. Read the 'swarms' skill instructions using read_file(\"skills/swarms/SKILL.md\")\n2. Follow the skill instructions exactly to assemble and coordinate a team of specialist agents\n3. Analyze the user's request to determine which specialist roles are needed\n4. Generate worker configurations, launch them as A2A servers, and dispatch tasks in parallel\n5. Integrate all results and provide a comprehensive final report\n\nYou MUST use the swarms skill for any implementation task. Do not implement anything directly."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "leader_node",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof SwarmsState.State"
+          },
+          {
+            "name": "model",
+            "parameterType": "model",
+            "modelRef": "leader"
+          }
+        ],
+        "function": "console.log('[leader] Starting Swarms orchestration');\nconst processedMessages = state.messages.map((m, i) => {\n  const type = m._getType ? m._getType() : m.role;\n  if (i > 0 && type === 'system') {\n    const content = typeof m.content === 'string' ? m.content : JSON.stringify(m.content);\n    return { role: 'user', content: '[System context]\\n' + content };\n  }\n  return m;\n});\nconst response = await model.invoke(processedMessages);\nreturn { messages: [response] };"
+      }
+    },
+    {
+      "id": "tools_node",
+      "type": "ToolNode",
+      "useSystemSkills": true,
+      "excludeTools": ["glob_files"]
+    },
+    {
+      "id": "finalize_node",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof SwarmsState.State"
+          }
+        ],
+        "function": "const lastMessage = state.messages[state.messages.length - 1];\nconst report = lastMessage?.content || 'No report generated';\nconsole.log('[leader] Swarms workflow complete');\nreturn { messages: [{ role: 'assistant', content: report }], finalReport: report };"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "__start__",
+      "to": "leader_node"
+    },
+    {
+      "from": "leader_node",
+      "type": "conditional",
+      "condition": {
+        "name": "routeLeader",
+        "handler": {
+          "parameters": [
+            {
+              "name": "state",
+              "parameterType": "state",
+              "stateType": "typeof SwarmsState.State"
+            }
+          ],
+          "function": "const lastMessage = state.messages[state.messages.length - 1];\nif (lastMessage?.tool_calls && lastMessage.tool_calls.length > 0) {\n  return 'tools_node';\n}\nreturn 'finalize_node';"
+        }
+      }
+    },
+    {
+      "from": "tools_node",
+      "to": "leader_node"
+    },
+    {
+      "from": "finalize_node",
+      "to": "__end__"
+    }
+  ],
+  "stateGraph": {
+    "annotationRef": "SwarmsState"
+  }
+}
