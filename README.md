@@ -269,6 +269,51 @@ The LLM freely names roles based on the prompt — there is no fixed role table.
 
 ---
 
+## Testing Agent Teams
+
+To verify that Agent Teams works correctly across different domains, the following test prompts are provided.
+
+### Verification Criteria
+
+Each test case checks the following:
+
+| Item | How to Verify |
+| ---- | ------------- |
+| Correct number of workers spawned | Count `/tmp/teams/worker_*.json` files |
+| Role names are domain-appropriate | Check `name` field in each `worker_*.json` |
+| No port conflicts | `lsof -i :3100-3199` |
+| Each worker started successfully | `curl http://localhost:31XX/.well-known/agent.json` |
+| Result files were generated | Check existence and content of `/tmp/teams/result_*.json` |
+| Final report includes all worker outputs | Review report content |
+
+### Test Cases
+
+| ID | Domain | Prompt Summary | Expected Workers |
+| -- | ------ | -------------- | ---------------- |
+| T-01 | Marketing Research | Survey Japan's streaming video market (players, pricing, users, forecast) | `market_researcher`, `competitor_analyst`, `user_analyst` |
+| T-02 | Academic Survey | Summarize LLM fine-tuning trends since 2023 (LoRA, QLoRA, DPO) | `literature_reviewer`, `technique_comparator`, `application_analyst` |
+| T-03 | Travel Planning | 5-day Tokyo → Kyoto/Osaka itinerary with transport, lodging, food | `sightseeing_planner`, `logistics_coordinator`, `food_curator` |
+| T-04 | Content Creation | Blog post: "10 ways to boost remote work productivity" with SEO | `seo_researcher`, `content_writer`, `editor` |
+| T-05 | Data Analysis | Design an e-commerce analytics framework (RFM, churn prediction) | `data_architect`, `segmentation_specialist`, `ml_engineer` |
+| T-06 | Legal / Compliance | Explain key components of a SaaS Terms of Service | `legal_analyst` (1 worker expected — simple task) |
+| T-07 | Code Generation | Implement `formatDateJP(date: Date): string` in TypeScript with Jest tests | `implementer`, `tester` |
+
+> **T-07 pass/fail criterion:** `yarn jest src/formatDateJP.test.ts` — all tests must pass.
+
+### Running a Test
+
+```bash
+# 1. Clean up previous runs
+pkill -f 'start-a2a-server.ts' || true
+rm -rf /tmp/teams/
+
+# 2. Open leader.json in the Workflow Editor
+# 3. Enter the test prompt and run
+# 4. Check /tmp/teams/ for worker and result files
+```
+
+---
+
 ## Development
 
 ### Build Prerequisites
