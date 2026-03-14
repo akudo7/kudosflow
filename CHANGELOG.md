@@ -12,6 +12,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Changed
 
+- **Packaging**: Added `scripts` folder to the extension package (removed from `.vscodeignore`)
+
 - **Teams leader.json systemPrompt**: Replaced SKILL.md delegation with fully embedded step-by-step orchestration instructions (Step 1–8) including worker kill, template load, JSON write, launch, healthcheck, parallel task send, and result integration
 - **Teams leader.json leader_node**: Added `injectSkillsPrompt: false` to prevent skills prompt injection; added debug logging for message count, types, tool_calls, and response content preview
 - **Teams leader.json tools_node**: Added `"teams"` to `excludeTools` to prevent recursive self-invocation
