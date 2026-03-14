@@ -10,17 +10,19 @@ description: ユーザのプロンプトを解析し、タスクに最適な専�
 ユーザのプロンプトを解析し、専門エージェントを生成する。
 固定チームではなく、依頼内容に応じてその場でチームを組成し並列で作業する。
 
-## 利用可能なエージェント種別
+## ポート割り当てルール
 
-| role名 | 専門領域 | 使用するポート |
-|--------|---------|-------------|
-| `frontend` | UI/UX、React、CSS、コンポーネント設計 | 3011 |
-| `backend`  | API、データベース、サーバーロジック | 3012 |
-| `test`     | テスト設計、Jest、E2E、品質保証 | 3013 |
-| `docs`     | ドキュメント、README、API仕様 | 3014 |
-| `arch`     | アーキテクチャ設計、技術選定、レビュー | 3015 |
+利用可能なポート範囲: 3100〜3199
 
-必要なエージェントのみ起動する（最小2、最大5）。
+Worker数 N はプロンプト解析後に決定する。ポートは BASE=3100 から連番で割り当てる。
+
+起動前に既存プロセスをクリーンアップする:
+
+```
+bash_command("lsof -ti:3100-3199 | xargs kill -9 2>/dev/null || true")
+```
+
+必要なエージェントのみ起動する（上限なし）。
 
 ---
 
@@ -32,21 +34,57 @@ description: ユーザのプロンプトを解析し、タスクに最適な専�
 
 ---
 
+## Worker設計の原則
+
+ロール名はユーザーのプロンプトに最適なものをLLMが自由に命名する。
+事前定義のロールテーブルは存在しない。
+
+命名規則:
+- タスクの専門領域を英語の名詞で表現する（例: researcher, writer, analyst）
+- 汎用的すぎる名前は避ける（例: worker1 は不可）
+- 英数字とアンダースコアのみ使用する
+
+Worker数の決め方:
+- タスクを独立して並列実行できる単位に分解する
+- 1つのWorkerが担うタスクは明確に1つの専門領域に限定する
+- 最小1、最大5。分割できないタスクは1Worker。
+
+各Workerに必要な情報:
+- role: Workerの役割名（命名規則に従う）
+- port: 割り当てるポート番号（上記ポート割り当てルールで決定）
+- systemPrompt: このWorkerの専門性を定義するシステムプロンプト
+- task: このWorkerに割り当てる具体的なタスク
+
+---
+
 ## 手順
 
-### Step 1: プロンプト解析 → チーム構成を決定
+### Step 1: プロンプト解析 → Worker設計
 
-ユーザーの依頼を読み、必要なroleの一覧を決定する。
+ユーザーのプロンプトを読み、以下を決定する:
 
-判断基準:
-- UIの変更を含む → `frontend`
-- API/サーバー/DBの変更を含む → `backend`
-- テストが言及されている、または品質保証が必要 → `test`
-- ドキュメント更新が必要 → `docs`
-- 大きな設計判断がある → `arch`
+1. タスクを独立した専門領域に分解する
+2. 各領域に役割名（role）を命名する（上記「Worker設計の原則」に従う）
+3. 各Workerのシステムプロンプトを設計する
+4. 各Workerの担当タスクを具体的に記述する
 
-例：「ReactアプリにダークモードとREST APIを追加して」
-→ frontend（ダークモード）, backend（REST API）, test（両方のテスト）= 3エージェント
+Worker設計の出力形式（内部でJSON配列として整理する）:
+```
+[
+  {
+    "role": "役割名",
+    "port": 3100,
+    "systemPrompt": "You are a ... specialist. Focus on ...",
+    "task": "具体的なタスク内容"
+  },
+  ...
+]
+```
+
+- Worker数 N を決定し、BASE=3100 から連番でポートを割り当てる（worker_0=3100, worker_1=3101, ...）
+
+例：「市場調査レポートを作成して」
+→ researcher（ポート3100）, analyst（ポート3101）, writer（ポート3102）= 3エージェント
 
 ---
 
@@ -59,60 +97,63 @@ read_file("skills/swarms/worker-template.json")
 テンプレートを読み込み、各roleのJSONを生成する。
 
 置換ルール:
-- `{{WORKER_NAME}}` → `swarm_{role}` （例: `swarm_frontend`）
-- `{{WORKER_PORT}}` → roleに対応するポート番号
-- `{{ROLE_SYSTEM_PROMPT}}` → roleに特化したシステムプロンプト（下記参照）
+- `{{WORKER_NAME}}` → `swarm_{role}` （例: `swarm_researcher`）
+- `{{WORKER_PORT}}` → Step 1 で決定した動的ポート番号
+- `{{ROLE_SYSTEM_PROMPT}}` → roleに特化したシステムプロンプト。以下のパターンで生成する:
+  `"You are a {role} specialist. Focus on {専門領域の具体的な説明}. Your output should be {期待する成果物の形式}."`
 - `{{ASSIGNED_TASK}}` → このworkerに割り当てる具体的なタスク
 
-roleごとのシステムプロンプト:
-- frontend: "You are a frontend specialist. Focus on React components, CSS, and UI/UX implementation."
-- backend:  "You are a backend specialist. Focus on API design, database schema, and server logic."
-- test:     "You are a QA specialist. Focus on test strategy, Jest unit tests, and integration tests."
-- docs:     "You are a documentation specialist. Focus on clear, accurate technical documentation."
-- arch:     "You are a software architect. Focus on system design, patterns, and technical decisions."
-
-生成したJSONを書き出す:
+生成したJSONを書き出す（全workerを**並列で同時に** `write_file` すること。順次実行するとターン数を無駄に消費する）:
 ```
-write_file("/tmp/swarms/worker_{role}.json", <生成したJSON文字列>)
+write_file("/tmp/swarms/worker_{role_0}.json", <JSON>)  # 同時に
+write_file("/tmp/swarms/worker_{role_1}.json", <JSON>)  # 同時に
+# ... 全roleを1ターンで並列書き出し
 ```
 
 ---
 
 ### Step 3: workerプロセスを起動
 
-生成したJSONを使い、各workerをA2Aサーバーとして起動する。
+生成したJSONを使い、全workerを**1つの `bash_command`** でまとめて起動する（ターン数を最小化するため）。
 
-まず作業ディレクトリと `.env` を準備する（APIキーの読み込みに必要）:
-
-```
-bash_command("mkdir -p /tmp/swarms")
-bash_command("cp /Users/akirakudo/Desktop/MyWork/VSCode/kudosflow/.env /tmp/swarms/.env")
-```
+作業ディレクトリの準備・`.env` コピー・全worker起動を1コマンドで実行する:
 
 > **なぜ `.env` をコピーするか**: kudosflow の `serverRunner.ts` は `.env` を
 > 「ワークフロー JSON と同じディレクトリ」からも探索する。
 > worker JSON は `/tmp/swarms/` に生成されるため、同ディレクトリに `.env` がないと
 > `ANTHROPIC_API_KEY` 等が読み込まれず worker が起動直後にエラーになる。
 
-各workerを起動する（`cd` で kudosflow ルートを起点にすること）:
-
 ```
-bash_command("cd /Users/akirakudo/Desktop/MyWork/VSCode/kudosflow && npx tsx scripts/start-a2a-server.ts --config /tmp/swarms/worker_{role}.json --port {port} --name swarm_{role} > /tmp/swarms/{role}.log 2>&1 &")
+bash_command("
+  mkdir -p /tmp/swarms
+  cp /Users/akirakudo/Desktop/MyWork/VSCode/kudosflow/.env /tmp/swarms/.env
+  cd /Users/akirakudo/Desktop/MyWork/VSCode/kudosflow
+  npx tsx scripts/start-a2a-server.ts --config /tmp/swarms/worker_{role_0}.json --port {port_0} --name swarm_{role_0} > /tmp/swarms/{role_0}.log 2>&1 &
+  npx tsx scripts/start-a2a-server.ts --config /tmp/swarms/worker_{role_1}.json --port {port_1} --name swarm_{role_1} > /tmp/swarms/{role_1}.log 2>&1 &
+  # ... 全workerの行を動的に生成する（Step 1 で決定したrole/port一覧を使う）
+  echo 'all workers launched'
+")
 ```
 
-全roleに対して順次実行する。
+> **重要**: 全workerの起動を1回の `bash_command` にまとめること。個別に呼び出すとLLMのターン数を無駄に消費し recursionLimit に達する。
 
 ---
 
 ### Step 4: 起動確認（healthcheck）
 
-各workerが起動するまで待機する（最大15秒）:
+全workerを**1つの `bash_command`** でまとめて確認する（ターン数を最小化するため）:
 
 ```
-bash_command("for i in $(seq 1 15); do curl -sf http://localhost:{port}/.well-known/agent.json > /dev/null && echo 'ready' && break || sleep 1; done")
+bash_command("
+  for port in {port_0} {port_1} ...; do
+    for i in \$(seq 1 15); do
+      curl -sf http://localhost:\$port/.well-known/agent.json > /dev/null && echo \"port \$port: ready\" && break || sleep 1
+    done
+  done
+")
 ```
 
-「ready」が返らない場合はそのworkerの起動失敗と判断し、ログを確認する:
+いずれかのポートで「ready」が返らない場合は、該当ロールのログを確認する:
 ```
 bash_command("cat /tmp/swarms/{role}.log")
 ```
@@ -138,9 +179,9 @@ bash_command("cd /Users/akirakudo/Desktop/MyWork/VSCode/kudosflow && npx tsx scr
 ```
 bash_command("
   cd /Users/akirakudo/Desktop/MyWork/VSCode/kudosflow
-  npx tsx scripts/send-a2a-message.ts --url http://localhost:3011 --message '{task_frontend}' --output json --timeout 300000 > /tmp/swarms/result_frontend.json &
-  npx tsx scripts/send-a2a-message.ts --url http://localhost:3012 --message '{task_backend}'  --output json --timeout 300000 > /tmp/swarms/result_backend.json  &
-  npx tsx scripts/send-a2a-message.ts --url http://localhost:3013 --message '{task_test}'     --output json --timeout 300000 > /tmp/swarms/result_test.json     &
+  npx tsx scripts/send-a2a-message.ts --url http://localhost:{port_0} --message '{task_role_0}' --output json --timeout 300000 > /tmp/swarms/result_{role_0}.json &
+  npx tsx scripts/send-a2a-message.ts --url http://localhost:{port_1} --message '{task_role_1}' --output json --timeout 300000 > /tmp/swarms/result_{role_1}.json &
+  # ... 全workerの行を動的に生成する（Step 1 で決定したrole/port一覧を使う）
   wait
   echo 'all workers completed'
 ")
@@ -162,10 +203,11 @@ read_file("/tmp/swarms/result_{role}.json")
 
 ---
 
-### Step 7: クリーンアップ（オプション）
+### Step 7: クリーンアップ（自動問い合わせ）
 
-セッション終了後にworkerプロセスを停止する:
-```
-bash_command("pkill -f 'start-a2a-server.ts' || true")
-bash_command("rm -rf /tmp/swarms/")
-```
+Step 6 完了後、クリーンアップは `finalize_node` が自動的にユーザーへ確認する。
+
+- ユーザーが **yes / y** を回答 → `pkill -f start-a2a-server.ts` + `rm -rf /tmp/swarms/` を実行
+- ユーザーが **no** を回答 → スキップ（ログは `/tmp/swarms/` に残る）
+
+**このステップで bash_command を実行しないこと。** クリーンアップは leader ワークフローの `finalize_node` に委ねる。

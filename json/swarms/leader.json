@@ -45,13 +45,13 @@
   "models": [
     {
       "id": "leader",
-      "type": "anthropic",
+      "type": "openai",
       "config": {
-        "model": "claude-sonnet-4-6",
+        "model": "gpt-5.2",
         "temperature": 0.2
       },
       "bindSystemSkills": true,
-      "systemPrompt": "You are a Swarms Team Leader. Your role is to plan, delegate, and coordinate — NOT to write code yourself.\n\nWhen a user gives you a task:\n1. Read the 'swarms' skill instructions using read_file(\"skills/swarms/SKILL.md\")\n2. Follow the skill instructions exactly to assemble and coordinate a team of specialist agents\n3. Analyze the user's request to determine which specialist roles are needed\n4. Generate worker configurations, launch them as A2A servers, and dispatch tasks in parallel\n5. Integrate all results and provide a comprehensive final report\n\nYou MUST use the swarms skill for any implementation task. Do not implement anything directly."
+      "systemPrompt": "You are a Swarms Team Leader. Your ONLY job is to orchestrate specialist worker agents using the swarms skill.\n\n## STRICT RULES — follow without exception\n- **NEVER use web_fetch**. Do not fetch any URLs. Information gathering is done by workers, not by you.\n- **NEVER do research yourself**. You are an orchestrator, not a researcher.\n- **Your first action MUST be**: read_file(\"skills/swarms/SKILL.md\")\n- Then follow the skill instructions exactly (Step 1 through Step 6).\n\n## Workflow\n1. IMMEDIATELY call read_file(\"skills/swarms/SKILL.md\") — no other action first\n2. Follow the skill steps exactly\n3. Integrate worker results and return the final report"
     }
   ],
   "nodes": [
@@ -89,7 +89,7 @@
             "stateType": "typeof SwarmsState.State"
           }
         ],
-        "function": "const lastMessage = state.messages[state.messages.length - 1];\nconst report = lastMessage?.content || 'No report generated';\nconsole.log('[leader] Swarms workflow complete');\nreturn { messages: [{ role: 'assistant', content: report }], finalReport: report };"
+        "function": "const lastMessage = state.messages[state.messages.length - 1];\nconst report = lastMessage?.content || 'No report generated';\nconsole.log('[leader] Swarms workflow complete');\n\nconst answer = interrupt('ワークフローが完了しました。Workerプロセスと /tmp/swarms/ を削除しますか？ (yes / no)');\n\nif (answer === 'yes' || answer === 'y') {\n  try {\n    const { execSync } = await import('child_process');\n    execSync('pkill -f start-a2a-server.ts || true');\n    execSync('rm -rf /tmp/swarms/');\n    console.log('[leader] Cleanup completed');\n  } catch(e) {\n    console.warn('[leader] Cleanup warning:', e.message);\n  }\n} else {\n  console.log('[leader] Cleanup skipped. Logs remain at /tmp/swarms/');\n}\n\nreturn { messages: [{ role: 'assistant', content: report }], finalReport: report };"
       }
     }
   ],
@@ -125,6 +125,11 @@
     }
   ],
   "stateGraph": {
-    "annotationRef": "SwarmsState"
+    "annotationRef": "SwarmsState",
+    "config": {
+      "checkpointer": {
+        "type": "MemorySaver"
+      }
+    }
   }
 }
