@@ -6,12 +6,22 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [1.2.0] - 2026-03-14
 
+### Added
+
+- **README**: Added "Testing Agent Teams" section with verification criteria and 7 test cases (T-01 through T-07) covering marketing research, academic survey, travel planning, content creation, data analysis, legal/compliance, and code generation domains
+
 ### Changed
 
+- **Teams leader.json systemPrompt**: Replaced SKILL.md delegation with fully embedded step-by-step orchestration instructions (Step 1–8) including worker kill, template load, JSON write, launch, healthcheck, parallel task send, and result integration
+- **Teams leader.json leader_node**: Added `injectSkillsPrompt: false` to prevent skills prompt injection; added debug logging for message count, types, tool_calls, and response content preview
+- **Teams leader.json tools_node**: Added `"teams"` to `excludeTools` to prevent recursive self-invocation
 - **Teams finalize_node**: Included report content in interrupt message so results can be reviewed before the yes/no prompt
 - **Teams finalize_node**: Changed final assistant message to show only cleanup result, eliminating duplicate report display
 - **Teams / SKILL.md**: Translated all Japanese text in JSON configs, skill files, and scripts to English
 - **Rename**: Renamed `swarms` → `teams` (folders, files, and all references) to align with Claude Code official terminology
+- **Teams leader systemPrompt**: Embedded full step-by-step orchestration instructions directly in the system prompt (previously delegated to `read_file("skills/teams/SKILL.md")`) for more reliable execution
+- **Removed**: `skills/teams/SKILL.md` — no longer needed as instructions are now embedded in the system prompt
+- **task-creation.json**: Translated Japanese regex patterns and string literals to English
 
 ## [1.1.0] - 2026-03-14
 
