@@ -8,8 +8,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Changed
 
-- **Swarms finalize_node**: レポート内容を interrupt メッセージに含めることで、yes/no プロンプト前に結果が確認できるよう改善
-- **Swarms finalize_node**: 最終アシスタントメッセージをクリーンアップ結果のみに変更し、レポートの重複表示を解消
+- **Teams finalize_node**: Included report content in interrupt message so results can be reviewed before the yes/no prompt
+- **Teams finalize_node**: Changed final assistant message to show only cleanup result, eliminating duplicate report display
+- **Teams / SKILL.md**: Translated all Japanese text in JSON configs, skill files, and scripts to English
+- **Rename**: Renamed `swarms` → `teams` (folders, files, and all references) to align with Claude Code official terminology
 
 ## [1.1.0] - 2026-03-14
 
