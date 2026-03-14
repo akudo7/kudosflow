@@ -4,7 +4,7 @@ All notable changes to the "kudosflow2" extension will be documented in this fil
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [Unreleased]
+## [1.2.0] - 2026-03-14
 
 ### Changed
 
