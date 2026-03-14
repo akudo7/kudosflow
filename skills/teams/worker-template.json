@@ -9,7 +9,7 @@
       "port": {{WORKER_PORT}},
       "agentCard": {
         "name": "{{WORKER_NAME}}",
-        "description": "Swarms worker agent - {{WORKER_NAME}}",
+        "description": "teams worker agent - {{WORKER_NAME}}",
         "supportedMessageFormats": ["text/plain", "application/json"]
       }
     }
