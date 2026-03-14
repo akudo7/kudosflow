@@ -11,7 +11,6 @@ src/**
 # Documentation
 CLAUDE.md
 screenshots/**
-scripts/**
 docs/**
 *.md
 !README.md
@@ -27,6 +26,7 @@ webpack.config.js
 # Source maps and TypeScript
 **/*.map
 **/*.ts
+!scripts/**/*.ts
 
 # Build artifacts
 .DS_Store

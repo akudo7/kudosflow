@@ -79,6 +79,43 @@ code --install-extension kudosflow2-1.2.0.vsix
 
 Search for "Kudosflow2" in the VSCode extensions marketplace.
 
+### Included Folders
+
+The extension package includes the following folders that provide workflows, scripts, and skills:
+
+|Folder|Description|
+|------|-----------|
+|`json/`|Sample workflow JSON files and agent configurations|
+|`scripts/`|Utility scripts for A2A server and messaging|
+|`skills/`|Agent skill definitions (e.g., Teams, Arxiv Search)|
+
+These folders are located inside the installed extension directory:
+
+```text
+~/.vscode/extensions/akirakudo911.kudosflow2-1.2.0/
+├── json/
+├── scripts/
+└── skills/
+```
+
+To use them in your project, copy or symlink them to your project root:
+
+**Copy:**
+
+```bash
+cp -r ~/.vscode/extensions/akirakudo911.kudosflow2-1.2.0/json ./json
+cp -r ~/.vscode/extensions/akirakudo911.kudosflow2-1.2.0/scripts ./scripts
+cp -r ~/.vscode/extensions/akirakudo911.kudosflow2-1.2.0/skills ./skills
+```
+
+**Symlink (macOS/Linux):**
+
+```bash
+ln -s ~/.vscode/extensions/akirakudo911.kudosflow2-1.2.0/json ./json
+ln -s ~/.vscode/extensions/akirakudo911.kudosflow2-1.2.0/scripts ./scripts
+ln -s ~/.vscode/extensions/akirakudo911.kudosflow2-1.2.0/skills ./skills
+```
+
 ### Setup
 
 1. **Configure API Keys**
