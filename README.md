@@ -179,6 +179,96 @@ curl -X POST http://localhost:3000/message/send \
 
 ---
 
+## Agent Teams: Dynamic Multi-Agent Orchestration
+
+The Agent Teams feature dynamically assembles a team of specialist agents at runtime based on any user prompt. Rather than a fixed team, the leader analyzes the task, decides how many workers are needed, assigns roles and ports, then orchestrates them in parallel.
+
+### How to Use
+
+1. **Open** `json/teams/leader.json` in the Workflow Editor (right-click → "Open Workflow Editor")
+2. **Run** the workflow and enter your prompt (any domain — research, writing, analysis, etc.)
+3. The leader orchestrates workers automatically and returns an integrated final report
+4. When complete, you will be prompted whether to clean up worker processes and temp files
+
+### How it Works
+
+```text
+User Prompt
+    │
+    ▼
+┌─────────────┐
+│ leader_node │  Reads SKILL.md, designs workers (roles/ports/tasks)
+└──────┬──────┘
+       │ tool call?
+       ├─── yes ──▶ ┌────────────┐
+       │            │ tools_node │  Executes skill tools (write_file, bash_command, etc.)
+       │            └──────┬─────┘
+       │                   │ loop back
+       ◀───────────────────┘
+       │ no tool calls
+       ▼
+┌───────────────┐
+│ finalize_node │  Presents final report + prompts user for cleanup
+└───────────────┘
+```
+
+**Execution flow inside `leader_node`** (driven by `skills/teams/SKILL.md`):
+
+| Step | Action |
+| ---- | ------ |
+| 1 | Analyze prompt → decide number of workers, roles, and port assignments |
+| 2 | Read `worker-template.json`, generate a JSON config per worker |
+| 3 | Launch all worker A2A servers in one bash command (background processes) |
+| 4 | Healthcheck each worker port until ready |
+| 5 | Send each worker its assigned task in parallel |
+| 6 | Read result files and integrate into a final report |
+| 7 | `finalize_node` presents report and asks user to confirm cleanup |
+
+### Processes and Files Created at Runtime
+
+| Path | Description |
+| ---- | ----------- |
+| `/tmp/teams/.env` | Copy of `.env` so workers can load API keys |
+| `/tmp/teams/worker_{role}.json` | Generated workflow config for each worker |
+| `/tmp/teams/{role}.log` | stdout/stderr log for each worker process |
+| `/tmp/teams/result_{role}.json` | Task result returned by each worker |
+
+**Worker processes** are launched as independent `npx tsx scripts/start-a2a-server.ts` processes on ports 3100–3199. All are killed and `/tmp/teams/` is deleted when the user confirms cleanup.
+
+### Key Files
+
+| File | Role |
+| ---- | ---- |
+| `json/teams/leader.json` | Workflow definition for the leader agent |
+| `skills/teams/SKILL.md` | Step-by-step instructions the leader follows |
+| `skills/teams/worker-template.json` | Template used to generate each worker's config |
+| `scripts/start-a2a-server.ts` | Launches a workflow JSON as an A2A HTTP server |
+| `scripts/send-a2a-message.ts` | Sends a task message to a running A2A server |
+
+### Port Assignment
+
+Workers are assigned ports sequentially starting from **3100**:
+
+```text
+worker_0 → port 3100
+worker_1 → port 3101
+worker_2 → port 3102
+...
+```
+
+Before launch, any existing processes on 3100–3199 are killed to avoid conflicts.
+
+### Worker Design
+
+The LLM freely names roles based on the prompt — there is no fixed role table. Naming rules:
+
+- English noun describing the domain (e.g., `researcher`, `analyst`, `writer`)
+- Alphanumerics and underscores only
+- No generic names like `worker1`
+- Minimum 1 worker, maximum 5
+
+---
+
 ## Development
 
 ### Build Prerequisites

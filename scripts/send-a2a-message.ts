@@ -7,7 +7,7 @@
  *   cd /Users/akirakudo/Desktop/MyWork/VSCode/kudosflow && \
  *   npx tsx scripts/send-a2a-message.ts \
  *     --url http://localhost:3011 \
- *     --message "タスクリストを作成してください" \
+ *     --message "Please create a task list" \
  *     [--timeout 120000] \
  *     [--output text|json]
  */
