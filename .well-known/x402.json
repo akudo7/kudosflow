@@ -1,0 +1,12 @@
+{
+  "name": "akudo7/kudosflow",
+  "description": "Visual workflow editor for building node-based AI agent workflows with drag-and-drop interface, A2A integration, and real-time execution",
+  "accepts": [
+    {
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "address": "YOUR_WALLET_ADDRESS"
+    }
+  ],
+  "resources": []
+}
