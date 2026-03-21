@@ -35,27 +35,24 @@
 
 ## What is Kudosflow?
 
-「AIエージェントのワークフロー、結局スクリプトが散らかって再現できない…」
-「試作は動いたのに、チームに渡すと動かない…」
-「ノードで組みたいけど、最終的に“運用できる形”に落ちない…」
+“AI agent workflows keep turning into scattered scripts that nobody can reproduce…”
+“The prototype worked, but it breaks when handed off to the team…”
+“I want to build with nodes, but it never lands in a form that's actually operable…”
 
-Kudosflowは、VSCode内のドラッグ&ドロップUIで**ノードベースのAIエージェント・ワークフローを設計し、そのまま実行**できる拡張機能です。設計したワークフローは**ポータブルなJSON**として保存され、**バージョン管理・共有・本番実行**まで一直線。
+Kudosflow is a VSCode extension that lets you **design and execute node-based AI agent workflows** using a drag-and-drop UI — right inside your editor. Workflows are saved as **portable JSON**, so version control, sharing, and production execution are all in one straight line.
 
-**あなたが得られること（ベネフィット）**
-- 仕様が「コードの行間」ではなく、**全体図**として残る
-- ワークフローがJSONなので、**レビュー・差分管理・再利用**がしやすい
-- プロトタイプから本番まで、**同じ成果物**でつなげられる
+### What you get
 
-**ミニCTA（今日やる1つ）**：まずはデモ動画を1分だけ見て、UIの感覚を掴んでください（上のサムネをクリック）。
+- Specs live as a **visual overview**, not buried between lines of code
+- Workflows are JSON, making **review, diff management, and reuse** straightforward
+- The **same artifact** takes you from prototype to production
 
 ### Why Kudosflow?
 
-- **Visual First**: ワークフロー全体を一望。散らばるスクリプトから卒業
-- **Production Ready**: 試作→本番を同じJSONで。作り直しを最小化
-- **Portable**: AIロジックを標準JSONとしてGit管理・共有
-- **Integrated**: VSCode内で完結。A2A / MCPプロトコルにも対応
-
-**ミニCTA（今日やる1つ）**：いま使っている“散らかった手順”を1つ思い出し、Kudosflowならノードに分けるとしたら何ノードになるかだけメモしてみてください。設計の解像度が一気に上がります。
+- **Visual First**: See your entire workflow at a glance — no more scattered scripts
+- **Production Ready**: Go from prototype to production with the same JSON — minimize rewrites
+- **Portable**: Manage and share AI logic as standard JSON with Git
+- **Integrated**: Everything stays inside VSCode — supports A2A and MCP protocols
 
 ---
 
@@ -71,8 +68,6 @@ Kudosflowは、VSCode内のドラッグ&ドロップUIで**ノードベースの
 - 🚀 **Live Execution**: Real-time workflow execution and testing
 - 🧵 **State Management**: Thread-based conversation persistence across requests
 
-**ミニCTA（今日やる1つ）**：この中で「いま一番困っていること」を1つ選び、下のQuick Startで“そこだけ”先に試してください（全部やろうとしないのがコツです）。
-
 ---
 
 ## Quick Start
@@ -83,8 +78,6 @@ Kudosflowは、VSCode内のドラッグ&ドロップUIで**ノードベースの
 - API keys for your AI providers (OpenAI, Anthropic, or Ollama)
 
 ### Installation
-
-**ミニCTA（今日やる1つ）**：まずはVSIXでインストールして、VSCodeを再起動するところまでやり切ってください。ここまでできれば、次は“開いて動かすだけ”です。
 
 #### Option 1: From VSIX (Current)
 
@@ -135,8 +128,6 @@ ln -s ~/.vscode/extensions/akirakudo911.kudosflow2-1.3.0/skills ./skills
 
 ### Setup
 
-**ミニCTA（今日やる1つ）**：`.env`は“完璧に”埋めなくてOK。使うプロバイダ（OpenAI/Anthropic/Ollama）を1つだけ決めて、キーを1つ入れるところから始めましょう。
-
 1. **Configure API Keys**
 
    Create a `.env` file in your project root:
@@ -178,8 +169,6 @@ ln -s ~/.vscode/extensions/akirakudo911.kudosflow2-1.3.0/skills ./skills
 
 ### Opening Workflow Editor
 
-**ミニCTA（今日やる1つ）**：手元のJSON（サンプルでもOK）を1つ右クリックして「Open Workflow Editor」を開いてみてください。開けた時点で“導入の山”は越えています。
-
 **Three ways to open:**
 
 - **From Explorer**: Right-click any `.json` file → "Open Workflow Editor"
@@ -187,8 +176,6 @@ ln -s ~/.vscode/extensions/akirakudo911.kudosflow2-1.3.0/skills ./skills
 - **Create New**: Right-click a folder → "Create New Workflow Here"
 
 ### Building Workflows
-
-**ミニCTA（今日やる1つ）**：ノードは最初から増やさず、**「入力 → 1処理 → 出力」**の3ノードだけで1回保存・実行してみてください。成功体験が最短で作れます。
 
 1. Click the **+** button to add nodes to the canvas
 2. Drag nodes to position them on the canvas
@@ -209,8 +196,6 @@ Each step can be an independent agent workflow, communicating via A2A protocol.
 ---
 
 ## State Management & Thread Persistence
-
-**ミニCTA（今日やる1つ）**：まずは`thread_id`なしで1回投げて、次に同じ`thread_id`で「Approved」だけ送ってみてください。“状態が続く”感覚が一発で分かります。
 
 Kudosflow supports stateful conversations using thread IDs:
 
