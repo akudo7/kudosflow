@@ -35,14 +35,27 @@
 
 ## What is Kudosflow?
 
-Build and execute node-based AI agent workflows with a drag-and-drop interface inside VSCode. Design once, run anywhere—your workflows are portable JSON files that can be version-controlled, shared, and executed in production.
+「AIエージェントのワークフロー、結局スクリプトが散らかって再現できない…」
+「試作は動いたのに、チームに渡すと動かない…」
+「ノードで組みたいけど、最終的に“運用できる形”に落ちない…」
+
+Kudosflowは、VSCode内のドラッグ&ドロップUIで**ノードベースのAIエージェント・ワークフローを設計し、そのまま実行**できる拡張機能です。設計したワークフローは**ポータブルなJSON**として保存され、**バージョン管理・共有・本番実行**まで一直線。
+
+**あなたが得られること（ベネフィット）**
+- 仕様が「コードの行間」ではなく、**全体図**として残る
+- ワークフローがJSONなので、**レビュー・差分管理・再利用**がしやすい
+- プロトタイプから本番まで、**同じ成果物**でつなげられる
+
+**ミニCTA（今日やる1つ）**：まずはデモ動画を1分だけ見て、UIの感覚を掴んでください（上のサムネをクリック）。
 
 ### Why Kudosflow?
 
-- **Visual First**: See your entire AI workflow at a glance—no more scattered scripts
-- **Production Ready**: From prototype to production with the same JSON workflow
-- **Portable**: Version control your AI logic as standard JSON files
-- **Integrated**: Works inside VSCode with A2A and MCP protocol support
+- **Visual First**: ワークフロー全体を一望。散らばるスクリプトから卒業
+- **Production Ready**: 試作→本番を同じJSONで。作り直しを最小化
+- **Portable**: AIロジックを標準JSONとしてGit管理・共有
+- **Integrated**: VSCode内で完結。A2A / MCPプロトコルにも対応
+
+**ミニCTA（今日やる1つ）**：いま使っている“散らかった手順”を1つ思い出し、Kudosflowならノードに分けるとしたら何ノードになるかだけメモしてみてください。設計の解像度が一気に上がります。
 
 ---
 
@@ -58,6 +71,8 @@ Build and execute node-based AI agent workflows with a drag-and-drop interface i
 - 🚀 **Live Execution**: Real-time workflow execution and testing
 - 🧵 **State Management**: Thread-based conversation persistence across requests
 
+**ミニCTA（今日やる1つ）**：この中で「いま一番困っていること」を1つ選び、下のQuick Startで“そこだけ”先に試してください（全部やろうとしないのがコツです）。
+
 ---
 
 ## Quick Start
@@ -69,10 +84,12 @@ Build and execute node-based AI agent workflows with a drag-and-drop interface i
 
 ### Installation
 
+**ミニCTA（今日やる1つ）**：まずはVSIXでインストールして、VSCodeを再起動するところまでやり切ってください。ここまでできれば、次は“開いて動かすだけ”です。
+
 #### Option 1: From VSIX (Current)
 
 ```bash
-code --install-extension kudosflow2-1.2.0.vsix
+code --install-extension kudosflow2-1.3.0.vsix
 ```
 
 #### Option 2: From VSCode Marketplace (Coming Soon)
@@ -92,7 +109,7 @@ The extension package includes the following folders that provide workflows, scr
 These folders are located inside the installed extension directory:
 
 ```text
-~/.vscode/extensions/akirakudo911.kudosflow2-1.2.0/
+~/.vscode/extensions/akirakudo911.kudosflow2-1.3.0/
 ├── json/
 ├── scripts/
 └── skills/
@@ -103,20 +120,22 @@ To use them in your project, copy or symlink them to your project root:
 **Copy:**
 
 ```bash
-cp -r ~/.vscode/extensions/akirakudo911.kudosflow2-1.2.0/json ./json
-cp -r ~/.vscode/extensions/akirakudo911.kudosflow2-1.2.0/scripts ./scripts
-cp -r ~/.vscode/extensions/akirakudo911.kudosflow2-1.2.0/skills ./skills
+cp -r ~/.vscode/extensions/akirakudo911.kudosflow2-1.3.0/json ./json
+cp -r ~/.vscode/extensions/akirakudo911.kudosflow2-1.3.0/scripts ./scripts
+cp -r ~/.vscode/extensions/akirakudo911.kudosflow2-1.3.0/skills ./skills
 ```
 
 **Symlink (macOS/Linux):**
 
 ```bash
-ln -s ~/.vscode/extensions/akirakudo911.kudosflow2-1.2.0/json ./json
-ln -s ~/.vscode/extensions/akirakudo911.kudosflow2-1.2.0/scripts ./scripts
-ln -s ~/.vscode/extensions/akirakudo911.kudosflow2-1.2.0/skills ./skills
+ln -s ~/.vscode/extensions/akirakudo911.kudosflow2-1.3.0/json ./json
+ln -s ~/.vscode/extensions/akirakudo911.kudosflow2-1.3.0/scripts ./scripts
+ln -s ~/.vscode/extensions/akirakudo911.kudosflow2-1.3.0/skills ./skills
 ```
 
 ### Setup
+
+**ミニCTA（今日やる1つ）**：`.env`は“完璧に”埋めなくてOK。使うプロバイダ（OpenAI/Anthropic/Ollama）を1つだけ決めて、キーを1つ入れるところから始めましょう。
 
 1. **Configure API Keys**
 
@@ -138,7 +157,7 @@ ln -s ~/.vscode/extensions/akirakudo911.kudosflow2-1.2.0/skills ./skills
    Sample workflows are automatically installed to:
 
    ```text
-   ~/.vscode/extensions/akirakudo911.kudosflow2-1.2.0/json/
+   ~/.vscode/extensions/akirakudo911.kudosflow2-1.3.0/json/
    ```
 
    **Basic Examples:**
@@ -159,6 +178,8 @@ ln -s ~/.vscode/extensions/akirakudo911.kudosflow2-1.2.0/skills ./skills
 
 ### Opening Workflow Editor
 
+**ミニCTA（今日やる1つ）**：手元のJSON（サンプルでもOK）を1つ右クリックして「Open Workflow Editor」を開いてみてください。開けた時点で“導入の山”は越えています。
+
 **Three ways to open:**
 
 - **From Explorer**: Right-click any `.json` file → "Open Workflow Editor"
@@ -166,6 +187,8 @@ ln -s ~/.vscode/extensions/akirakudo911.kudosflow2-1.2.0/skills ./skills
 - **Create New**: Right-click a folder → "Create New Workflow Here"
 
 ### Building Workflows
+
+**ミニCTA（今日やる1つ）**：ノードは最初から増やさず、**「入力 → 1処理 → 出力」**の3ノードだけで1回保存・実行してみてください。成功体験が最短で作れます。
 
 1. Click the **+** button to add nodes to the canvas
 2. Drag nodes to position them on the canvas
@@ -186,6 +209,8 @@ Each step can be an independent agent workflow, communicating via A2A protocol.
 ---
 
 ## State Management & Thread Persistence
+
+**ミニCTA（今日やる1つ）**：まずは`thread_id`なしで1回投げて、次に同じ`thread_id`で「Approved」だけ送ってみてください。“状態が続く”感覚が一発で分かります。
 
 Kudosflow supports stateful conversations using thread IDs:
 
@@ -216,16 +241,16 @@ curl -X POST http://localhost:3000/message/send \
 
 ---
 
-## Agent Teams: Dynamic Multi-Agent Orchestration
+## Agent Teams: Fan-out/Fan-in Parallel Execution
 
-The Agent Teams feature dynamically assembles a team of specialist agents at runtime based on any user prompt. Rather than a fixed team, the leader analyzes the task, decides how many workers are needed, assigns roles and ports, then orchestrates them in parallel.
+The Agent Teams feature dynamically assembles a team of specialist agents at runtime based on any user prompt. Workers run **in parallel** as native LangGraph nodes (fan-out/fan-in) — no external processes, no port management.
 
 ### How to Use
 
 1. **Open** `json/teams/leader.json` in the Workflow Editor (right-click → "Open Workflow Editor")
 2. **Run** the workflow and enter your prompt (any domain — research, writing, analysis, etc.)
-3. The leader orchestrates workers automatically and returns an integrated final report
-4. When complete, you will be prompted whether to clean up worker processes and temp files
+3. Workers execute in parallel and results are integrated automatically
+4. When complete, you will be prompted to confirm the final report
 
 ### How it Works
 
@@ -233,76 +258,39 @@ The Agent Teams feature dynamically assembles a team of specialist agents at run
 User Prompt
     │
     ▼
-┌─────────────┐
-│ leader_node │  Reads SKILL.md, designs workers (roles/ports/tasks)
-└──────┬──────┘
-       │ tool call?
-       ├─── yes ──▶ ┌────────────┐
-       │            │ tools_node │  Executes skill tools (write_file, bash_command, etc.)
-       │            └──────┬─────┘
-       │                   │ loop back
-       ◀───────────────────┘
-       │ no tool calls
-       ▼
 ┌───────────────┐
-│ finalize_node │  Presents final report + prompts user for cleanup
-└───────────────┘
+│ planner_node  │  Analyzes task → outputs JSON array of worker definitions
+└──────┬────────┘
+       │ Send(worker_A), Send(worker_B), Send(worker_C)  ← fan-out
+       ├──────────────────────┬─────────────────────────┐
+       ▼                      ▼                         ▼
+┌─────────────┐       ┌─────────────┐           ┌─────────────┐
+│ worker_node │       │ worker_node │    ...     │ worker_node │  (parallel)
+└──────┬──────┘       └──────┬──────┘           └──────┬──────┘
+       └──────────────────────┴─────────────────────────┘
+                              │ fan-in
+                              ▼
+                   ┌──────────────────┐
+                   │ aggregator_node  │  Merges all worker results → final report
+                   └────────┬─────────┘
+                            ▼
+                   ┌──────────────────┐
+                   │  finalize_node   │  Presents report + confirmation prompt
+                   └──────────────────┘
 ```
 
-**Execution flow inside `leader_node`** (driven by `skills/teams/SKILL.md`):
-
-| Step | Action |
-| ---- | ------ |
-| 1 | Analyze prompt → decide number of workers, roles, and port assignments |
-| 2 | Read `worker-template.json`, generate a JSON config per worker |
-| 3 | Launch all worker A2A servers in one bash command (background processes) |
-| 4 | Healthcheck each worker port until ready |
-| 5 | Send each worker its assigned task in parallel |
-| 6 | Read result files and integrate into a final report |
-| 7 | `finalize_node` presents report and asks user to confirm cleanup |
-
-### Processes and Files Created at Runtime
-
-| Path | Description |
-| ---- | ----------- |
-| `/tmp/teams/.env` | Copy of `.env` so workers can load API keys |
-| `/tmp/teams/worker_{role}.json` | Generated workflow config for each worker |
-| `/tmp/teams/{role}.log` | stdout/stderr log for each worker process |
-| `/tmp/teams/result_{role}.json` | Task result returned by each worker |
-
-**Worker processes** are launched as independent `npx tsx scripts/start-a2a-server.ts` processes on ports 3100–3199. All are killed and `/tmp/teams/` is deleted when the user confirms cleanup.
+| Node | Role |
+| ---- | ---- |
+| `planner_node` | Analyzes the prompt and outputs a `workerPlans` array (name, role, task) |
+| `worker_node` | Executes each worker's task independently and in parallel via LangGraph `Send` |
+| `aggregator_node` | Collects all `workerResults` and synthesizes an integrated `finalReport` |
+| `finalize_node` | Presents the final report and prompts user for confirmation |
 
 ### Key Files
 
 | File | Role |
 | ---- | ---- |
-| `json/teams/leader.json` | Workflow definition for the leader agent |
-| `skills/teams/SKILL.md` | Step-by-step instructions the leader follows |
-| `skills/teams/worker-template.json` | Template used to generate each worker's config |
-| `scripts/start-a2a-server.ts` | Launches a workflow JSON as an A2A HTTP server |
-| `scripts/send-a2a-message.ts` | Sends a task message to a running A2A server |
-
-### Port Assignment
-
-Workers are assigned ports sequentially starting from **3100**:
-
-```text
-worker_0 → port 3100
-worker_1 → port 3101
-worker_2 → port 3102
-...
-```
-
-Before launch, any existing processes on 3100–3199 are killed to avoid conflicts.
-
-### Worker Design
-
-The LLM freely names roles based on the prompt — there is no fixed role table. Naming rules:
-
-- English noun describing the domain (e.g., `researcher`, `analyst`, `writer`)
-- Alphanumerics and underscores only
-- No generic names like `worker1`
-- Minimum 1 worker, maximum 5
+| `json/teams/leader.json` | Workflow definition (planner → worker×N → aggregator → finalize) |
 
 ---
 
@@ -316,12 +304,11 @@ Each test case checks the following:
 
 | Item | How to Verify |
 | ---- | ------------- |
-| Correct number of workers spawned | Count `/tmp/teams/worker_*.json` files |
-| Role names are domain-appropriate | Check `name` field in each `worker_*.json` |
-| No port conflicts | `lsof -i :3100-3199` |
-| Each worker started successfully | `curl http://localhost:31XX/.well-known/agent.json` |
-| Result files were generated | Check existence and content of `/tmp/teams/result_*.json` |
-| Final report includes all worker outputs | Review report content |
+| Correct number of workers planned | Check `workerPlans` count in execution logs |
+| Role names are domain-appropriate | Review `name` field in planner output |
+| Workers executed in parallel | Confirm multiple `worker_node` entries appear concurrently in logs |
+| Each worker produced a result | Check `workerResults` array in aggregator input |
+| Final report includes all worker outputs | Review `finalReport` content |
 
 ### Test Cases
 
@@ -340,13 +327,9 @@ Each test case checks the following:
 ### Running a Test
 
 ```bash
-# 1. Clean up previous runs
-pkill -f 'start-a2a-server.ts' || true
-rm -rf /tmp/teams/
-
-# 2. Open leader.json in the Workflow Editor
-# 3. Enter the test prompt and run
-# 4. Check /tmp/teams/ for worker and result files
+# 1. Open leader.json in the Workflow Editor
+# 2. Enter the test prompt and run
+# 3. Review the final report presented by finalize_node
 ```
 
 ---

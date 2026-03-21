@@ -4,6 +4,29 @@ All notable changes to the "kudosflow2" extension will be documented in this fil
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.3.0] - 2026-03-21
+
+### Added
+
+- **Agent Teams Fan-out/Fan-in**: Replaced sequential A2A worker execution with LangGraph-native parallel execution
+  - New `planner_node`: Analyzes user task and outputs a JSON array of worker definitions (name, role, task)
+  - New `worker_node`: Executes each worker as an independent LangGraph node in the same process
+  - New `aggregator_node`: Collects all worker results and generates an integrated report
+  - New `finalize_node`: Presents final report with confirmation prompt before cleanup
+  - Workers now run in parallel via LangGraph `Send` API (fan-out), results merged via fan-in
+
+### Changed
+
+- **Teams leader.json**: Fully redesigned graph structure from single leader+tools nodes to planner→worker×N→aggregator→finalize pipeline (version 1.0.0 → 2.2.0)
+- **Teams leader.json state**: Replaced `teamPlan: string` with `workerPlans: {name, role, task}[]`, `currentPlan`, `workerResults`, `finalReport` for fan-out/fan-in state management
+- **WorkflowExecutor**: Output resolution now prefers `finalReport` state field when present, falling back to last assistant message — supports fan-out/fan-in workflows that store results outside the message list
+- **extractPossibleTargets**: Added `new Send('nodeName', ...)` pattern detection alongside existing `return 'string'` pattern to support LangGraph fan-out edge declarations
+
+### Removed
+
+- **Teams leader.json**: Removed `tools_node` (ToolNode) — worker tasks are now executed as LangGraph nodes, not via bash/A2A tool calls
+- **Teams leader systemPrompt**: Removed embedded 8-step A2A orchestration instructions (worker JSON write → launch → healthcheck → send → read results)
+
 ## [1.2.0] - 2026-03-14
 
 ### Added
