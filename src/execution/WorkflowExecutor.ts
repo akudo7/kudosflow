@@ -253,9 +253,19 @@ export class WorkflowExecutor {
     // Send result to chat
     // LangGraph workflows return result with messages array
     if (result && result.messages && Array.isArray(result.messages) && result.messages.length > 0) {
-      // Get the last message from the workflow
-      const lastMessage = result.messages[result.messages.length - 1];
-      const content = lastMessage.content || this.formatOutput(result);
+      // Prefer finalReport field if present (e.g. fan-out/fan-in workflows)
+      let content: any;
+      if (result.finalReport && typeof result.finalReport === 'string' && result.finalReport.trim()) {
+        content = result.finalReport;
+      } else {
+        // Find last assistant message with non-empty content
+        const assistantMessages = result.messages.filter(
+          (m: any) => (m.role === 'assistant' || m._getType?.() === 'ai') && m.content
+        );
+        const lastAssistant = assistantMessages[assistantMessages.length - 1];
+        const lastMessage = result.messages[result.messages.length - 1];
+        content = lastAssistant?.content || lastMessage.content || this.formatOutput(result);
+      }
 
       this.sendMessage({
         command: 'executionMessage',

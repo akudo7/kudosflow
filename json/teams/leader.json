@@ -1,28 +1,20 @@
 {
   "config": {
     "info": {
-      "version": "1.0.0",
-      "description": "Teams Leader - Analyzes user prompts and dynamically creates and orchestrates a team of specialist agents",
+      "version": "2.2.0",
+      "description": "Teams Leader - Fan-out/Fan-in parallel worker execution via LangGraph nodes",
       "author": "Akira Kudo"
     },
     "recursionLimit": 50,
     "eventEmitter": {
       "defaultMaxListeners": 20
     },
-    "skills": {
-      "enabled": true,
-      "skillsPath": "skills",
-      "backend": {
-        "virtualMode": true,
-        "rootDir": "/Users/akirakudo/Desktop/MyWork/VSCode/kudosflow"
-      }
-    },
     "store": {
       "type": "InMemoryStore"
     }
   },
   "stateAnnotation": {
-    "name": "TeamsState",
+    "name": "SwarmsState",
     "type": "Annotation.Root"
   },
   "annotation": {
@@ -31,10 +23,20 @@
       "reducer": "(x, y) => x.concat(y)",
       "default": []
     },
-    "teamPlan": {
-      "type": "string",
+    "workerPlans": {
+      "type": "{ name: string; role: string; task: string }[]",
+      "reducer": "(x, y) => (y && y.length > 0 ? y : x)",
+      "default": []
+    },
+    "currentPlan": {
+      "type": "{ name: string; role: string; task: string }",
       "reducer": "(x, y) => y || x",
-      "default": ""
+      "default": null
+    },
+    "workerResults": {
+      "type": "{ name: string; result: string }[]",
+      "reducer": "(x, y) => x.concat(y)",
+      "default": []
     },
     "finalReport": {
       "type": "string",
@@ -50,20 +52,18 @@
         "model": "gpt-5.2",
         "temperature": 0.2
       },
-      "bindSystemSkills": true,
-      "systemPrompt": "You are an Agent Teams Leader. Your ONLY job is to orchestrate specialist worker agents.\n\n## STRICT RULES — follow without exception\n- **NEVER answer the user's question yourself**. You are an orchestrator, not a researcher.\n- **NEVER use web_fetch**. Information gathering is done by workers only.\n- **NEVER skip tool calls**. You MUST call tools — responding directly is FORBIDDEN.\n\n## Mandatory Workflow — execute every step via tool calls\n\n### Step 1: Kill existing workers\nbash_command: `lsof -ti:3100-3199 | xargs kill -9 2>/dev/null || true`\n\n### Step 2: Load worker template\nread_file: `skills/teams/worker-template.json`\n\n### Step 3: Design workers\nBased on user prompt, decide N workers (1-5). Assign ports 3100, 3101, ... For each worker define: role name, port, systemPrompt, task.\n\n### Step 4: Write worker JSONs\nFor EACH worker, call write_file with path `/tmp/teams/worker_{role}.json`.\nThe JSON MUST be a complete copy of the worker-template.json with these substitutions:\n- `{{WORKER_NAME}}` → `team_{role}`\n- `{{WORKER_PORT}}` → port number (integer, no quotes)\n- `{{ROLE_SYSTEM_PROMPT}}` → role-specific system prompt\n- `{{ASSIGNED_TASK}}` → task description\nDo NOT write simplified JSON — use the full template structure.\n\n### Step 5: Copy .env and launch all workers in ONE bash_command (background with &)\n```\nmkdir -p /tmp/teams && cp /Users/akirakudo/Desktop/MyWork/VSCode/kudosflow/.env /tmp/teams/.env\ncd /Users/akirakudo/Desktop/MyWork/VSCode/kudosflow\nnpx tsx scripts/start-a2a-server.ts --config /tmp/teams/worker_{role0}.json --port {port0} --name team_{role0} > /tmp/teams/{role0}.log 2>&1 &\nnpx tsx scripts/start-a2a-server.ts --config /tmp/teams/worker_{role1}.json --port {port1} --name team_{role1} > /tmp/teams/{role1}.log 2>&1 &\necho 'launched'\n```\n\n### Step 6: Healthcheck all workers in ONE bash_command\n```\nfor port in {port0} {port1} ...; do\n  for i in $(seq 1 15); do\n    curl -sf http://localhost:$port/.well-known/agent.json > /dev/null && echo \"port $port: ready\" && break || sleep 1\n  done\ndone\n```\n\n### Step 7: Send tasks to all workers in ONE bash_command (background with & + wait, timeout=360000)\n```\ncd /Users/akirakudo/Desktop/MyWork/VSCode/kudosflow\nnpx tsx scripts/send-a2a-message.ts --url http://localhost:{port0} --message '{task0}' --output json --timeout 300000 > /tmp/teams/result_{role0}.json &\nnpx tsx scripts/send-a2a-message.ts --url http://localhost:{port1} --message '{task1}' --output json --timeout 300000 > /tmp/teams/result_{role1}.json &\nwait && echo 'all done'\n```\n\n### Step 8: Read results and return final report\nread_file each `/tmp/teams/result_{role}.json`, integrate, return report.\n\nStart NOW with Step 1."
+      "bindSystemSkills": true
     }
   ],
   "nodes": [
     {
-      "id": "leader_node",
-      "injectSkillsPrompt": false,
+      "id": "planner_node",
       "handler": {
         "parameters": [
           {
             "name": "state",
             "parameterType": "state",
-            "stateType": "typeof TeamsState.State"
+            "stateType": "typeof SwarmsState.State"
           },
           {
             "name": "model",
@@ -71,14 +71,46 @@
             "modelRef": "leader"
           }
         ],
-        "function": "console.log('[leader] Starting Teams orchestration');\nconst processedMessages = state.messages.map((m, i) => {\n  const type = m._getType ? m._getType() : m.role;\n  if (i > 0 && type === 'system') {\n    const content = typeof m.content === 'string' ? m.content : JSON.stringify(m.content);\n    return { role: 'user', content: '[System context]\\n' + content };\n  }\n  return m;\n});\nconsole.log('[leader] messages count:', processedMessages.length);\nconsole.log('[leader] message types:', processedMessages.map(m => m._getType ? m._getType() : m.role));\nconst response = await model.invoke(processedMessages);\nconsole.log('[leader] response type:', response._getType ? response._getType() : typeof response);\nconsole.log('[leader] tool_calls:', JSON.stringify(response.tool_calls));\nconsole.log('[leader] content preview:', typeof response.content === 'string' ? response.content.slice(0, 200) : JSON.stringify(response.content).slice(0, 200));\nreturn { messages: [response] };"
+        "function": "const lastMessage = state.messages[state.messages.length - 1];\nconst userTask = typeof lastMessage.content === 'string' ? lastMessage.content : JSON.stringify(lastMessage.content);\n\nconst planPrompt = `あなたはタスク分解の専門家です。\n以下のタスクを達成するために必要な専門家チームを定義してください。\n\nタスク: ${userTask}\n\n以下のJSON配列のみを返してください（説明文不要）:\n[\n  {\"name\": \"スネークケースの役割名\", \"role\": \"役割の説明\", \"task\": \"具体的な担当タスク\"},\n  ...\n]\n\n制約:\n- Workerは1〜5人の範囲で、タスクに必要な人数だけ定義する\n- 1人で完結するタスクは1人にする\n- nameはスネークケース英語`;\n\nconst response = await model.invoke([{ role: 'user', content: planPrompt }]);\nconst content = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);\n\nlet workerPlans;\ntry {\n  const jsonMatch = content.match(/\\[.*\\]/s);\n  workerPlans = jsonMatch ? JSON.parse(jsonMatch[0]) : [];\n} catch (e) {\n  console.error('[planner] Failed to parse worker plans:', e);\n  workerPlans = [{ name: 'general_worker', role: '汎用担当', task: userTask }];\n}\n\nconsole.log(`[planner] Defined ${workerPlans.length} workers:`, JSON.stringify(workerPlans, null, 2));\nreturn { workerPlans, messages: [response] };"
       }
     },
     {
-      "id": "tools_node",
-      "type": "ToolNode",
+      "id": "worker_node",
       "useSystemSkills": true,
-      "excludeTools": ["glob_files", "teams"]
+      "excludeTools": ["glob_files"],
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof SwarmsState.State"
+          },
+          {
+            "name": "model",
+            "parameterType": "model",
+            "modelRef": "leader"
+          }
+        ],
+        "function": "const plan = state.currentPlan;\nif (!plan) {\n  console.error('[worker] No currentPlan in state');\n  return { workerResults: [{ name: 'unknown', result: 'Error: no plan assigned' }] };\n}\n\nconsole.log(`[worker:${plan.name}] Starting task: ${plan.task}`);\n\nconst cwd = '/Users/akirakudo/Desktop/MyWork/VSCode/kudosflow';\nconst workerPrompt = `あなたは${plan.role}の専門家です。\n\n担当タスク: ${plan.task}\n\n作業ディレクトリ: ${cwd}\nファイルパスは必ず絶対パスで指定してください（例: ${cwd}/src/formatDateJP.ts）。\nファイルの作成・編集・コマンド実行が必要な場合は、利用可能なツール（write_file, edit_file, bash_command など）を使って実際に実行してください。\nbash_command でコマンドを実行する場合は cd ${cwd} してから実行してください。\n\n重要な制約:\n- glob_files は絶対に使用しないでください。ファイル探索は不要です。\n- タスクに記載されたパスに直接 write_file または edit_file を使用してください。\n\nすべての作業が完了したら、実施した内容を日本語で報告してください。`;\n\nconst messages = [{ role: 'user', content: workerPrompt }];\nlet finalResult = '';\n\nfor (let i = 0; i < 10; i++) {\n  const response = await model.invoke(messages);\n  messages.push(response);\n\n  const toolCalls = response.tool_calls || [];\n  if (toolCalls.length === 0) {\n    const content = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);\n    if (content && content.trim()) {\n      finalResult = content;\n    }\n    break;\n  }\n\n  for (const toolCall of toolCalls) {\n    console.log(`[worker:${plan.name}] Calling tool: ${toolCall.name}`);\n    const tool = tools.find(t => t.name === toolCall.name);\n    if (!tool) {\n      console.error(`[worker:${plan.name}] Tool not found: ${toolCall.name}`);\n      messages.push({ role: 'tool', tool_call_id: toolCall.id, content: `Error: tool ${toolCall.name} not found` });\n      continue;\n    }\n    const toolResult = await tool.invoke(toolCall.args);\n    const toolContent = typeof toolResult === 'string' ? toolResult : JSON.stringify(toolResult);\n    messages.push(new ToolMessage({ tool_call_id: toolCall.id, content: toolContent }));\n  }\n}\n\nconsole.log(`[worker:${plan.name}] Completed. Result preview: ${finalResult.slice(0, 100)}`);\nreturn { workerResults: [{ name: plan.name, result: finalResult }], messages: [messages[messages.length - 1]] };"
+      }
+    },
+    {
+      "id": "aggregator_node",
+      "handler": {
+        "parameters": [
+          {
+            "name": "state",
+            "parameterType": "state",
+            "stateType": "typeof SwarmsState.State"
+          },
+          {
+            "name": "model",
+            "parameterType": "model",
+            "modelRef": "leader"
+          }
+        ],
+        "function": "console.log(`[aggregator] Aggregating ${state.workerResults.length} worker results`);\n\nconst resultsSummary = state.workerResults.map(r => `## ${r.name}\\n${r.result}`).join('\\n\\n');\n\nconst aggregatePrompt = `以下は各専門家チームの調査・作業結果です。\n\n${resultsSummary}\n\nこれらの結果を統合して、包括的な最終レポートを日本語で作成してください。\n各担当者の成果を適切に組み合わせ、ユーザーの元のリクエストに対する回答として整理してください。`;\n\nlet finalReport = '';\nfor (let attempt = 0; attempt < 3; attempt++) {\n  const response = await model.invoke([{ role: 'user', content: aggregatePrompt }]);\n  const content = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);\n  if (content && content.trim()) {\n    finalReport = content;\n    break;\n  }\n  console.warn(`[aggregator] Empty response on attempt ${attempt + 1}, retrying...`);\n}\n\nif (!finalReport) {\n  console.warn('[aggregator] All attempts returned empty, falling back to worker results summary');\n  finalReport = state.workerResults.map(r => `## ${r.name}\\n${r.result || '(結果なし)'}`).join('\\n\\n');\n}\n\nconsole.log('[aggregator] Final report generated, length:', finalReport.length);\nreturn { finalReport, messages: [{ role: 'assistant', content: finalReport }] };"
+      }
     },
     {
       "id": "finalize_node",
@@ -87,38 +119,42 @@
           {
             "name": "state",
             "parameterType": "state",
-            "stateType": "typeof TeamsState.State"
+            "stateType": "typeof SwarmsState.State"
           }
         ],
-        "function": "const lastMessage = state.messages[state.messages.length - 1];\nconst report = lastMessage?.content || 'No report generated';\nconsole.log('[leader] Teams workflow complete');\n\nconst answer = interrupt(report + '\\n\\nDelete worker processes and /tmp/teams/? (yes / no)');\n\nlet cleanupResult;\nif (answer === 'yes' || answer === 'y') {\n  try {\n    const { execSync } = await import('child_process');\n    execSync('pkill -f start-a2a-server.ts || true');\n    execSync('rm -rf /tmp/teams/');\n    console.log('[leader] Cleanup completed');\n    cleanupResult = 'Cleanup completed.';\n  } catch(e) {\n    console.warn('[leader] Cleanup warning:', e.message);\n    cleanupResult = 'An error occurred during cleanup: ' + e.message;\n  }\n} else {\n  console.log('[leader] Cleanup skipped. Logs remain at /tmp/teams/');\n  cleanupResult = 'Cleanup skipped. Logs remain at /tmp/teams/.';\n}\n\nreturn { messages: [{ role: 'assistant', content: cleanupResult }], finalReport: report };"
+        "function": "console.log('[finalize] Teams workflow complete');\nconst report = (state.finalReport && state.finalReport.trim()) ? state.finalReport : (state.messages.slice().reverse().find(m => m.role === 'assistant' && m.content && m.content.trim())?.content) || 'No report generated';\nreturn { messages: [{ role: 'assistant', content: report }] };"
       }
     }
   ],
   "edges": [
     {
       "from": "__start__",
-      "to": "leader_node"
+      "to": "planner_node"
     },
     {
-      "from": "leader_node",
+      "from": "planner_node",
       "type": "conditional",
       "condition": {
-        "name": "routeLeader",
+        "name": "fanOutToWorkers",
         "handler": {
           "parameters": [
             {
               "name": "state",
               "parameterType": "state",
-              "stateType": "typeof TeamsState.State"
+              "stateType": "typeof SwarmsState.State"
             }
           ],
-          "function": "const lastMessage = state.messages[state.messages.length - 1];\nif (lastMessage?.tool_calls && lastMessage.tool_calls.length > 0) {\n  return 'tools_node';\n}\nreturn 'finalize_node';"
+          "function": "return state.workerPlans.map(plan => new Send('worker_node', { ...state, currentPlan: plan }));"
         }
       }
     },
     {
-      "from": "tools_node",
-      "to": "leader_node"
+      "from": "worker_node",
+      "to": "aggregator_node"
+    },
+    {
+      "from": "aggregator_node",
+      "to": "finalize_node"
     },
     {
       "from": "finalize_node",
@@ -126,7 +162,7 @@
     }
   ],
   "stateGraph": {
-    "annotationRef": "TeamsState",
+    "annotationRef": "SwarmsState",
     "config": {
       "checkpointer": {
         "type": "MemorySaver"
