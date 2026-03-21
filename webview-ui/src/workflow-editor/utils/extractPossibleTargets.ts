@@ -1,21 +1,28 @@
 /**
  * Implementation コードから possibleTargets を抽出
- * シンプルな return '文字列リテラル' パターンのみサポート
+ * - return '文字列リテラル' パターン
+ * - new Send('ノード名', ...) パターン (LangGraph fan-out)
  */
 export function extractPossibleTargets(implementation: string): string[] | null {
+  const targets: string[] = [];
+
   // return 'string' または return "string" パターンをマッチ
   const returnPattern = /return\s+['"]([^'"]+)['"]/g;
-  const matches = [...implementation.matchAll(returnPattern)];
-
-  if (matches.length === 0) {
-    return null; // return 文が見つからない
+  for (const m of implementation.matchAll(returnPattern)) {
+    targets.push(m[1]);
   }
 
-  // 重複を削除してユニークな targets を抽出
-  const targets = matches.map(m => m[1]);
-  const uniqueTargets = [...new Set(targets)];
+  // new Send('node', ...) または new Send("node", ...) パターンをマッチ
+  const sendPattern = /new\s+Send\(\s*['"]([^'"]+)['"]/g;
+  for (const m of implementation.matchAll(sendPattern)) {
+    targets.push(m[1]);
+  }
 
-  return uniqueTargets;
+  if (targets.length === 0) {
+    return null;
+  }
+
+  return [...new Set(targets)];
 }
 
 /**
